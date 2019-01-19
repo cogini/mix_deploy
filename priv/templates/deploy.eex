@@ -1,13 +1,14 @@
 #!/usr/bin/env bash
 
-# Set up target system
+# Perform deploy tasks on target system
 
 set -e
 
-export LANG=<%= env_lang %>
+export LANG="<%= env_lang %>"
 
-MIX_ENV="${MIX_ENV:-dev}"
+MIX_ENV="${MIX_ENV:-prod}"
 
+# Create dirs on target system
 function do_create_dirs(){
 <%= for {path, user, group, mode, comment} <- create_dirs do %>
   <%= if path do %>
@@ -29,6 +30,7 @@ function do_enable_systemd_units(){
   <% end %>
 }
 
+# Copy files to target
 function do_copy_files(){
   echo "==> Copying systemd unit files <%= service_name %>"
   mkdir -p "$DESTDIR/lib/systemd/system"
