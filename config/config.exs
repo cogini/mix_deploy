@@ -35,7 +35,8 @@ config :mix_deploy,
   app_user: "foo",
   app_group: "foo",
   sudo_deploy: true,
-  sudo_app: true
+  sudo_app: true,
+  restart_method: :systemd_flag
 
 # It is also possible to import configuration files, relative to this
 # directory. For example, you can emulate configuration per environment

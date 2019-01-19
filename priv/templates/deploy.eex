@@ -6,6 +6,8 @@ set -e
 
 export LANG=<%= env_lang %>
 
+MIX_ENV="${MIX_ENV:-dev}"
+
 function do_create_dirs(){
 <%= for {path, user, group, mode, comment} <- create_dirs do %>
   <%= if path do %>
@@ -41,8 +43,49 @@ function do_copy_files(){
   <% end %>
 }
 
+# Deploy release from local build
+function do_deploy_release(){
+  TIMESTAMP=$(date +%Y%m%d%H%M%S)
+  RELEASE_DIR="$DESTDIR<%= releases_dir %>/$TIMESTAMP"
+  VERSION="${VERSION:-<%= version %>"
+
+  echo "==> Deploying release $VERSION to $RELEASE_DIR"
+  mkdir -p "$RELEASE_DIR"
+
+  TAR_FILE="_build/$MIX_ENV/rel/<%= app_name %>/releases/$VERSION/<%= app_name %>.tar.gz"
+  echo "===> Extracting release from tar file $TAR_FILE"
+  tar -C "$RELEASE_DIR" -xf "$TAR_FILE"
+
+  CURRENT_LINK="$DESTDIR<%= releases_dir %>/current"
+
+  echo "===> Setting current symlink"
+  if [[ -L "$CURRENT_LINK" ]]; then
+    rm "$CURRENT_LINK"
+  fi
+  ln -s "$RELEASE_DIR" "$CURRENT_LINK"
+}
+
+function do_rollback_release(){
+  RELEASES_DIR="$DESTDIR<%= releases_dir %>"
+  CURRENT_LINK="$RELEASES_DIR/current"
+  PREV_DIR=$(find "$RELEASES_DIR" -maxdepth 1 | sort | tail -2 | head -1)
+  PREV_NAME=$(basename "$PREV_DIR")
+  RELEASE="${RELEASE:-$PREV_NAME}"
+
+  echo "==> Rolling back to release $RELEASE"
+  if [[ -L "$CURRENT_LINK" ]]; then
+    rm "$CURRENT_LINK"
+  fi
+  ln -s "$RELEASES_DIR/$PREV_NAME" "$CURRENT_LINK"
+}
+
+function do_restart(){
+  /bin/systemctl restart <%= service_name %>
+}
+
+
 if [ -z "$1" ]; then
-    echo "You must pass a task to execute! Expected create_dirs | enable_systemd_units | copy_files"
+    echo "You must pass a task to execute!"
     exit 1
 fi
 
@@ -55,6 +98,15 @@ case $1 in
         ;;
     enable_systemd_units)
         do_enable_systemd_units
+        ;;
+    deploy_release)
+        do_deploy_release
+        ;;
+    rollback_release)
+        do_rollback_release
+        ;;
+    restart)
+        do_restart
         ;;
     *)
         echo "Invalid command $1"
