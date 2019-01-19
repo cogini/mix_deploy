@@ -1,0 +1,65 @@
+#!/usr/bin/env bash
+
+# Set up target system
+
+set -e
+
+export LANG=<%= env_lang %>
+
+function do_create_dirs(){
+<%= for {path, user, group, mode, comment} <- create_dirs do %>
+  <%= if path do %>
+  # <%= comment %>
+  echo "==> Creating dir $DESTDIR<%= path %>"
+  mkdir -p $DESTDIR<%= path %>
+  chown <%= user %>:<%= group %> $DESTDIR<%= path %>
+  chmod <%= Integer.to_string(mode, 8) %> $DESTDIR<%= path %>
+  <% end %>
+<% end %>
+}
+
+function do_enable_systemd_units(){
+  echo "==> Enabling systemd unit <%= service_name %>"
+  systemctl enable <%= service_name %>.service
+  <%= if restart_method == :systemd_flag do %>
+  echo "==> Enabling systemd unit <%= service_name %>-restart"
+  systemctl enable <%= service_name %>-restart.service
+  <% end %>
+}
+
+function do_copy_files(){
+  echo "==> Copying systemd unit files <%= service_name %>"
+  mkdir -p $DESTDIR/lib/systemd/system
+  cp _build/$MIX_ENV/systemd/lib/systemd/system/* $DESTDIR/lib/systemd/system/
+  chmod 0644 $DESTDIR/lib/systemd/system/<%= service_name %>*
+
+  <%= if sudo_deploy or sudo_app do %>
+  echo "==> Copying sudoers.d/<%= ext_name %>"
+  mkdir -p $DESTDIR/etc/sudoers.d
+  cp _build/$MIX_ENV/deploy/etc/sudoers.d/<%= ext_name %> $DESTDIR/etc/sudoers.d/
+  chmod 0600 $DESTDIR/etc/sudoers.d/<%= ext_name %>
+  <% end %>
+}
+
+if [ -z "$1" ]; then
+    echo "You must pass a task to execute! Expected create_dirs | enable_systemd_units | copy_files"
+    exit 1
+fi
+
+case $1 in
+    create_dirs)
+        do_create_dirs
+        ;;
+    copy_files)
+        do_copy_files
+        ;;
+    enable_systemd_units)
+        do_enable_systemd_units
+        ;;
+    *)
+        echo "Invalid command $1"
+        exit 1
+        ;;
+esac
+
+exit 0

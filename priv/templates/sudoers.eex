@@ -1,0 +1,9 @@
+<%= if sudo_deploy do %>
+<%= deploy_user %> ALL=(ALL) NOPASSWD: /bin/systemctl start <%= ext_name %>, /bin/systemctl stop <%= ext_name %>, /bin/systemctl restart <%= ext_name %>, /bin/systemctl status <%= ext_name %>
+Defaults:<%= deploy_user %> !requiretty
+<% end %>
+
+<%= if sudo_app do %>
+<%= app_user %> ALL=(ALL) NOPASSWD: /bin/systemctl start <%= ext_name %>, /bin/systemctl stop <%= ext_name %>, /bin/systemctl restart <%= ext_name %>, /bin/systemctl status <%= ext_name %>
+Defaults:<%= app_user %> !requiretty
+<% end %>

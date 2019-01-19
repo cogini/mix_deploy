@@ -1,0 +1,3 @@
+%{
+  "mix_systemd": {:git, "https://github.com/cogini/mix_systemd.git", "4465f97a37fb53a2c39bbaddadbbeb22556db258", []},
+}
