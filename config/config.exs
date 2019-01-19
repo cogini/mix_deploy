@@ -30,10 +30,10 @@ use Mix.Config
 
 config :mix_deploy,
   conform: true,
-  deploy_user: "deploy",
-  deploy_group: "deploy",
-  app_user: "foo",
-  app_group: "foo",
+  # deploy_user: "deploy",
+  # deploy_group: "deploy",
+  # app_user: "foo",
+  # app_group: "foo",
   sudo_deploy: true,
   sudo_app: true,
   restart_method: :systemd_flag
