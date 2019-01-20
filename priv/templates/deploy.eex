@@ -7,9 +7,9 @@ set -e
 # Environment vars
 # MIX_ENV: location of files in _build dir, defaults to "prod"
 MIX_ENV="${MIX_ENV:-prod}"
-# DESTDIR, prefix for target files, optional
 # VERSION: version of release, defaults to version when script was generated
-DEFAULT_VERSION="<%= version %>""
+VERSION="${VERSION:-<%= version %>}
+# DESTDIR, prefix for target files, optional
 
 export LANG="<%= env_lang %>"
 
@@ -25,13 +25,12 @@ APP_GROUP="<%= app_group %>"
 # Create app dirs on target system
 function do_create_dirs(){
 <%= for {path, user, group, mode, comment} <- create_dirs do %>
-    <%= if path do %>
     # <%= comment %>
     echo "==> Creating dir ${DESTDIR}<%= path %>"
     mkdir -p "${DESTDIR}<%= path %>"
     chown <%= user %>:<%= group %> "${DESTDIR}<%= path %>"
     chmod <%= Integer.to_string(mode, 8) %> "${DESTDIR}<%= path %>"
-    <% end %>
+
 <% end %>
 }
 
@@ -74,7 +73,6 @@ function do_extract_release(){
 function do_deploy_release(){
     TIMESTAMP=$(date +%Y%m%d%H%M%S)
     RELEASE_DIR="${DESTDIR}${RELEASES_DIR}/${TIMESTAMP}"
-    VERSION="${VERSION:-$DEFAULT_VERSION}
 
     echo "==> Deploying release $VERSION to $RELEASE_DIR"
     mkdir -p "$RELEASE_DIR"
