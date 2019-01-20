@@ -4,91 +4,115 @@
 
 set -e
 
+# Environment vars
+# MIX_ENV: location of files in _build dir, defaults to "prod"
+MIX_ENV="${MIX_ENV:-prod}"
+# DESTDIR, prefix for target files, optional
+# VERSION: version of release, defaults to version when script was generated
+DEFAULT_VERSION="<%= version %>""
+
 export LANG="<%= env_lang %>"
 
-MIX_ENV="${MIX_ENV:-prod}"
+SERVICE_NAME="<%= service_name %>"
+EXT_NAME="<%= ext_name %>"
+APP_NAME="<%= app_name %>"
+RELEASES_DIR="<%= releases_dir %>"
 
-# Create dirs on target system
+# Create app dirs on target system
 function do_create_dirs(){
 <%= for {path, user, group, mode, comment} <- create_dirs do %>
-  <%= if path do %>
-  # <%= comment %>
-  echo "==> Creating dir $DESTDIR<%= path %>"
-  mkdir -p "$DESTDIR<%= path %>"
-  chown <%= user %>:<%= group %> "$DESTDIR<%= path %>"
-  chmod <%= Integer.to_string(mode, 8) %> "$DESTDIR<%= path %>"
-  <% end %>
+    <%= if path do %>
+    # <%= comment %>
+    echo "==> Creating dir ${DESTDIR}<%= path %>"
+    mkdir -p "${DESTDIR}<%= path %>"
+    chown <%= user %>:<%= group %> "${DESTDIR}<%= path %>"
+    chmod <%= Integer.to_string(mode, 8) %> "${DESTDIR}<%= path %>"
+    <% end %>
 <% end %>
 }
 
-function do_enable_systemd_units(){
-  echo "==> Enabling systemd unit <%= service_name %>"
-  systemctl enable <%= service_name %>.service
-  <%= if restart_method == :systemd_flag do %>
-  echo "==> Enabling systemd unit <%= service_name %>-restart"
-  systemctl enable <%= service_name %>-restart.service
-  <% end %>
-}
-
 # Copy files to target
+# This is used for local deploy or staging files using DESTDIR
 function do_copy_files(){
-  echo "==> Copying systemd unit files <%= service_name %>"
-  mkdir -p "$DESTDIR/lib/systemd/system"
-  cp _build/$MIX_ENV/systemd/lib/systemd/system/* "$DESTDIR/lib/systemd/system/"
-  chmod 0644 $DESTDIR/lib/systemd/system/<%= service_name %>*
+    echo "==> Copying systemd unit files for $SERVICE_NAME"
+    mkdir -p "${DESTDIR}/lib/systemd/system"
+    cp _build/${MIX_ENV}/systemd/lib/systemd/system/* "${DESTDIR}/lib/systemd/system/"
+    chmod 0644 ${DESTDIR}/lib/systemd/system/${SERVICE_NAME}*
 
-  <%= if sudo_deploy or sudo_app do %>
-  echo "==> Copying sudoers.d/<%= ext_name %>"
-  mkdir -p "$DESTDIR/etc/sudoers.d"
-  cp "_build/$MIX_ENV/deploy/etc/sudoers.d/<%= ext_name %>" "$DESTDIR/etc/sudoers.d/"
-  chmod 0600 "$DESTDIR/etc/sudoers.d/<%= ext_name %>"
-  <% end %>
+    <%= if sudo_deploy or sudo_app do %>
+    echo "==> Copying sudoers.d/${EXT_NAME}"
+    mkdir -p "${DESTDIR}/etc/sudoers.d"
+    cp "_build/${MIX_ENV}/deploy/etc/sudoers.d/${EXT_NAME}" "${DESTDIR}/etc/sudoers.d/"
+    chmod 0600 "${DESTDIR}/etc/sudoers.d/${EXT_NAME}"
+    <% end %>
 }
 
 # Deploy release from local build
+# Env var VERSION specifies version
 function do_deploy_release(){
-  TIMESTAMP=$(date +%Y%m%d%H%M%S)
-  RELEASE_DIR="$DESTDIR<%= releases_dir %>/$TIMESTAMP"
-  DEFAULT_VERSION="<%= version %>""
-  VERSION="${VERSION:-$DEFAULT_VERSION}
+    TIMESTAMP=$(date +%Y%m%d%H%M%S)
+    RELEASE_DIR="${DESTDIR}${RELEASES_DIR}/${TIMESTAMP}"
+    VERSION="${VERSION:-$DEFAULT_VERSION}
 
-  echo "==> Deploying release $VERSION to $RELEASE_DIR"
-  mkdir -p "$RELEASE_DIR"
+    echo "==> Deploying release $VERSION to $RELEASE_DIR"
+    mkdir -p "$RELEASE_DIR"
 
-  TAR_FILE="_build/$MIX_ENV/rel/<%= app_name %>/releases/$VERSION/<%= app_name %>.tar.gz"
-  echo "===> Extracting release from tar file $TAR_FILE"
-  tar -C "$RELEASE_DIR" -xf "$TAR_FILE"
+    TAR_FILE="_build/${MIX_ENV}/rel/${APP_NAME}/releases/$VERSION/$APP_NAME.tar.gz"
+    echo "===> Extracting release from tar file $TAR_FILE"
+    tar -C "$RELEASE_DIR" -xf "$TAR_FILE"
 
-  CURRENT_LINK="$DESTDIR<%= releases_dir %>/current"
-
-  echo "===> Setting current symlink"
-  if [[ -L "$CURRENT_LINK" ]]; then
-    rm "$CURRENT_LINK"
-  fi
-  ln -s "$RELEASE_DIR" "$CURRENT_LINK"
+    CURRENT_LINK="${DESTDIR}${RELEASES_DIR}/current"
+    echo "===> Setting current symlink $CURRENT_LINK"
+    if [[ -L "$CURRENT_LINK" ]]; then
+        rm "$CURRENT_LINK"
+    fi
+    ln -s "$RELEASE_DIR" "$CURRENT_LINK"
 }
 
+# Rollback release to previous
 function do_rollback_release(){
-  RELEASES_DIR="$DESTDIR<%= releases_dir %>"
-  CURRENT_LINK="$RELEASES_DIR/current"
-  PREV_DIR=$(find "$RELEASES_DIR" -maxdepth 1 | sort | tail -2 | head -1)
-  PREV_NAME=$(basename "$PREV_DIR")
-  RELEASE="${RELEASE:-$PREV_NAME}"
+    CURRENT_LINK="${DESTDIR}${RELEASES_DIR}/current"
+    # TODO: error handling
+    PREV_DIR=$(find "${DESTDIR}${RELEASES_DIR}" -maxdepth 1 | sort | tail -2 | head -1)
+    PREV_NAME=$(basename "${PREV_DIR}")
+    RELEASE="${RELEASE:-$PREV_NAME}"
 
-  echo "==> Rolling back to release $RELEASE"
-  if [[ -L "$CURRENT_LINK" ]]; then
-    rm "$CURRENT_LINK"
-  fi
-  ln -s "$RELEASES_DIR/$PREV_NAME" "$CURRENT_LINK"
+    echo "==> Rolling back to release $RELEASE"
+    if [[ -L "$CURRENT_LINK" ]]; then
+        rm "$CURRENT_LINK"
+    fi
+    ln -s "${DESTDIR}${RELEASES_DIR}/${PREV_NAME}" "$CURRENT_LINK"
 }
 
+# Enable systemd unit on target system
+function do_enable(){
+    echo "==> Enabling systemd unit $SERVICE_NAME"
+    /bin/systemctl enable "${SERVICE_NAME}"
+    <%= if restart_method == :systemd_flag do %>
+    echo "==> Enabling systemd unit ${SERVICE_NAME}-restart"
+    /bin/systemctl enable "${SERVICE_NAME}-restart"
+    <% end %>
+}
+
+# Start service
+function do_start(){
+    /bin/systemctl start "${SERVICE_NAME}"
+}
+
+# Stop service if it is running
+function do_stop(){
+    if /bin/systemctl is-active "${SERVICE_NAME}"; then
+        /bin/systemctl stop "${SERVICE_NAME}"
+    fi
+}
+
+# Restart service
 function do_restart(){
-  /bin/systemctl restart <%= service_name %>
+    /bin/systemctl restart "${SERVICE_NAME}"
 }
-
 
 if [ -z "$1" ]; then
-    echo "deploy: no task specified"
+    echo "deploy: no task specified. Options: create_dirs copy_files deploy_release rollback_release enable start stop restart"
     exit 1
 fi
 
@@ -99,17 +123,23 @@ case $1 in
     copy_files)
         do_copy_files
         ;;
-    enable_systemd_units)
-        do_enable_systemd_units
-        ;;
     deploy_release)
         do_deploy_release
         ;;
     rollback_release)
         do_rollback_release
         ;;
+    enable)
+        do_enable
+        ;;
+    start)
+        do_start
+        ;;
+    stop)
+        do_stop
+        ;;
     restart)
-        do_restart
+        do_restart_service
         ;;
     *)
         echo "Invalid command $1"

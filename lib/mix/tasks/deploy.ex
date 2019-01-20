@@ -201,7 +201,7 @@ defmodule Mix.Tasks.Deploy.Generate do
       {cfg[:deploy_dir], deploy_user, app_group, 0o750, "Base dir"},
       {cfg[:releases_dir], deploy_user, app_group, 0o750, "Releases"},
       {cfg[:scripts_dir], deploy_user, app_group, 0o750, "Target scripts"},
-      {cfg[:flags_dir], deploy_user, app_group, 0o750, "Trigger restart when deploying new release"}, # maybe 0o770
+      {cfg[:flags_dir], deploy_user, app_group, 0o750, "Flag files"}, # maybe 0o770
     ] ++
     if cfg[:systemd_version] < 235 do
       [
@@ -210,6 +210,7 @@ defmodule Mix.Tasks.Deploy.Generate do
 
         # We always need runtime dir, as we use it for RELEASE_MUTABLE_DIR
         {cfg[:runtime_dir], app_user, app_group, 0o750, "systemd RuntimeDirectory"},
+        # Needed for conform
         {cfg[:configuration_dir], deploy_user, app_group, 0o750, "systemd ConfigurationDirectory"},
 
         {cfg[:logs_dir], app_user, app_group, 0o700, "systemd LogsDirectory"},
@@ -223,14 +224,17 @@ defmodule Mix.Tasks.Deploy.Generate do
       []
     end
 
-    # root:root 700, run by root on install
+    # Deploy commands
+    # root:root 700
     write_template(cfg ++ [create_dirs: dirs], "bin", "deploy", "deploy")
 
-    # deploy_user:app_group 0o750
+    # Make it easy to start a remote console, setting env vars
+    # deploy_user:app_group 750
     write_template(cfg, "bin", "remote_console", "remote_console")
 
     if cfg[:sudo_deploy] or cfg[:sudo_app] do
-      # root:root 0600
+      # Give deploy and/or app user ability to run start/stop commands via sudo
+      # root:root 600
       write_template(cfg, Path.join(output_dir, "/etc/sudoers.d"), "sudoers", ext_name)
     end
   end

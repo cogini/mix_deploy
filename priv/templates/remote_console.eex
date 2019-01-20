@@ -7,15 +7,14 @@
 set -e
 # set -o errexit -o xtrace
 
-CURDIR="$PWD"
-BINDIR=$(dirname "$0")
-cd "$BINDIR"; BINDIR="$PWD"; cd "$CURDIR"
+# CURDIR="$PWD"
+# BINDIR=$(dirname "$0")
+# cd "$BINDIR"; BINDIR="$PWD"; cd "$CURDIR"
 
-BASEDIR="$BINDIR/.."
-cd "$BASEDIR/current"
+# BASEDIR="$BINDIR/.."
+# cd "$BASEDIR/current"
 
 export LANG="<%= env_lang %>"
-export MIX_ENV="<%= mix_env %>"
 export RELEASE_MUTABLE_DIR="<%= runtime_dir %>"
 <%= if conform do %>
 export CONFORM_CONF_PATH="<%= conform_conf_path %>"
