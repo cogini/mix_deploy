@@ -224,9 +224,14 @@ defmodule Mix.Tasks.Deploy.Generate do
       []
     end
 
+    files = [
+      {"bin/deploy", Path.join(cfg[:scripts_dir], "deploy"), deploy_user, app_group, 0o750},
+      {"bin/remote_console", Path.join(cfg[:scripts_dir], "remote_console"), deploy_user, app_group, 0o750},
+    ]
+
     # Deploy commands
     # root:root 700
-    write_template(cfg ++ [create_dirs: dirs], "bin", "deploy", "deploy")
+    write_template(cfg ++ [create_dirs: dirs, copy_files: files], "bin", "deploy", "deploy")
 
     # Make it easy to start a remote console, setting env vars
     # deploy_user:app_group 750
