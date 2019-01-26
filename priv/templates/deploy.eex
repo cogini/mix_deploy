@@ -11,6 +11,11 @@ MIX_ENV="${MIX_ENV:-prod}"
 VERSION="${VERSION:-<%= version %>}
 # DESTDIR, prefix for target files, optional
 
+DEPLOY_USER="${DEPLOY_USER:-<%= deploy_user %>}"
+DEPLOY_GROUP="${DEPLOY_GROUP:-<%= deploy_group %>}"
+APP_USER="${APP_USER:-<%= app_user %>}"
+APP_GROUP="${APP_USER:-<%= app_group %>}"
+
 export LANG="<%= env_lang %>"
 
 SERVICE_NAME="<%= service_name %>"
@@ -18,20 +23,18 @@ EXT_NAME="<%= ext_name %>"
 APP_NAME="<%= app_name %>"
 RELEASES_DIR="<%= releases_dir %>"
 
-DEPLOY_USER="<%= deploy_user %>"
-DEPLOY_GROUP="<%= deploy_group %>"
-APP_USER="<%= app_user %>"
-APP_GROUP="<%= app_group %>"
 
 # Create users on target
+# Local and CodeDeploy
 function do_create_users(){
     id -u "$DEPLOY_USER" &>/dev/null || useradd "$DEPLOY_USER"
-<%= if app_user != deploy_user %>
-    id -u "$APP_USER" &>/dev/null || useradd "$APP_USER"
-<%= end %>
+    if [ "$APP_USER" != "$DEPLOY_USER" ]; then
+        id -u "$APP_USER" &>/dev/null || useradd "$APP_USER"
+    fi
 }
 
 # Create app dirs on target
+# Local and CodeDeploy
 function do_create_dirs(){
 <%= for {path, user, group, mode, comment} <- create_dirs do %>
     # <%= comment %>
@@ -44,7 +47,7 @@ function do_create_dirs(){
 }
 
 # Copy files to target
-# This is used for local deploy or staging files using DESTDIR
+# Local deploy or staging files using DESTDIR
 function do_copy_files(){
 <%= for {src, dst, user, group, mode} <- copy_files do %>
     echo "==> Copying file ${DESTDIR}<%= dst %>"
@@ -58,39 +61,46 @@ function do_copy_files(){
     cp _build/${MIX_ENV}/systemd/lib/systemd/system/* "${DESTDIR}/lib/systemd/system/"
     chmod 644 ${DESTDIR}/lib/systemd/system/${SERVICE_NAME}*
 
-    <%= if sudo_deploy or sudo_app do %>
+<%= if sudo_deploy or sudo_app do %>
     echo "==> Copying sudoers.d/${EXT_NAME}"
     mkdir -p "${DESTDIR}/etc/sudoers.d"
     cp "_build/${MIX_ENV}/deploy/etc/sudoers.d/${EXT_NAME}" "${DESTDIR}/etc/sudoers.d/"
     chmod 600 "${DESTDIR}/etc/sudoers.d/${EXT_NAME}"
-    <% end %>
+<% end %>
 }
 
 # Extract release
+# CodeDeploy
 function do_extract_release(){
     CURRENT_DIR="${DESTDIR}${RELEASES_DIR}/current"
+    TAR_FILE="${APP_NAME}.tar.gz"
+
+    echo "==> Extracting release from tar file $TAR_FILE"
     mkdir -p "$CURRENT_DIR"
-    tar -C "$CURRENT_DIR" -xzf "${APP_NAME}.tar.gz"
+    tar -C "$CURRENT_DIR" -xzf "$TAR_FILE"
     chown -R ${DEPLOY_USER}:${APP_GROUP} "${CURRENT_DIR}"
 
     # Clean up archive
-    rm "${APP_NAME}.tar.gz"
+    rm "$TAR_FILE"
 }
 
 # Deploy release from local build
 # Env var VERSION specifies version
+# Local deploy
 function do_deploy_release(){
+    CURRENT_LINK="${DESTDIR}${RELEASES_DIR}/current"
+    TAR_FILE="_build/${MIX_ENV}/rel/${APP_NAME}/releases/${VERSION}/${APP_NAME}.tar.gz"
+
     TIMESTAMP=$(date +%Y%m%d%H%M%S)
     RELEASE_DIR="${DESTDIR}${RELEASES_DIR}/${TIMESTAMP}"
 
     echo "==> Deploying release $VERSION to $RELEASE_DIR"
     mkdir -p "$RELEASE_DIR"
 
-    TAR_FILE="_build/${MIX_ENV}/rel/${APP_NAME}/releases/${VERSION}/${APP_NAME}.tar.gz"
     echo "===> Extracting release from tar file $TAR_FILE"
     tar -C "$RELEASE_DIR" -xf "$TAR_FILE"
+    chown -R ${DEPLOY_USER}:${APP_GROUP} "${CURRENT_LINK}"
 
-    CURRENT_LINK="${DESTDIR}${RELEASES_DIR}/current"
     echo "===> Setting current symlink $CURRENT_LINK"
     if [[ -L "$CURRENT_LINK" ]]; then
         rm "$CURRENT_LINK"
@@ -99,6 +109,7 @@ function do_deploy_release(){
 }
 
 # Rollback release to previous
+# Local deploy
 function do_rollback_release(){
     CURRENT_LINK="${DESTDIR}${RELEASES_DIR}/current"
     # TODO: error handling
@@ -113,15 +124,15 @@ function do_rollback_release(){
     ln -s "${DESTDIR}${RELEASES_DIR}/${PREV_NAME}" "$CURRENT_LINK"
 }
 
-# Enable systemd unit on target system
+# Enable systemd unit on target
 function do_enable(){
     echo "==> Enabling systemd unit $SERVICE_NAME"
     /bin/systemctl enable "${SERVICE_NAME}"
 
-    <%= if restart_method == :systemd_flag do %>
+<%= if restart_method == :systemd_flag do %>
     echo "==> Enabling systemd unit ${SERVICE_NAME}-restart"
     /bin/systemctl enable "${SERVICE_NAME}-restart"
-    <% end %>
+<% end %>
 }
 
 # Start service
@@ -142,7 +153,7 @@ function do_restart(){
 }
 
 if [ -z "$1" ]; then
-    echo "deploy: no task specified. Options: create_dirs copy_files deploy_release rollback_release extract_release enable start stop restart"
+    echo "deploy: no task specified. Options: init create_users create_dirs copy_files deploy_release rollback_release extract_release enable start stop restart"
     exit 1
 fi
 
@@ -176,6 +187,9 @@ case $1 in
         ;;
     restart)
         do_restart_service
+        ;;
+    init)
+        do_create_users && do_create_dirs && do_copy_files && do_enable
         ;;
     *)
         echo "Invalid command $1"
