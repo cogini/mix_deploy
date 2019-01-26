@@ -23,7 +23,6 @@ EXT_NAME="<%= ext_name %>"
 APP_NAME="<%= app_name %>"
 RELEASES_DIR="<%= releases_dir %>"
 
-
 # Create users on target
 # Local and CodeDeploy
 function do_create_users(){
