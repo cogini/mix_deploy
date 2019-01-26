@@ -20,9 +20,18 @@ RELEASES_DIR="<%= releases_dir %>"
 
 DEPLOY_USER="<%= deploy_user %>"
 DEPLOY_GROUP="<%= deploy_group %>"
+APP_USER="<%= app_user %>"
 APP_GROUP="<%= app_group %>"
 
-# Create app dirs on target system
+# Create users on target
+function do_create_users(){
+    id -u "$DEPLOY_USER" &>/dev/null || useradd "$DEPLOY_USER"
+<%= if app_user != deploy_user %>
+    id -u "$APP_USER" &>/dev/null || useradd "$APP_USER"
+<%= end %>
+}
+
+# Create app dirs on target
 function do_create_dirs(){
 <%= for {path, user, group, mode, comment} <- create_dirs do %>
     # <%= comment %>
@@ -138,6 +147,9 @@ if [ -z "$1" ]; then
 fi
 
 case $1 in
+    create_users)
+        do_create_users
+        ;;
     create_dirs)
         do_create_dirs
         ;;
