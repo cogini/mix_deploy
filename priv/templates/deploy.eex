@@ -163,11 +163,11 @@ function do_network_environment(){
     # https://cloudinit.readthedocs.io/en/latest/topics/network-config.html#network-configuration-outputs
 
     # Digital Ocean
-    # IP_ADDR=$(cat /run/cloud-init/instance-data.json | jq '.ds.meta_data.interfaces.public[0].anchor_ipv4.ip_address' | sed -e 's/"//g')
+    # IP_ADDR=$(jq -r '.ds.meta_data.interfaces.public[0].anchor_ipv4.ip_address' < /run/cloud-init/instance-data.json)
 
     # AWS
-    IP_ADDR=$(cat /run/cloud-init/instance-data.json | jq '.ds."meta-data"."local-ipv4"' | sed -e 's/"//g')
-    # IP_ADDR=$(cat /run/cloud-init/instance-data.json | jq '.ds."meta-data"."public-ipv4"' | sed -e 's/"//g')
+    IP_ADDR=$(jq -r '.ds."meta-data"."local-ipv4"' < /run/cloud-init/instance-data.json)
+    # IP_ADDR=$(jq -r '.ds."meta-data"."public-ipv4"' < /run/cloud-init/instance-data.json)
 
     echo "DEFAULT_IPV4=$IP_ADDR" > <%= runtime_dir %>/network-environment
 }
