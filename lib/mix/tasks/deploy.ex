@@ -266,6 +266,9 @@ defmodule Mix.Tasks.Deploy.Generate do
     # deploy_user:app_group 750
     write_template(cfg, "bin", "remote_console", "remote_console")
 
+    # Migrate database
+    write_template(cfg, "bin", "migrate", "migrate")
+
     if cfg[:sudo_deploy] or cfg[:sudo_app] do
       # Give deploy and/or app user ability to run start/stop commands via sudo
       # root:root 600

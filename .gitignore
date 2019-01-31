@@ -25,3 +25,4 @@ mix_deploy-*.tar
 /rel/templates/
 /bin/deploy
 /bin/remote_console
+/bin/migrate

@@ -151,8 +151,22 @@ function do_restart(){
     /bin/systemctl restart "${SERVICE_NAME}"
 }
 
+function do_network_environment(){
+    # Digital Ocean
+    # IP_ADDR=$(cat /run/cloud-init/instance-data.json | jq '.ds.meta_data.interfaces.public[0].anchor_ipv4.ip_address' | sed -e 's/"//g')
+
+    # AWS
+    IP_ADDR=$(cat /run/cloud-init/instance-data.json | jq '.ds."meta-data"."local-ipv4"' | sed -e 's/"//g')
+    # IP_ADDR=$(cat /run/cloud-init/instance-data.json | jq '.ds."meta-data"."public-ipv4"' | sed -e 's/"//g')
+
+    echo "DEFAULT_IPV4=$IP_ADDR" > <%= runtime_dir %>/network-environment
+}
+
 if [ -z "$1" ]; then
-    echo "deploy: no task specified. Options: init create_users create_dirs copy_files deploy_release rollback_release extract_release enable start stop restart"
+    echo "deploy: no task specified."
+    echo "deploy: Options: init create_users create_dirs copy_files"
+    echo "deploy:          deploy_release rollback_release extract_release"
+    echo "deploy:          network_environment enable start stop restart"
     exit 1
 fi
 
@@ -186,6 +200,9 @@ case $1 in
         ;;
     restart)
         do_restart_service
+        ;;
+    network_environment)
+        do_network_environment
         ;;
     init)
         do_create_users && do_create_dirs && do_copy_files && do_enable
