@@ -152,6 +152,8 @@ function do_restart(){
 }
 
 function do_network_environment(){
+    # https://cloudinit.readthedocs.io/en/latest/topics/network-config.html#network-configuration-outputs
+
     # Digital Ocean
     # IP_ADDR=$(cat /run/cloud-init/instance-data.json | jq '.ds.meta_data.interfaces.public[0].anchor_ipv4.ip_address' | sed -e 's/"//g')
 
