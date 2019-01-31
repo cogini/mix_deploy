@@ -84,6 +84,9 @@ defmodule Mix.Tasks.Deploy do
       sudo_deploy: false,
       sudo_app: false,
 
+      restart_method: :systemctl, # :systemd_flag | :systemctl | :touch
+      network_environment_service: false, # enable and start app network-environment.service
+
       dirs: [
         :runtime,         # needed for network-environment or conform
         # :configuration, # needed for conform or other external app config file
@@ -114,8 +117,6 @@ defmodule Mix.Tasks.Deploy do
       tmp_directory: service_name,
       tmp_directory_base: "/var/tmp",
       tmp_directory_mode: "750",
-
-      restart_method: :systemctl, # :systemd_flag | :systemctl | :touch
     ]
 
     cfg = defaults

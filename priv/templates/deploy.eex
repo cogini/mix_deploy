@@ -132,10 +132,18 @@ function do_enable(){
     echo "==> Enabling systemd unit ${SERVICE_NAME}-restart"
     /bin/systemctl enable "${SERVICE_NAME}-restart"
 <% end %>
+
+<%= if network_environment_service do %>
+    echo "==> Enabling systemd unit ${SERVICE_NAME}-network-environment"
+    /bin/systemctl enable "${SERVICE_NAME}-network-environment"
+<% end %>
 }
 
 # Start service
 function do_start(){
+<%= if network_environment_service do %>
+    /bin/systemctl start "${SERVICE_NAME}-network-environment"
+<% end %>
     /bin/systemctl start "${SERVICE_NAME}"
 }
 
