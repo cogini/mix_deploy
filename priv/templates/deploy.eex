@@ -35,7 +35,7 @@ function do_create_users(){
 # Create app dirs on target
 # Local and CodeDeploy
 function do_create_dirs(){
-<%= for {path, user, group, mode, comment} <- create_dirs do %>
+<%= for {enabled, path, user, group, mode, comment} <- create_dirs, enabled == true do %>
     # <%= comment %>
     echo "==> Creating dir ${DESTDIR}<%= path %>"
     mkdir -p "${DESTDIR}<%= path %>"

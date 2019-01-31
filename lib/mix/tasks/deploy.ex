@@ -84,6 +84,15 @@ defmodule Mix.Tasks.Deploy do
       sudo_deploy: false,
       sudo_app: false,
 
+      dirs: [
+        :runtime,         # needed for network-environment or conform
+        # :configuration, # needed for conform or other external app config file
+        # :logs,          # needed for external log file, not journald
+        # :cache,         # app cache files which can be deleted
+        # :state,         # app state persisted between runs
+        # :tmp,           # app temp files
+      ],
+
       # These directories may be automatically created by newer versions of
       # systemd, otherwise we need to create them the app uses them
       cache_directory: service_name,
@@ -106,7 +115,7 @@ defmodule Mix.Tasks.Deploy do
       tmp_directory_base: "/var/tmp",
       tmp_directory_mode: "750",
 
-      restart_method: :systemd_flag, # :systemd_flag | :systemctl | :touch
+      restart_method: :systemctl, # :systemd_flag | :systemctl | :touch
     ]
 
     cfg = defaults
@@ -186,47 +195,67 @@ defmodule Mix.Tasks.Deploy.Generate do
 
   alias MixDeploy.Templates
 
+  def flags_dir(cfg) do
+    if cfg[:restart_method] in [:systemd_flag, :touch] do
+      perms = if cfg[:restart_method] == :touch do
+        0o770 # app needs to be able to delete file at runtime
+      else
+        0o750
+      end
+      [{cfg[:flags_dir], cfg[:deploy_user], cfg[:app_group], perms, "Flag files"}]
+    else
+      []
+    end
+  end
+
   @spec run(OptionParser.argv()) :: no_return
   def run(args) do
     cfg = Mix.Tasks.Deploy.parse_args(args)
     ext_name = cfg[:ext_name]
     output_dir = cfg[:output_dir]
 
-    deploy_user = cfg[:deploy_user]
-    # deploy_group = cfg[:deploy_group]
-    app_user = cfg[:app_user]
-    app_group = cfg[:app_group]
+    # deploy_user = cfg[:deploy_user]
+    # # deploy_group = cfg[:deploy_group]
+    # app_user = cfg[:app_user]
+    # app_group = cfg[:app_group]
+
+    create_flags_dir = cfg[:restart_method] in [:systemd_flag, :touch]
+    flags_dir_perms = if cfg[:restart_method] == :touch do
+      0o770 # app needs to be able to delete file at runtime
+    else
+      0o750
+    end
 
     dirs = [
-      {cfg[:deploy_dir], deploy_user, app_group, 0o750, "Base dir"},
-      {cfg[:releases_dir], deploy_user, app_group, 0o750, "Releases"},
-      {cfg[:scripts_dir], deploy_user, app_group, 0o750, "Target scripts"},
-      {cfg[:flags_dir], deploy_user, app_group, 0o750, "Flag files"}, # maybe 0o770
-    ] ++
+      {true, cfg[:deploy_dir], "$DEPLOY_USER", "$APP_GROUP", 0o750, "Base dir"},
+      {true, cfg[:releases_dir], "$DEPLOY_USER", "$APP_GROUP", 0o750, "Releases"},
+      {true, cfg[:scripts_dir], "$DEPLOY_USER", "$APP_GROUP", 0o750, "Target scripts"},
+      {create_flags_dir, cfg[:flags_dir], "$DEPLOY_USER", "$APP_GROUP", flags_dir_perms, "Flag files"}
+    ]
     if cfg[:systemd_version] < 235 do
+      # systemd will automatically create directories in newer versions
+      # https://www.freedesktop.org/software/systemd/man/systemd.exec.html#RuntimeDirectory=
       [
-        # https://www.freedesktop.org/software/systemd/man/systemd.exec.html#RuntimeDirectory=
-        # systemd will automatically create directories in newer versions
-
         # We always need runtime dir, as we use it for RELEASE_MUTABLE_DIR
-        {cfg[:runtime_dir], app_user, app_group, 0o750, "systemd RuntimeDirectory"},
-        # Needed for conform
-        {cfg[:configuration_dir], deploy_user, app_group, 0o750, "systemd ConfigurationDirectory"},
+        {true, cfg[:runtime_dir], "$APP_USER", "$APP_GROUP", 0o750, "systemd RuntimeDirectory"},
 
-        {cfg[:logs_dir], app_user, app_group, 0o700, "systemd LogsDirectory"},
-        {cfg[:state_dir], app_user, app_group, 0o700, "systemd StateDirectory"},
-        {cfg[:cache_dir], app_user, app_group, 0o700, "systemd CacheDirectory"},
+        # Needed for conform or other exernal config file
+        {:configuration in cfg[:dirs], cfg[:configuration_dir], "$DEPLOY_USER", "$APP_GROUP", 0o750, "systemd ConfigurationDirectory"},
+
+        {:logs  in cfg[:dirs], cfg[:logs_dir],  "$APP_USER", "$APP_GROUP", 0o700, "systemd LogsDirectory"},
+        {:state in cfg[:dirs], cfg[:state_dir], "$APP_USER", "$APP_GROUP", 0o700, "systemd StateDirectory"},
+        {:cache in cfg[:dirs], cfg[:cache_dir], "$APP_USER", "$APP_GROUP", 0o700, "systemd CacheDirectory"},
 
         # Better handled by PrivateTmp in newer systemd
-        {cfg[:tmp_dir], app_user, app_group, 0o700, "Temp directory"},
+        {:tmp in cfg[:dirs], cfg[:tmp_dir], "$APP_USER", "$APP_GROUP", 0o700, "Temp directory"},
       ]
     else
       []
     end
 
     files = [
-      {"bin/deploy", Path.join(cfg[:scripts_dir], "deploy"), deploy_user, app_group, 0o750},
-      {"bin/remote_console", Path.join(cfg[:scripts_dir], "remote_console"), deploy_user, app_group, 0o750},
+      {"bin/deploy", Path.join(cfg[:scripts_dir], "deploy"), "$DEPLOY_USER", "$APP_GROUP", 0o750},
+      {"bin/remote_console", Path.join(cfg[:scripts_dir], "remote_console"), "$DEPLOY_USER", "$APP_GROUP", 0o750},
     ]
 
     # Deploy commands
