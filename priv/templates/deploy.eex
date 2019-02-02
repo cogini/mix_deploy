@@ -8,7 +8,7 @@ set -e
 # MIX_ENV: location of files in _build dir, defaults to "prod"
 MIX_ENV="${MIX_ENV:-prod}"
 # VERSION: version of release, defaults to version when script was generated
-VERSION="${VERSION:-<%= version %>}
+VERSION="${VERSION:-<%= version %>}"
 # DESTDIR, prefix for target files, optional
 
 DEPLOY_USER="${DEPLOY_USER:-<%= deploy_user %>}"
@@ -123,7 +123,7 @@ function do_rollback_release(){
     ln -s "${DESTDIR}${RELEASES_DIR}/${PREV_NAME}" "$CURRENT_LINK"
 }
 
-# Enable systemd unit on target
+# Enable systemd units on target
 function do_enable(){
     echo "==> Enabling systemd unit $SERVICE_NAME"
     /bin/systemctl enable "${SERVICE_NAME}"
