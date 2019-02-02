@@ -255,8 +255,8 @@ defmodule Mix.Tasks.Deploy.Generate do
     end
 
     files = [
-      {"bin/deploy", Path.join(cfg[:scripts_dir], "deploy"), "$DEPLOY_USER", "$APP_GROUP", 0o750},
-      {"bin/remote_console", Path.join(cfg[:scripts_dir], "remote_console"), "$DEPLOY_USER", "$APP_GROUP", 0o750},
+      # {"bin/deploy", Path.join(cfg[:scripts_dir], "deploy"), "$DEPLOY_USER", "$APP_GROUP", 0o750},
+      # {"bin/remote_console", Path.join(cfg[:scripts_dir], "remote_console"), "$DEPLOY_USER", "$APP_GROUP", 0o750},
     ]
 
     templates = [
