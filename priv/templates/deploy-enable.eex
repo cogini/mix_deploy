@@ -9,7 +9,6 @@ export LANG="<%= env_lang %>"
 # Config vars
 SERVICE_NAME="<%= service_name %>"
 
-
 echo "==> Enabling systemd unit $SERVICE_NAME"
 /bin/systemctl enable "${SERVICE_NAME}"
 

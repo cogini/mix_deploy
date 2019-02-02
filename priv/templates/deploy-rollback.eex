@@ -11,12 +11,11 @@ set -e
 # Config vars
 export LANG="<%= env_lang %>"
 DEPLOY_DIR="<%= deploy_dir %>"
-RELEASES_DIR="<%= releases_dir %>"
 
-
+RELEASES_DIR="${DESTDIR}${DEPLOY_DIR}/releases"
 CURRENT_LINK="${DESTDIR}${DEPLOY_DIR}/current"
 # TODO: error handling
-PREV_DIR=$(find "${DESTDIR}${RELEASES_DIR}" -maxdepth 1 | sort | tail -2 | head -1)
+PREV_DIR=$(find "${RELEASES_DIR}" -maxdepth 1 | sort | tail -2 | head -1)
 PREV_NAME=$(basename "${PREV_DIR}")
 RELEASE="${RELEASE:-$PREV_NAME}"
 
@@ -24,4 +23,4 @@ echo "==> Rolling back to release $RELEASE"
 if [[ -L "$CURRENT_LINK" ]]; then
     rm "$CURRENT_LINK"
 fi
-ln -s "${DESTDIR}${RELEASES_DIR}/${PREV_NAME}" "$CURRENT_LINK"
+ln -s "${RELEASES_DIR}/${PREV_NAME}" "$CURRENT_LINK"

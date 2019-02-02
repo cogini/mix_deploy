@@ -15,10 +15,11 @@ set -e
 # cd "$BASEDIR/current"
 
 # Config vars
+DEPLOY_DIR="<%= deploy_dir %>"
+APP_NAME="<%= app_name %>"
 export LANG="<%= env_lang %>"
 export RELEASE_MUTABLE_DIR="<%= runtime_dir %>"
-CURRENT_DIR="<%= current_dir %>"
-APP_NAME="<%= app_name %>"
+CURRENT_DIR="$DEPLOY_DIR/current"
 <%= if conform do %>
 export CONFORM_CONF_PATH="<%= conform_conf_path %>"
 <% end %>

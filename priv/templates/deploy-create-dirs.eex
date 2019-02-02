@@ -9,7 +9,6 @@ export LANG="<%= env_lang %>"
 # Environment vars
 # DESTDIR, prefix for target files, optional
 
-
 <%= for {enabled, path, user, group, mode, comment} <- create_dirs, enabled == true do %>
 # <%= comment %>
 echo "==> Creating dir ${DESTDIR}<%= path %>"
