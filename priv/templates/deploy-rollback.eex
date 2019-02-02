@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+
+# Rollback release to previous
+# Local deploy
+
+set -e
+
+# Environment vars
+# DESTDIR, prefix for target files, optional
+
+# Config vars
+export LANG="<%= env_lang %>"
+RELEASES_DIR="<%= releases_dir %>"
+
+
+CURRENT_LINK="${DESTDIR}${RELEASES_DIR}/current"
+# TODO: error handling
+PREV_DIR=$(find "${DESTDIR}${RELEASES_DIR}" -maxdepth 1 | sort | tail -2 | head -1)
+PREV_NAME=$(basename "${PREV_DIR}")
+RELEASE="${RELEASE:-$PREV_NAME}"
+
+echo "==> Rolling back to release $RELEASE"
+if [[ -L "$CURRENT_LINK" ]]; then
+    rm "$CURRENT_LINK"
+fi
+ln -s "${DESTDIR}${RELEASES_DIR}/${PREV_NAME}" "$CURRENT_LINK"

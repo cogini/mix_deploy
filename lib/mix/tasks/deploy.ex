@@ -259,16 +259,26 @@ defmodule Mix.Tasks.Deploy.Generate do
       {"bin/remote_console", Path.join(cfg[:scripts_dir], "remote_console"), "$DEPLOY_USER", "$APP_GROUP", 0o750},
     ]
 
-    # Deploy commands
-    # root:root 700
-    write_template(cfg ++ [create_dirs: dirs, copy_files: files], "bin", "deploy", "deploy")
+    templates = [
+      "deploy-copy-files",
+      "deploy-create-dirs",
+      "deploy-create-users",
+      "deploy-enable",
+      "deploy-extract-release",
+      "deploy-migrate",
+      "deploy-network-environment",
+      "deploy-release",
+      "deploy-remote-console",
+      "deploy-restart",
+      "deploy-rollback",
+      "deploy-start",
+      "deploy-stop",
+      "deploy",
+    ]
 
-    # Make it easy to start a remote console, setting env vars
-    # deploy_user:app_group 750
-    write_template(cfg, "bin", "remote_console", "remote_console")
+    vars = cfg ++ [create_dirs: dirs, copy_files: files]
 
-    # Migrate database
-    write_template(cfg, "bin", "migrate", "migrate")
+    for template <- templates, do: write_template(vars, "bin", template)
 
     if cfg[:sudo_deploy] or cfg[:sudo_app] do
       # Give deploy and/or app user ability to run start/stop commands via sudo
@@ -276,6 +286,8 @@ defmodule Mix.Tasks.Deploy.Generate do
       write_template(cfg, Path.join(output_dir, "/etc/sudoers.d"), "sudoers", ext_name)
     end
   end
+
+  defp write_template(cfg, dest_dir, template), do: write_template(cfg, dest_dir, template, template)
 
   defp write_template(cfg, dest_dir, template, file) do
     target_file = Path.join(dest_dir, file)

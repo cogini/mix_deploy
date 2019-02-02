@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+
+# Stop services on target
+
+set -e
+
+# Config vars
+export LANG="<%= env_lang %>"
+SERVICE_NAME="<%= service_name %>"
+
+# Stop service if it is running
+if /bin/systemctl is-active "${SERVICE_NAME}"; then
+    /bin/systemctl stop "${SERVICE_NAME}"
+fi

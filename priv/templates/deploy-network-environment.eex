@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+
+# Create network-environment file on target from cloud-init metadata
+# https://cloudinit.readthedocs.io/en/latest/topics/network-config.html#network-configuration-outputs
+
+set -e
+
+# Config vars
+RUNTIME_DIR="<%= runtime_dir %>"
+
+# Digital Ocean
+# IP_ADDR=$(jq -r '.ds.meta_data.interfaces.public[0].anchor_ipv4.ip_address' < /run/cloud-init/instance-data.json)
+
+# AWS
+IP_ADDR=$(jq -r '.ds."meta-data"."local-ipv4"' < /run/cloud-init/instance-data.json)
+# IP_ADDR=$(jq -r '.ds."meta-data"."public-ipv4"' < /run/cloud-init/instance-data.json)
+
+echo "DEFAULT_IPV4=$IP_ADDR" > "${RUNTIME_DIR}/network-environment"

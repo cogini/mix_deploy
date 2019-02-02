@@ -1,0 +1,34 @@
+#!/usr/bin/env bash
+
+# Copy files to target or staging directory
+
+set -e
+
+export LANG="<%= env_lang %>"
+
+# Environment vars
+# DESTDIR, prefix for target files, optional
+MIX_ENV="${MIX_ENV:-prod}"
+
+# Config vars
+SERVICE_NAME="<%= service_name %>"
+EXT_NAME="<%= ext_name %>"
+
+<%= for {src, dst, user, group, mode} <- copy_files do %>
+echo "==> Copying file ${DESTDIR}<%= dst %>"
+cp <%= src %> "${DESTDIR}<%= dst %>"
+chown <%= user %>:<%= group %> "${DESTDIR}<%= dst %>"
+chmod <%= Integer.to_string(mode, 8) %> "${DESTDIR}<%= dst %>"
+
+<% end %>
+echo "==> Copying systemd unit files for $SERVICE_NAME"
+mkdir -p "${DESTDIR}/lib/systemd/system"
+cp _build/${MIX_ENV}/systemd/lib/systemd/system/* "${DESTDIR}/lib/systemd/system/"
+chmod 644 ${DESTDIR}/lib/systemd/system/${SERVICE_NAME}*
+
+<%= if sudo_deploy or sudo_app do %>
+echo "==> Copying sudoers.d/${EXT_NAME}"
+mkdir -p "${DESTDIR}/etc/sudoers.d"
+cp "_build/${MIX_ENV}/deploy/etc/sudoers.d/${EXT_NAME}" "${DESTDIR}/etc/sudoers.d/"
+chmod 600 "${DESTDIR}/etc/sudoers.d/${EXT_NAME}"
+<% end %>

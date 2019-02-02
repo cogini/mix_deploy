@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+
+# Start services on target
+
+set -e
+
+# Config vars
+export LANG="<%= env_lang %>"
+SERVICE_NAME="<%= service_name %>"
+
+
+<%= if network_environment_service do %>
+/bin/systemctl start "${SERVICE_NAME}-network-environment"
+<% end %>
+/bin/systemctl start "${SERVICE_NAME}"

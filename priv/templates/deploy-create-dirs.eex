@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+
+# Create app dirs on target
+
+set -e
+
+export LANG="<%= env_lang %>"
+
+# Environment vars
+# DESTDIR, prefix for target files, optional
+
+
+<%= for {enabled, path, user, group, mode, comment} <- create_dirs, enabled == true do %>
+# <%= comment %>
+echo "==> Creating dir ${DESTDIR}<%= path %>"
+mkdir -p "${DESTDIR}<%= path %>"
+chown <%= user %>:<%= group %> "${DESTDIR}<%= path %>"
+chmod <%= Integer.to_string(mode, 8) %> "${DESTDIR}<%= path %>"
+
+<% end %>

@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+
+# Extract release
+# CodeDeploy
+
+set -e
+
+export LANG="<%= env_lang %>"
+
+# Environment vars
+# DESTDIR, prefix for target files, optional
+
+# Config vars
+RELEASES_DIR="<%= releases_dir %>"
+APP_NAME="<%= app_name %>"
+DEPLOY_USER="${DEPLOY_USER:-<%= deploy_user %>}"
+APP_GROUP="${APP_USER:-<%= app_group %>}"
+
+
+CURRENT_DIR="${DESTDIR}${RELEASES_DIR}/current"
+TAR_FILE="${APP_NAME}.tar.gz"
+
+echo "==> Extracting release from tar file $TAR_FILE"
+mkdir -p "$CURRENT_DIR"
+tar -C "$CURRENT_DIR" -xzf "$TAR_FILE"
+chown -R ${DEPLOY_USER}:${APP_GROUP} "${CURRENT_DIR}"
+
+# Clean up archive
+rm "$TAR_FILE"

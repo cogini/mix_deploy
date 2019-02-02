@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+
+# Restart services on target
+
+set -e
+
+# Config vars
+export LANG="<%= env_lang %>"
+SERVICE_NAME="<%= service_name %>"
+
+/bin/systemctl restart "${SERVICE_NAME}"

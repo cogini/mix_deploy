@@ -1,0 +1,38 @@
+#!/usr/bin/env bash
+
+# Deploy release from local build
+
+set -e
+
+export LANG="<%= env_lang %>"
+
+# Environment vars
+# DESTDIR, prefix for target files, optional
+MIX_ENV="${MIX_ENV:-prod}"
+VERSION="${VERSION:-<%= version %>}"
+
+# Config vars
+RELEASES_DIR="<%= releases_dir %>"
+APP_NAME="<%= app_name %>"
+DEPLOY_USER="${DEPLOY_USER:-<%= deploy_user %>}"
+APP_GROUP="${APP_USER:-<%= app_group %>}"
+
+
+CURRENT_LINK="${DESTDIR}${RELEASES_DIR}/current"
+TAR_FILE="_build/${MIX_ENV}/rel/${APP_NAME}/releases/${VERSION}/${APP_NAME}.tar.gz"
+
+TIMESTAMP=$(date +%Y%m%d%H%M%S)
+RELEASE_DIR="${DESTDIR}${RELEASES_DIR}/${TIMESTAMP}"
+
+echo "==> Deploying release $VERSION to $RELEASE_DIR"
+mkdir -p "$RELEASE_DIR"
+
+echo "===> Extracting release from tar file $TAR_FILE"
+tar -C "$RELEASE_DIR" -xf "$TAR_FILE"
+chown -R ${DEPLOY_USER}:${APP_GROUP} "${CURRENT_LINK}"
+
+echo "===> Setting current symlink $CURRENT_LINK"
+if [[ -L "$CURRENT_LINK" ]]; then
+    rm "$CURRENT_LINK"
+fi
+ln -s "$RELEASE_DIR" "$CURRENT_LINK"

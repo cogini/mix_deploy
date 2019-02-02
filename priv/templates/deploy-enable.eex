@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+
+# Enable systemd units on target
+
+set -e
+
+export LANG="<%= env_lang %>"
+
+# Config vars
+SERVICE_NAME="<%= service_name %>"
+
+
+echo "==> Enabling systemd unit $SERVICE_NAME"
+/bin/systemctl enable "${SERVICE_NAME}"
+
+<%= if restart_method == :systemd_flag do %>
+echo "==> Enabling systemd unit ${SERVICE_NAME}-restart"
+/bin/systemctl enable "${SERVICE_NAME}-restart"
+<% end %>
+
+<%= if network_environment_service do %>
+echo "==> Enabling systemd unit ${SERVICE_NAME}-network-environment"
+/bin/systemctl enable "${SERVICE_NAME}-network-environment"
+<% end %>

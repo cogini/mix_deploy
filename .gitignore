@@ -23,6 +23,4 @@ erl_crash.dump
 mix_deploy-*.tar
 
 /rel/templates/
-/bin/deploy
-/bin/remote_console
-/bin/migrate
+/bin/

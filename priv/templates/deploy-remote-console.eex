@@ -14,10 +14,13 @@ set -e
 # BASEDIR="$BINDIR/.."
 # cd "$BASEDIR/current"
 
+# Config vars
 export LANG="<%= env_lang %>"
 export RELEASE_MUTABLE_DIR="<%= runtime_dir %>"
+CURRENT_DIR="<%= current_dir %>"
+APP_NAME="<%= app_name %>"
 <%= if conform do %>
 export CONFORM_CONF_PATH="<%= conform_conf_path %>"
 <% end %>
 
-<%= current_dir %>/bin/<%= app_name %> remote_console
+$CURRENT_DIR/bin/$APP_NAME remote_console
