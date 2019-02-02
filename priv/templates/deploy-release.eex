@@ -12,17 +12,17 @@ MIX_ENV="${MIX_ENV:-prod}"
 VERSION="${VERSION:-<%= version %>}"
 
 # Config vars
-RELEASES_DIR="<%= releases_dir %>"
+DEPLOY_DIR="<%= deploy_dir %>"
 APP_NAME="<%= app_name %>"
 DEPLOY_USER="${DEPLOY_USER:-<%= deploy_user %>}"
 APP_GROUP="${APP_USER:-<%= app_group %>}"
 
 
-CURRENT_LINK="${DESTDIR}${RELEASES_DIR}/current"
+CURRENT_LINK="${DESTDIR}${DEPLOY_DIR}/current"
 TAR_FILE="_build/${MIX_ENV}/rel/${APP_NAME}/releases/${VERSION}/${APP_NAME}.tar.gz"
 
 TIMESTAMP=$(date +%Y%m%d%H%M%S)
-RELEASE_DIR="${DESTDIR}${RELEASES_DIR}/${TIMESTAMP}"
+RELEASE_DIR="${DESTDIR}${DEPLOY_DIR}/releases/${TIMESTAMP}"
 
 echo "==> Deploying release $VERSION to $RELEASE_DIR"
 mkdir -p "$RELEASE_DIR"

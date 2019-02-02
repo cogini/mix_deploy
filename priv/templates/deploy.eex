@@ -21,6 +21,7 @@ export LANG="<%= env_lang %>"
 SERVICE_NAME="<%= service_name %>"
 EXT_NAME="<%= ext_name %>"
 APP_NAME="<%= app_name %>"
+DEPLOY_DIR="<%= deploy_dir %>"
 RELEASES_DIR="<%= releases_dir %>"
 
 # Create users on target
@@ -71,7 +72,7 @@ function do_copy_files(){
 # Extract release
 # CodeDeploy
 function do_extract_release(){
-    CURRENT_DIR="${DESTDIR}${RELEASES_DIR}/current"
+    CURRENT_DIR="${DESTDIR}${DEPLOY_DIR}/current"
     TAR_FILE="${APP_NAME}.tar.gz"
 
     echo "==> Extracting release from tar file $TAR_FILE"
@@ -87,7 +88,7 @@ function do_extract_release(){
 # Env var VERSION specifies version
 # Local deploy
 function do_deploy_release(){
-    CURRENT_LINK="${DESTDIR}${RELEASES_DIR}/current"
+    CURRENT_LINK="${DESTDIR}${DEPLOY_DIR}/current"
     TAR_FILE="_build/${MIX_ENV}/rel/${APP_NAME}/releases/${VERSION}/${APP_NAME}.tar.gz"
 
     TIMESTAMP=$(date +%Y%m%d%H%M%S)
@@ -110,7 +111,7 @@ function do_deploy_release(){
 # Rollback release to previous
 # Local deploy
 function do_rollback_release(){
-    CURRENT_LINK="${DESTDIR}${RELEASES_DIR}/current"
+    CURRENT_LINK="${DESTDIR}${DEPLOY_DIR}/current"
     # TODO: error handling
     PREV_DIR=$(find "${DESTDIR}${RELEASES_DIR}" -maxdepth 1 | sort | tail -2 | head -1)
     PREV_NAME=$(basename "${PREV_DIR}")
