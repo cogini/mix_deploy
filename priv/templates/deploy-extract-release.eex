@@ -23,6 +23,9 @@ cd "$BINDIR"; BINDIR="$PWD"; cd "$CURDIR"
 CURRENT_DIR="${DESTDIR}${DEPLOY_DIR}/current"
 TAR_FILE="$BINDIR/../${APP_NAME}.tar.gz"
 
+echo "==> Removing previous release $CURRENT_DIR"
+rm -rf "$CURRENT_DIR"
+
 echo "==> Extracting release from tar file $TAR_FILE"
 mkdir -p "$CURRENT_DIR"
 tar -C "$CURRENT_DIR" -xzf "$TAR_FILE"
