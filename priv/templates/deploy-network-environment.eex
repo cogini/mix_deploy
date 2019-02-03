@@ -8,6 +8,8 @@ set -e
 # Config vars
 RUNTIME_DIR="<%= runtime_dir %>"
 
+mkdir -p "$RUNTIME_DIR"
+
 # Digital Ocean
 # IP_ADDR=$(jq -r '.ds.meta_data.interfaces.public[0].anchor_ipv4.ip_address' < /run/cloud-init/instance-data.json)
 
