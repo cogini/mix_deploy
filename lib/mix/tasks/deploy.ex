@@ -85,10 +85,10 @@ defmodule Mix.Tasks.Deploy do
       sudo_app: false,
 
       restart_method: :systemctl, # :systemd_flag | :systemctl | :touch
-      network_environment_service: false, # enable and start app network-environment.service
+      runtime_environment_service: false, # enable and start app runtime-environment.service
 
       dirs: [
-        :runtime,         # needed for network-environment or conform
+        :runtime,         # needed for runtime-environment or conform
         # :configuration, # needed for conform or other external app config file
         # :logs,          # needed for external log file, not journald
         # :cache,         # app cache files which can be deleted
@@ -266,7 +266,7 @@ defmodule Mix.Tasks.Deploy.Generate do
       "deploy-enable",
       "deploy-extract-release",
       "deploy-migrate",
-      "deploy-network-environment",
+      "deploy-runtime-environment",
       "deploy-release",
       "deploy-remote-console",
       "deploy-restart",

@@ -43,7 +43,7 @@ use Mix.Config
 #   sudo_app: true,
 #   # restart_method: :systemctl,
 #   dirs: [
-#     :runtime, # for RELEASE_MUTABLE_DIR, network-environment or conform
+#     :runtime, # for RELEASE_MUTABLE_DIR, runtime-environment or conform
 #     # :configuration, # for conform or other app config file
 #     # :logs, # for external log file, not journald
 #     # :cache, # for app cache files which can be deleted
@@ -61,7 +61,7 @@ use Mix.Config
 #   # Enable extra restrictions
 #   paranoia: true,
 #   dirs: [
-#     :runtime, # for network-environment or conform
+#     :runtime, # for runtime-environment or conform
 #     # :configuration, # for conform or other app config file
 #     # :logs, # for external log file, not journald
 #     # :cache, # for app cache files which can be deleted

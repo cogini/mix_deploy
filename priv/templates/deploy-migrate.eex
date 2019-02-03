@@ -12,9 +12,9 @@ APP_NAME="<%= app_name %>"
 CURRENT_DIR="${DEPLOY_DIR}/current"
 cd "$CURRENT_DIR" || exit 1
 
-NETWORK_ENVIRONMENT_FILE="${RUNTIME_DIR}/network-environment"
-if [ -f "$NETWORK_ENVIRONMENT_FILE" ]; then
-    source "$NETWORK_ENVIRONMENT_FILE"
+RUNTIME_ENVIRONMENT_FILE="${RUNTIME_DIR}/runtime-environment"
+if [ -f "$RUNTIME_ENVIRONMENT_FILE" ]; then
+    source "$RUNTIME_ENVIRONMENT_FILE"
 fi
 
 $CURRENT_DIR/bin/$APP_NAME migrate
