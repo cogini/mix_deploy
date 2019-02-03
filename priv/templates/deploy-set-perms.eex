@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+
+# Set permissions
+# CodeDeploy
+
+set -e
+
+export LANG="<%= env_lang %>"
+
+# Environment vars
+# DESTDIR, prefix for target files, optional
+
+# Config vars
+DEPLOY_DIR="<%= deploy_dir %>"
+DEPLOY_USER="${DEPLOY_USER:-<%= deploy_user %>}"
+APP_GROUP="${APP_USER:-<%= app_group %>}"
+
+chmod 750 "$DEPLOY_DIR"
+chown $DEPLOY_USER:$APP_GROUP "$DEPLOY_DIR"
+
+mkdir -p "$DEPLOY_DIR/bin"
+chmod -R 750 "$DEPLOY_DIR/bin"
+chown -R $DEPLOY_USER:$APP_GROUP "$DEPLOY_DIR/bin"

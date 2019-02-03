@@ -271,6 +271,7 @@ defmodule Mix.Tasks.Deploy.Generate do
       "deploy-remote-console",
       "deploy-restart",
       "deploy-rollback",
+      "deploy-set-perms",
       "deploy-start",
       "deploy-stop",
       "deploy",
