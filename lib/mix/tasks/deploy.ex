@@ -117,6 +117,25 @@ defmodule Mix.Tasks.Deploy do
       tmp_directory: service_name,
       tmp_directory_base: "/var/tmp",
       tmp_directory_mode: "750",
+
+      templates: [
+        "deploy-copy-files",
+        "deploy-create-dirs",
+        "deploy-create-users",
+        "deploy-enable",
+        "deploy-extract-release",
+        "deploy-migrate",
+        "deploy-runtime-environment-file",
+        "deploy-runtime-environment-wrap",
+        "deploy-release",
+        "deploy-remote-console",
+        "deploy-restart",
+        "deploy-rollback",
+        "deploy-set-perms",
+        "deploy-start",
+        "deploy-stop",
+        # "deploy",
+      ]
     ]
 
     cfg = defaults
@@ -259,27 +278,9 @@ defmodule Mix.Tasks.Deploy.Generate do
       # {"bin/remote_console", Path.join(cfg[:scripts_dir], "remote_console"), "$DEPLOY_USER", "$APP_GROUP", 0o750},
     ]
 
-    templates = [
-      "deploy-copy-files",
-      "deploy-create-dirs",
-      "deploy-create-users",
-      "deploy-enable",
-      "deploy-extract-release",
-      "deploy-migrate",
-      "deploy-runtime-environment",
-      "deploy-release",
-      "deploy-remote-console",
-      "deploy-restart",
-      "deploy-rollback",
-      "deploy-set-perms",
-      "deploy-start",
-      "deploy-stop",
-      "deploy",
-    ]
-
     vars = cfg ++ [create_dirs: dirs, copy_files: files]
 
-    for template <- templates, do: write_template(vars, "bin", template)
+    for template <- cfg[:templates], do: write_template(vars, "bin", template)
 
     if cfg[:sudo_deploy] or cfg[:sudo_app] do
       # Give deploy and/or app user ability to run start/stop commands via sudo

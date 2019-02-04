@@ -20,9 +20,10 @@ elif [ "$CLOUD_NAME" = "aws" ]; then
     IP_ADDR=$(jq -r '.ds."meta-data"."local-ipv4"' < /run/cloud-init/instance-data.json)
     # IP_ADDR=$(jq -r '.ds."meta-data"."public-ipv4"' < /run/cloud-init/instance-data.json)
 
-    echo "DEFAULT_IPV4=$IP_ADDR" > "${RUNTIME_DIR}/runtime-environment"
-    echo "AWS_REGION=$AWS_REGION" > "${RUNTIME_DIR}/runtime-environment"
     AWS_REGION=$(jq -r '.v1.region' < /run/cloud-init/instance-data.json)
+
+    echo "DEFAULT_IPV4=$IP_ADDR" > "${RUNTIME_DIR}/runtime-environment"
+    echo "AWS_REGION=$AWS_REGION" >> "${RUNTIME_DIR}/runtime-environment"
 else
     echo "Unsupported cloud: $CLOUD_NAME"
     exit 1
