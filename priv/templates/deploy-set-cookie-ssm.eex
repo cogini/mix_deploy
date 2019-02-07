@@ -12,5 +12,7 @@ export LANG="<%= env_lang %>"
 # COMPONENT_NAME
 DEFAULT_COOKIE_FILE="${DEFAULT_COOKIE_FILE:-$HOME/.erlang.cookie}"
 
-COOKIE=$(aws ssm get-parameter "--region=${AWS_REGION}" "--name=/${APPLICATION_NAME}/${ENVIRONMENT_NAME}/${COMPONENT_NAME}/erlang_cookie" --with-decryption | jq -r '.Parameter.Value')
+AWS_REGION=$(jq -r '.v1.region' < /run/cloud-init/instance-data.json)
+
+COOKIE=$(aws ssm get-parameter --region="${AWS_REGION}" --name="/${APPLICATION_NAME}/${ENVIRONMENT_NAME}/${COMPONENT_NAME}/erlang_cookie" --with-decryption | jq -r '.Parameter.Value')
 echo "$COOKIE" > "$DEFAULT_COOKIE_FILE"
