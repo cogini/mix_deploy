@@ -10,10 +10,7 @@ export LANG="<%= env_lang %>"
 # APPLICATION_NAME
 # ENVIRONMENT_NAME
 # COMPONENT_NAME
+DEFAULT_COOKIE_FILE="${DEFAULT_COOKIE_FILE:-$HOME/.erlang.cookie"
 
-# Config vars
-RUNTIME_DIR="<%= runtime_dir %>"
-
-export DEFAULT_COOKIE_FILE="$RUNTIME_DIR/erlang.cookie"
 COOKIE=$(aws ssm get-parameter "--region=${AWS_REGION}" "--name=/${APPLICATION_NAME}/${ENVIRONMENT_NAME}/${COMPONENT_NAME}/erlang_cookie" --with-decryption | jq -r '.Parameter.Value')
 echo "$COOKIE" > "$DEFAULT_COOKIE_FILE"
