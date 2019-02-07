@@ -15,8 +15,8 @@ if [ "$CLOUD_NAME" = "digitalocean" ]; then
 
     exec $*
 elif [ "$CLOUD_NAME" = "aws" ]; then
-    IP_ADDR=$(jq -r '.ds."meta-data"."local-ipv4"' < /run/cloud-init/instance-data.json)
-    # IP_ADDR=$(jq -r '.ds."meta-data"."public-ipv4"' < /run/cloud-init/instance-data.json)
+    IP_ADDR=$(jq -r '.ds.meta_data."local-ipv4"' < /run/cloud-init/instance-data.json)
+    # IP_ADDR=$(jq -r '.ds.meta_data."public-ipv4"' < /run/cloud-init/instance-data.json)
 
     AWS_REGION=$(jq -r '.v1.region' < /run/cloud-init/instance-data.json)
     export DEFAULT_IPV4="$IP_ADDR"
