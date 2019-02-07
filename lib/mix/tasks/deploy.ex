@@ -119,6 +119,7 @@ defmodule Mix.Tasks.Deploy do
       tmp_directory_mode: "750",
 
       templates: [
+        "deploy-clean-target",
         "deploy-copy-files",
         "deploy-create-dirs",
         "deploy-create-users",
