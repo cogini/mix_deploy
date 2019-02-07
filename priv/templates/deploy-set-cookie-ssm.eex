@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+
+# Get cookie from AWS SSM Parameter Store and write to file
+
+set -e
+
+export LANG="<%= env_lang %>"
+
+# Env vars
+# APPLICATION_NAME
+# ENVIRONMENT_NAME
+# COMPONENT_NAME
+
+# Config vars
+RUNTIME_DIR="<%= runtime_dir %>"
+
+export DEFAULT_COOKIE_FILE="$RUNTIME_DIR/erlang.cookie"
+COOKIE=$(aws ssm get-parameter "--region=${AWS_REGION}" "--name=/${APPLICATION_NAME}/${ENVIRONMENT_NAME}/${COMPONENT_NAME}/erlang_cookie" --with-decryption | jq -r '.Parameter.Value')
+echo "$COOKIE" > "$DEFAULT_COOKIE_FILE"

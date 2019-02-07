@@ -132,6 +132,7 @@ defmodule Mix.Tasks.Deploy do
         "deploy-remote-console",
         "deploy-restart",
         "deploy-rollback",
+        "deploy-set-cookie-ssm",
         "deploy-set-perms",
         "deploy-start",
         "deploy-stop",
