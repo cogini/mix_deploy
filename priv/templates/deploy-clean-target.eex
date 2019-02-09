@@ -12,5 +12,8 @@ export LANG="<%= env_lang %>"
 
 # Config vars
 DEPLOY_DIR="<%= deploy_dir %>"
+SERVICE_NAME="<%= service_name %>"
 
 rm -rf "${DESTDIR}${DEPLOY_DIR}"
+
+rm -f $DESTDIR/lib/systemd/system/${SERVICE_NAME}*
