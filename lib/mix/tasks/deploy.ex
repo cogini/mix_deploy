@@ -136,6 +136,7 @@ defmodule Mix.Tasks.Deploy do
         "deploy-set-perms",
         "deploy-start",
         "deploy-stop",
+        "deploy-sync-config-s3",
         # "deploy",
       ]
     ]
