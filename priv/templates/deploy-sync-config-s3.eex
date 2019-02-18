@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+
+# Sync app config files from S3 bucket
+
+set -e
+
+export LANG="<%= env_lang %>"
+CONFIG_DIR="<%= configuration_dir %>"
+
+# Env vars
+# CONFIG_S3_BUCKET
+# CONFIG_S3_PREFIX
+
+aws s3 sync "s3://${CONFIG_S3_BUCKET}/${CONFIG_S3_PREFIX}" "${CONFIG_DIR}/"
