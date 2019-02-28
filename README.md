@@ -4,7 +4,7 @@ This module provides mix tasks which deploy a
 [Distillery](https://github.com/bitwalker/distillery) release.
 
 It supports deployment to the local machine, bare-metal servers
-and deployemnt to cloud servers using e.g. [AWS CodeDeploy](https://aws.amazon.com/codedeploy/).
+and deployment to cloud servers using e.g. [AWS CodeDeploy](https://aws.amazon.com/codedeploy/).
 
 It works by generating a set of scripts under the project `bin` directory which
 can be run on the local machine or copied to a target machine to handle
