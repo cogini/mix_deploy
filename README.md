@@ -357,27 +357,3 @@ script.
 
 `runtime_environment_service`: Default `false`. Set to `true` if you are using a separate
 `runtime-environment.service`.
-
-
-
-## Usage
-
-```shell
-# Create directory under /srv
-sudo mix deploy.local.init
-
-# Deploy current release tar from distillery to
-# /srv/example-app/releases/20180628115441 and
-# update symlink from /srv/example-app/current
-mix deploy.local
-
-# Deploy specific release version
-mix deploy.local --version=0.2.0
-
-# Update symlink to point to previous release
-mix deploy.local.rollback
-```
-
-Documentation can be generated with [ExDoc](https://github.com/elixir-lang/ex_doc)
-and published on [HexDocs](https://hexdocs.pm). Once published, the docs can
-be found at [https://hexdocs.pm/mix_deploy_local](https://hexdocs.pm/mix_deploy_local).
