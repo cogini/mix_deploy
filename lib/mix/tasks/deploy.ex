@@ -89,7 +89,7 @@ defmodule Mix.Tasks.Deploy do
 
       dirs: [
         :runtime,         # needed for runtime-environment or conform
-        # :configuration, # needed for conform or other external app config file
+        :configuration,   # needed for conform or other external app config file
         # :logs,          # needed for external log file, not journald
         # :cache,         # app cache files which can be deleted
         # :state,         # app state persisted between runs
