@@ -82,7 +82,7 @@ Distillery release (`mix releasee`) then run:
 
 ```shell
 # Create user to run the app
-sudo bin/create-users
+sudo bin/deploy-create-users
 
 # Create directory structure under /srv
 sudo bin/deploy-create-dirs
@@ -106,7 +106,8 @@ sudo bin/deploy-restart
 The scripts support configuration using environment vars, e.g. you can set the
 `DESTDIR` environment var and the copy script will add the `DESTDIR` prefix
 when copying files. This lets you copy files to a staging directory, tar it up,
-then extract it on a target machine.
+then extract it on a target machine. Similarly, you can override the users accounts
+which own the files by specifying `APP_USER`, `APP_GROUP`, and `DEPLOY_USER`.
 
 For example:
 
