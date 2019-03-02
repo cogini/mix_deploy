@@ -28,7 +28,7 @@ mkdir -p "$RELEASE_DIR"
 
 echo "===> Extracting release from tar file $TAR_FILE"
 tar -C "$RELEASE_DIR" -xf "$TAR_FILE"
-chown -R ${DEPLOY_USER}:${APP_GROUP} "${CURRENT_LINK}"
+chown -R ${DEPLOY_USER}:${APP_GROUP} "${RELEASE_DIR}"
 
 echo "===> Setting current symlink $CURRENT_LINK"
 if [[ -L "$CURRENT_LINK" ]]; then
