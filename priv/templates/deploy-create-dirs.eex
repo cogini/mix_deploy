@@ -6,6 +6,11 @@ set -e
 
 export LANG="<%= env_lang %>"
 
+DEPLOY_USER="${DEPLOY_USER:-<%= deploy_user %>}"
+DEPLOY_GROUP="${DEPLOY_GROUP:-<%= deploy_group %>}"
+APP_USER="${APP_USER:-<%= app_user %>}"
+APP_GROUP="${APP_GROUP:-<%= app_group %>}"
+
 # Environment vars
 # DESTDIR, prefix for target files, optional
 
