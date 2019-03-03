@@ -88,7 +88,7 @@ sudo bin/deploy-create-users
 sudo bin/deploy-create-dirs
 
 # Extract release to target directory, creating current symlink
-bin/deploy-release
+sudo bin/deploy-release
 
 # Copy and enable systemd unit files
 sudo bin/deploy-copy-files
@@ -99,7 +99,7 @@ sudo bin/deploy-restart
 You can roll back the release with the following:
 
 ```shell
-bin/deploy-rollback
+sudo bin/deploy-rollback
 sudo bin/deploy-restart
 ```
 
@@ -341,7 +341,6 @@ When using multiple releases and symlinks, the deployment process works like thi
 
 If you are only keeping a single version, then you would deploy it to
 the `/srv/foo/current` dir.
-
 
 ### Runtime configuration
 
