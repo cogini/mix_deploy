@@ -44,6 +44,7 @@ Next, generate output files under your project's `bin` direcory:
 
 ```shell
 MIX_ENV=prod mix deploy.generate
+chmod +x bin/*
 ```
 
 ## Scripts
@@ -70,15 +71,33 @@ This library generates the following scripts:
 
 * `deploy-runtime-environment-file`: Create `#{runtime_dir}/runtime-environment` file on target from `cloud-init` metadata
 * `deploy-runtime-environment-wrap`: Get runtime environment from `cloud-init` metadata, set environment vars, then launch script
+
 * `deploy-set-cookie-ssm`: Get Erlang VM cookie from AWS SSM Parameter Store and write to file
 * `deploy-sync-config-s3`: Sync config files from S3 bucket to app config dir
+
+### Dependencies
+
+The scripts are mostly straight bash, with minimal dependencies.
+
+`deploy-runtime-environment-file` and `deploy-runtime-environment-wrap` use `jq` to parse the `cloud-init` JSON file.
+
+```shell
+apt install jq
+```
+
+`deploy-set-cookie-ssm` uses the AWS CLI and `jq` to interact with Systems Manager Parameter Store.
+`deploy-sync-config-s3` uses the AWS CLI to copy files from an S3 bucket.
+Install the AWS CLI from the OS package manager or via `pip`.
+
+```shell
+apt install awscli
+```
 
 ## Scenarios
 
 ### Deploy on local machine
 
-You can build your app and deploy on the local machine. First build the
-Distillery release (`mix releasee`) then run:
+You can build your app and deploy on the local machine.
 
 ```shell
 # Create user to run the app
@@ -87,12 +106,18 @@ sudo bin/deploy-create-users
 # Create directory structure under /srv
 sudo bin/deploy-create-dirs
 
-# Extract release to target directory, creating current symlink
-sudo bin/deploy-release
+# Copy any scripts used at runtime by the systemd unit
+sudo cp bin/* /srv/foo/bin
 
 # Copy and enable systemd unit files
 sudo bin/deploy-copy-files
 sudo bin/deploy-enable
+
+# Create release
+MIX_ENV=prod mix release
+
+# Extract release to target directory, creating current symlink
+sudo bin/deploy-release
 sudo bin/deploy-restart
 ```
 
@@ -106,7 +131,7 @@ sudo bin/deploy-restart
 The scripts support configuration using environment vars, e.g. you can set the
 `DESTDIR` environment var and the copy script will add the `DESTDIR` prefix
 when copying files. This lets you copy files to a staging directory, tar it up,
-then extract it on a target machine. Similarly, you can override the users accounts
+then extract it on a target machine. Similarly, you can override the user accounts
 which own the files by specifying `APP_USER`, `APP_GROUP`, and `DEPLOY_USER`.
 
 For example:
@@ -159,7 +184,11 @@ hooks:
 The library gets standard information in `mix.exs`, e.g. the app name and
 version, then calculates default values for its configuration parameters.
 
-You can then override these parameters using settings in `config/config.exs`, e.g.:
+Without any config, the defaults configure the scripts to run the app a user account
+with the same name as the app, deployed by the user account which runs the `mix
+deploy.generate` command.
+
+You can override these parameters using settings in `config/config.exs`, e.g.
 
 ```elixir
 config :mix_systemd,
