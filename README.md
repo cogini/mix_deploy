@@ -1,15 +1,15 @@
 # mix_deploy
 
-This module provides mix tasks which deploy a
-[Distillery](https://github.com/bitwalker/distillery) release.
+This module provides mix tasks which deploy an Erlang release created
+with [Distillery](https://github.com/bitwalker/distillery).
 
 It supports deployment to the local machine, bare-metal servers
-and deployment to cloud servers using e.g. [AWS CodeDeploy](https://aws.amazon.com/codedeploy/).
+or cloud servers using e.g. [AWS CodeDeploy](https://aws.amazon.com/codedeploy/).
 
 It works by generating a set of scripts under the project `bin` directory which
 can be run on the local machine or copied to a target machine to handle
-lifecyle tasks such as initial setup, unpacking release files, configuration,
-and starting/stopping,
+lifecycle tasks such as creating initial directory structure, unpacking release
+files, managing configuration, and starting/stopping,
 
 It uses the [mix_systemd](https://github.com/cogini/mix_systemd)
 library to generate a systemd unit file for the application, and shares
@@ -40,7 +40,7 @@ Run this command to initialize templates under the `rel/templates/deploy` direct
 MIX_ENV=prod deploy.init
 ```
 
-Next, generate output files under your project's `bin` direcory:
+Next, generate output files under your project's `bin` directory:
 
 ```shell
 MIX_ENV=prod mix deploy.generate
@@ -55,22 +55,23 @@ This library generates the following scripts:
 * `deploy-stop`: Stop services on target
 * `deploy-restart`: Restart services on target
 * `deploy-enable`: Enable systemd units on target
-* `deploy-remote-console`: Launch a remote console on the app, setting up environment vars. It is run under the app user account.
+* `deploy-remote-console`: Launch a remote console on the app, setting up environment vars.
+  It is run under the app user account, not under sudo.
 
 * `deploy-create-users`: Create user accounts on target, e.g. `app_user`
 * `deploy-create-dirs`: Create app dirs on target
-* `deploy-clean-target`: Delete target dir files in preparation for install (CodeDeploy).
+* `deploy-clean-target`: Delete files in target dir in preparation for install (CodeDeploy).
 * `deploy-copy-files`: Copy files to target or staging directory
 * `deploy-extract-release`: Extract release from tar to target dir (CodeDeploy)
 * `deploy-set-perms`: Set file permissions
 
 * `deploy-migrate`: Migrate database on target system. TODO: describe method
 
-* `deploy-release`: Deploy release on local system, extracting to a timestamped releases dir, then making a symlink. (Local deploy)
+* `deploy-release`: Deploy release on local system, extracting to a timestamped dir under `releases`, then making a symlink. (Local deploy)
 * `deploy-rollback`: Rollback release on local system, resetting the symlink to point to the last release. (Local deploy)
 
 * `deploy-runtime-environment-file`: Create `#{runtime_dir}/runtime-environment` file on target from `cloud-init` metadata
-* `deploy-runtime-environment-wrap`: Get runtime environment from `cloud-init` metadata, set environment vars, then launch script
+* `deploy-runtime-environment-wrap`: Get runtime environment from `cloud-init` metadata, set environment vars, then launch main script
 
 * `deploy-set-cookie-ssm`: Get Erlang VM cookie from AWS SSM Parameter Store and write to file
 * `deploy-sync-config-s3`: Sync config files from S3 bucket to app config dir
@@ -79,7 +80,8 @@ This library generates the following scripts:
 
 The scripts are mostly straight bash, with minimal dependencies.
 
-`deploy-runtime-environment-file` and `deploy-runtime-environment-wrap` use `jq` to parse the `cloud-init` JSON file.
+`deploy-runtime-environment-file` and `deploy-runtime-environment-wrap` use
+`jq` to parse the `cloud-init` JSON file.
 
 ```shell
 apt install jq
@@ -97,7 +99,8 @@ apt install awscli
 
 ### Deploy on local machine
 
-You can build your app and deploy on the local machine.
+The following commands handle deploy on the local machine.
+TODO: describe user accounts
 
 ```shell
 # Create user to run the app
@@ -118,6 +121,8 @@ MIX_ENV=prod mix release
 
 # Extract release to target directory, creating current symlink
 sudo bin/deploy-release
+
+# Restart the systemd unit
 sudo bin/deploy-restart
 ```
 
@@ -128,11 +133,13 @@ sudo bin/deploy-rollback
 sudo bin/deploy-restart
 ```
 
-The scripts support configuration using environment vars, e.g. you can set the
-`DESTDIR` environment var and the copy script will add the `DESTDIR` prefix
-when copying files. This lets you copy files to a staging directory, tar it up,
-then extract it on a target machine. Similarly, you can override the user accounts
-which own the files by specifying `APP_USER`, `APP_GROUP`, and `DEPLOY_USER`.
+This library generates the scripts with paths and users based on the
+application configuration. You can override the variables using environment
+vars, e.g. set the `DESTDIR` environment var and the copy script will add the
+`DESTDIR` prefix when copying files. This lets you copy files to a staging
+directory, tar it up, then extract it on a target machine. Similarly, you can
+override the user accounts which own the files by specifying `APP_USER`,
+`APP_GROUP`, and `DEPLOY_USER`.
 
 For example:
 
@@ -144,8 +151,8 @@ DESTDIR=~/tmp/deploy bin/deploy-copy-files
 
 ### CodeDeploy
 
-You can copy the scripts into the target machine, then run them as hooks for a deployment system
-such as CodeDeploy.
+Copy the scripts into the target machine, then run them as hooks for a
+deployment system such as CodeDeploy.
 
 Here is a typical `appspec.yml` file:
 
@@ -169,9 +176,9 @@ hooks:
     - location: bin/deploy-set-perms
     - location: bin/deploy-enable
   ApplicationStart:
-    # - location: bin/deploy-migrate
-    #   runas: app
-    #   timeout: 300
+    - location: bin/deploy-migrate
+      runas: app
+      timeout: 300
     - location: bin/deploy-start
       timeout: 3600
   ValidateService:
@@ -219,7 +226,7 @@ scripts in the `bin` dir.
 
 The list of templates to generate is in the `templates` config var.
 You can modify this list to remove scripts, and they won't be generated.
-You could also add your own scripts and they will be run as templates with the
+You can also add your own scripts and they will be run as templates with the
 config vars defined.
 
 ```elixir
@@ -270,8 +277,8 @@ follow systemd conventions.
 `deploy_user`: OS user account that is used to deploy the app, e.g. own the
 files and restart it.
 
-For security, this is separate from `app_user`, keeping the runtime user from being
-able to modify the source files.
+For security, this is separate from `app_user`, keeping the runtime user from
+being able to modify the source files.
 
 This defaults to the user running the script, supporting local deploy.
 For remote deploy, set this to a user like `deploy` or the same as the app user.
@@ -286,18 +293,17 @@ The normal situation is that the app will be restarted using `systemctl`, e.g.
 `systemctl restart #{service_name}`.
 
 `sudo_deploy`: Create an `/etc/sudoers.d/#{ext_name}` file allowing the deploy
-user to start/stop/restart the the app using sudo. Default `false`.
+user to start/stop/restart the app using sudo. Default `false`.
 
 `sudo_app`: Create an `/etc/sudoers.d/#{ext_name}` file allowing the app user
-user to start/stop/restart the the app using sudo. Default `false`.
+user to start/stop/restart the app using sudo. Default `false`.
 
 Set `restart_method` to `:systemd_flag`, and the library will generate an additional
 unit file which watches for changes to a flag file and restarts the
 main unit. This allows updates to be pushed to the target machine by an
-unprivilieged user account which does not have permissions to restart
-proccesses. `touch` the file `#{flags_dir}/restart.flag` and systemd will restart the unit.
+unprivileged user account which does not have permissions to restart
+processes. `touch` the file `#{flags_dir}/restart.flag` and systemd will restart the unit.
 See `mix_systemd` for details.
-
 
 ### Environment vars
 
@@ -305,7 +311,7 @@ The library sets a few common env vars:
 
 * `mix_env`: default `Mix.env()`, sets `MIX_ENV`.
 * `env_lang`: default `en_US.UTF-8`, used to set `LANG`.
-* `conform`: default `false`. Sets `CONFORM_CONF_PATH` to `/etc/#{ext_name}/#{app_name}.conf` if true.
+* `conform`: default `false`. Sets `CONFORM_CONF_PATH` to `/etc/#{ext_name}/#{app_name}.conf` if `true`.
 
 ### Directories
 
@@ -320,27 +326,28 @@ and `configuration` (`/etc/#{ext_name}`). If your app uses other dirs, set them 
 
 ```elixir
 dirs: [
-  :runtime,       # Needed for RELEASE_MUTABLE_DIR, runtime-environment or conform
-  :configuration, # Needed for Erlang cookie
-  # :cache,       # App cache files which can be deleted
-  # :logs,        # App external log files, not via journald
-  # :state,       # App state persisted between runs
-  # :tmp,         # App temp files
+  :runtime,       # App runtime files which may be deleted between runs, /run/#{ext_name}
+                  # Needed for RELEASE_MUTABLE_DIR, runtime-environment or conform
+  :configuration, # App configuration, e.g. db passwords, /etc/#{ext_name}
+  # :state,       # App data or state persisted between runs, /var/lib/#{ext_name}
+  # :cache,       # App cache files which can be deleted, /var/cache/#{ext_name}
+  # :logs,        # App external log files, not via journald, /var/log/#{ext_name}
+  # :tmp,         # App temp files, /var/tmp/#{ext_name}
 ],
 ```
 
 For security, we set permissions to 750, more restrictive than the
 systemd defaults of 755. You can configure them with e.g. `configuration_directory_mode`.
-See the defaults in `lib/mix/tasks/systemd.ex`.
+See the defaults in `lib/mix/tasks/deploy.ex`.
 
 More recent versions of systemd (after 235) will create these directories at start
 time based on the settings in the unit file.
 
-For earlier systemd versions, mix_deploy will create them.
+For earlier systemd versions, `mix_deploy` will create them.
 
 `systemd_version`: Sets the systemd version on the target system, default 235.
 This determines which systemd features the library will enable. If you are
-targeting an older OS relese, you may need to change it. Here are the systemd
+targeting an older OS release, you may need to change it. Here are the systemd
 versions in common OS releases:
 
 * CentOS 7: 219
@@ -349,12 +356,12 @@ versions in common OS releases:
 
 ### Additional directories
 
-The library assues a directory structure under `deploy_dir` which allows it to handle multiple reases,
+The library assumes a directory structure under `deploy_dir` which allows it to handle multiple releases,
 similar to [Capistrano](https://capistranorb.com/documentation/getting-started/structure/).
 
-* `scripts_dir`:  dir for deployment scripts which e.g. start and stop the unit, default `bin`.
-* `current_dir`: dir where the current Erlang release is unpacked or referenced by symlink, default `current`.
-* `releases_dir`: dir where versioned releases may be unpacked, default `releases`.
+* `scripts_dir`:  deployment scripts which e.g. start and stop the unit, default `bin`.
+* `current_dir`: where the current Erlang release is unpacked or referenced by symlink, default `current`.
+* `releases_dir`: where versioned releases are unpacked, default `releases`.
 * `flags_dir`: dir for flag files to trigger restart, e.g. when `restart_method` is `:systemd_flag`, default `flags`.
 
 When using multiple releases and symlinks, the deployment process works like this:
@@ -362,14 +369,14 @@ When using multiple releases and symlinks, the deployment process works like thi
 1. Create a new directory for the release with a timestamp like
    `/srv/foo/releases/20181114T072116`.
 
-2. Upload the new release tarball to the server and unpack it to the release dir
+2. Upload the new release tarball to the server and unpack it to the releases dir
 
-3. Make a symlink from `/srv/foo/current` to the new release dir.
+3. Make a symlink from `/srv/#{ext_name}/current` to the new release dir.
 
 4. Restart the app.
 
 If you are only keeping a single version, then you would deploy it to
-the `/srv/foo/current` dir.
+the `/srv/#{ext_name}/current` dir.
 
 ### Runtime configuration
 
