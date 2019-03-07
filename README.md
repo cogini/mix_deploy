@@ -15,6 +15,8 @@ It uses the [mix_systemd](https://github.com/cogini/mix_systemd)
 library to generate a systemd unit file for the application, and shares
 conventions with it about naming files and systemd unit files.
 
+Here is [a complete example app which uses mix_deploy](https://github.com/cogini/mix-systemd-deploy-example).
+
 ## Installation
 
 Add `mix_deploy` to the list of dependencies in `mix.exs`:
