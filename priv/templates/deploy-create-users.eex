@@ -12,12 +12,12 @@ APP_USER="${APP_USER:-<%= app_user %>}"
 
 if [ ! id -u "$DEPLOY_USER" &>/dev/null ]; then
     echo "==> Creating deploy user $DEPLOY_USER"
-    useradd -m "$DEPLOY_USER"
+    useradd -m -s /bin/bash "$DEPLOY_USER"
 fi
 
 if [ "$APP_USER" != "$DEPLOY_USER" ]; then
     if [ ! id -u "$APP_USER" &>/dev/null ]; then
         echo "==> Creating deploy user $APP_USER"
-        useradd -m "$APP_USER"
+        useradd -m -s /bin/bash "$APP_USER"
     fi
 fi
