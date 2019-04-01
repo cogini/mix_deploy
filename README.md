@@ -39,7 +39,7 @@ task uses them to create the output files.
 Run this command to initialize templates under the `rel/templates/deploy` directory:
 
 ```shell
-MIX_ENV=prod deploy.init
+mix deploy.init
 ```
 
 Next, generate output files under your project's `bin` directory:
@@ -102,16 +102,19 @@ apt install awscli
 ### Deploy on local machine
 
 The following commands handle deploy on the local machine.
-TODO: describe user accounts
+
+By default, the scripts deploy the scripts as the same OS user that
+runs the `mix deploy.generate` command, and run the app under an OS
+user with the same name as the app.
 
 ```shell
 # Create user to run the app
 sudo bin/deploy-create-users
 
-# Create directory structure under /srv
+# Create directory structure under /srv (base_dir)
 sudo bin/deploy-create-dirs
 
-# Copy any scripts used at runtime by the systemd unit
+# Copy scripts used at runtime by the systemd unit
 sudo cp bin/* /srv/foo/bin
 
 # Copy and enable systemd unit files
@@ -140,8 +143,8 @@ application configuration. You can override the variables using environment
 vars, e.g. set the `DESTDIR` environment var and the copy script will add the
 `DESTDIR` prefix when copying files. This lets you copy files to a staging
 directory, tar it up, then extract it on a target machine. Similarly, you can
-override the user accounts which own the files by specifying `APP_USER`,
-`APP_GROUP`, and `DEPLOY_USER`.
+override the user accounts which own the files by setting the environment vars
+`APP_USER`, `APP_GROUP`, and `DEPLOY_USER`.
 
 For example:
 
@@ -154,9 +157,9 @@ DESTDIR=~/tmp/deploy bin/deploy-copy-files
 ### CodeDeploy
 
 Copy the scripts into the target machine, then run them as hooks for a
-deployment system such as CodeDeploy.
+deployment system such as [AWS CodeDeploy](https://aws.amazon.com/codedeploy/).
 
-Here is a typical `appspec.yml` file:
+Here is an example `appspec.yml` file:
 
 ```yaml
 version: 0.0
@@ -193,9 +196,10 @@ hooks:
 The library gets standard information in `mix.exs`, e.g. the app name and
 version, then calculates default values for its configuration parameters.
 
-Without any config, the defaults configure the scripts to run the app a user account
-with the same name as the app, deployed by the user account which runs the `mix
-deploy.generate` command.
+By default, with no configruation, the scripts are set up for building and
+deploying on the same machine. The scripts deploy with the same OS user runs
+the `mix deploy.generate` command, and run the app under an OS user with the
+same name as the app. 
 
 You can override these parameters using settings in `config/config.exs`, e.g.
 
