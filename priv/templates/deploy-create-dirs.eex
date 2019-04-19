@@ -16,9 +16,11 @@ APP_GROUP="${APP_GROUP:-<%= app_group %>}"
 
 <%= for {enabled, path, user, group, mode, comment} <- create_dirs, enabled == true do %>
 # <%= comment %>
-echo "==> Creating dir ${DESTDIR}<%= path %>"
-mkdir -p "${DESTDIR}<%= path %>"
-chown <%= user %>:<%= group %> "${DESTDIR}<%= path %>"
-chmod <%= Integer.to_string(mode, 8) %> "${DESTDIR}<%= path %>"
+if [ ! -d "${DESTDIR}<= path %>" ]; then
+  echo "==> Creating dir ${DESTDIR}<%= path %>"
+  mkdir -p "${DESTDIR}<%= path %>"
+  chown <%= user %>:<%= group %> "${DESTDIR}<%= path %>"
+  chmod <%= Integer.to_string(mode, 8) %> "${DESTDIR}<%= path %>"
+fi
 
 <% end %>
