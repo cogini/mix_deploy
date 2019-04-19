@@ -17,7 +17,7 @@ fi
 
 if [ "$APP_USER" != "$DEPLOY_USER" ]; then
     if [ ! id -u "$APP_USER" &>/dev/null ]; then
-        echo "==> Creating deploy user $APP_USER"
+        echo "==> Creating app user $APP_USER"
         useradd -m -s /bin/bash "$APP_USER"
     fi
 fi
