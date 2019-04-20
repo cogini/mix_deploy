@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# Get remote console on app
+# Get remote console for the app
 # This needs to be run under the app user account
 
 # Exit on errors
@@ -23,5 +23,10 @@ CURRENT_DIR="$DEPLOY_DIR/current"
 <%= if conform do %>
 export CONFORM_CONF_PATH="<%= conform_conf_path %>"
 <% end %>
+
+RUNTIME_ENVIRONMENT_FILE="${RUNTIME_DIR}/runtime-environment"
+if [ -f "$RUNTIME_ENVIRONMENT_FILE" ]; then
+    source "$RUNTIME_ENVIRONMENT_FILE"
+fi
 
 $CURRENT_DIR/bin/$APP_NAME remote_console
