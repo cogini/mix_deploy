@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
-# Set permissions
-# CodeDeploy
+# Set permissions on deploy dirs so they can be used by deploy and/or app user
+# CodeDeploy AfterInstall
 
 set -e
 

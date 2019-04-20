@@ -6,10 +6,10 @@ with [Distillery](https://github.com/bitwalker/distillery).
 It supports deployment to the local machine, bare-metal servers
 or cloud servers using e.g. [AWS CodeDeploy](https://aws.amazon.com/codedeploy/).
 
-It works by generating a set of scripts under the project `bin` directory which
-can be run on the local machine or copied to a target machine to handle
-lifecycle tasks such as creating initial directory structure, unpacking release
-files, managing configuration, and starting/stopping,
+It works by generating a set of scripts which can be run on the local machine
+or copied to a target machine to handle lifecycle tasks such as creating
+initial directory structure, unpacking release files, managing configuration,
+and starting/stopping,
 
 It uses the [mix_systemd](https://github.com/cogini/mix_systemd)
 library to generate a systemd unit file for the application, and shares
@@ -25,7 +25,8 @@ Add `mix_deploy` to the list of dependencies in `mix.exs`:
 def deps do
   [
     {:distillery, "~> 2.0"},
-    {:mix_deploy, "~> 0.1.0"}
+    {:mix_systemd, "~> 0.1.0"},
+    {:mix_deploy, "~> 0.1.0"},
   ]
 end
 ```
@@ -36,62 +37,84 @@ This library works similarly to [Distillery](https://hexdocs.pm/distillery/home.
 The `init` task copies template files into your project, then the `generate`
 task uses them to create the output files.
 
-Run this command to initialize templates under the `rel/templates/deploy` directory:
+First, initialize templates under the `rel/templates/deploy` directory by running this command:
 
 ```shell
 mix deploy.init
 ```
 
-Next, generate output files under your project's `bin` directory:
+Next, generate the scripts based on your project's config:
 
 ```shell
 MIX_ENV=prod mix deploy.generate
 chmod +x bin/*
 ```
 
+By default, `mix deploy.generate` creates scripts under a `bin` directory at
+the top level of your project. If you need to create different files based on
+the environment, set `output_dir_per_env: true`, and it will generate files
+under e.g. `_build/prod/deploy`.
+
 ## Scripts
 
 This library generates the following scripts:
 
-* `deploy-start`: Start services on target
-* `deploy-stop`: Stop services on target
-* `deploy-restart`: Restart services on target
-* `deploy-enable`: Enable systemd units on target
-* `deploy-remote-console`: Launch a remote console on the app, setting up environment vars.
-  It is run under the app user account, not under sudo.
+### Systemd scripts
 
-* `deploy-create-users`: Create user accounts on target, e.g. `app_user`
-* `deploy-create-dirs`: Create app dirs on target
-* `deploy-clean-target`: Delete files in target dir in preparation for install (CodeDeploy).
+* `deploy-start`: Start services
+* `deploy-stop`: Stop services
+* `deploy-restart`: Restart services
+* `deploy-enable`: Enable systemd units
+
+### Local deploy scripts
+
+* `deploy-create-users`: Create user accounts, e.g. `app_user` and `deploy_user`
+* `deploy-create-dirs`: Create dirs, e.g. `/srv/foo/releases`
 * `deploy-copy-files`: Copy files to target or staging directory
-* `deploy-extract-release`: Extract release from tar to target dir (CodeDeploy)
-* `deploy-set-perms`: Set file permissions
+* `deploy-release`: Deploy release, extracting to a timestamped dir under `releases`, then making a symlink
+* `deploy-rollback`: Rollback release, resetting the symlink to point to the last release
 
-* `deploy-migrate`: Migrate database on target system. TODO: describe method
+### CodeDeploy deploy scripts
 
-* `deploy-release`: Deploy release on local system, extracting to a timestamped dir under `releases`, then making a symlink. (Local deploy)
-* `deploy-rollback`: Rollback release on local system, resetting the symlink to point to the last release. (Local deploy)
+* `deploy-create-users`: Create user accounts, e.g. `app_user` and `deploy_user`
+* `deploy-clean-target`: Delete target dir in preparation for install
+* `deploy-extract-release`: Extract release from tar to target current dir
+* `deploy-set-perms`: Set target file permissions so they can be used by deploy and/or app user
 
-* `deploy-runtime-environment-file`: Create `#{runtime_dir}/runtime-environment` file on target from `cloud-init` metadata
+### Custom command scripts
+
+* `deploy-migrate`: Migrate database on target system by
+  [running a Distillery custom command](https://www.cogini.com/blog/running-ecto-migrations-in-production-releases-with-distillery-custom-commands/).
+  This runs under the app user account, not under sudo
+
+* `deploy-remote-console`: Launch a remote console for the app, setting up environment vars.
+  This is run runs interactively under the app user account, not under sudo
+
+### Environment setup scripts
+
+These may be called by the systemd startup unit to get the config at runtime based on the environment.
+
+* `deploy-runtime-environment-file`: Create `#{runtime_dir}/runtime-environment` file on target from `cloud-init` metadata.
 * `deploy-runtime-environment-wrap`: Get runtime environment from `cloud-init` metadata, set environment vars, then launch main script
-
 * `deploy-set-cookie-ssm`: Get Erlang VM cookie from AWS SSM Parameter Store and write to file
 * `deploy-sync-config-s3`: Sync config files from S3 bucket to app config dir
 
 ### Dependencies
 
-The scripts are mostly straight bash, with minimal dependencies.
+The generated scripts are mostly straight bash, with minimal dependencies.
 
 `deploy-runtime-environment-file` and `deploy-runtime-environment-wrap` use
-`jq` to parse the `cloud-init` JSON file.
+`jq` to parse the `cloud-init` JSON file. `deploy-set-cookie-ssm` uses the AWS
+CLI and `jq` to interact with Systems Manager Parameter Store.
+`deploy-sync-config-s3` uses the AWS CLI to copy files from an S3 bucket.
+
+Install `jq`:
 
 ```shell
 apt install jq
 ```
 
-`deploy-set-cookie-ssm` uses the AWS CLI and `jq` to interact with Systems Manager Parameter Store.
-`deploy-sync-config-s3` uses the AWS CLI to copy files from an S3 bucket.
-Install the AWS CLI from the OS package manager or via `pip`.
+Install the AWS CLI from the OS package manager or via `pip`:
 
 ```shell
 apt install awscli
@@ -101,14 +124,15 @@ apt install awscli
 
 ### Deploy on local machine
 
-The following commands handle deploy on the local machine.
+With a local deploy, you check out the code on a server, build/test, then
+generate a release. You then run the scripts to set up the runtime
+environment, including systemd unit scripts, extract the release to the target dir
+and run it under systemd.
 
-By default, the scripts deploy the scripts as the same OS user that
-runs the `mix deploy.generate` command, and run the app under an OS
-user with the same name as the app.
+Following are example commands:
 
 ```shell
-# Create user to run the app
+# Create users to run the app
 sudo bin/deploy-create-users
 
 # Create directory structure under /srv (base_dir)
@@ -139,12 +163,18 @@ sudo bin/deploy-restart
 ```
 
 This library generates the scripts with paths and users based on the
-application configuration. You can override the variables using environment
-vars, e.g. set the `DESTDIR` environment var and the copy script will add the
-`DESTDIR` prefix when copying files. This lets you copy files to a staging
-directory, tar it up, then extract it on a target machine. Similarly, you can
-override the user accounts which own the files by setting the environment vars
-`APP_USER`, `APP_GROUP`, and `DEPLOY_USER`.
+application configuration.
+
+By default, the scripts deploy the scripts as the same OS user that
+runs the `mix deploy.generate` command, and run the app under an OS
+user with the same name as the app.
+
+You can override the variables using environment vars, e.g. set the `DESTDIR`
+environment var and the copy script will add the `DESTDIR` prefix when copying
+files. This lets you copy files to a staging directory, tar it up, then extract
+it on a target machine. Similarly, you can override the user accounts which own
+the files by setting the environment vars `APP_USER`, `APP_GROUP`, and
+`DEPLOY_USER`.
 
 For example:
 
@@ -175,6 +205,7 @@ hooks:
       timeout: 300
   BeforeInstall:
     - location: bin/deploy-create-users
+    - location: bin/deploy-create-dirs
     - location: bin/deploy-clean-target
   AfterInstall:
     - location: bin/deploy-extract-release
@@ -196,10 +227,10 @@ hooks:
 The library gets standard information in `mix.exs`, e.g. the app name and
 version, then calculates default values for its configuration parameters.
 
-By default, with no configruation, the scripts are set up for building and
+By default, with no configuration, the scripts are set up for building and
 deploying on the same machine. The scripts deploy with the same OS user runs
 the `mix deploy.generate` command, and run the app under an OS user with the
-same name as the app. 
+same name as the app.
 
 You can override these parameters using settings in `config/config.exs`, e.g.
 
@@ -222,8 +253,8 @@ config :mix_deploy,
   app_group: "app"
 ```
 
-The following sections describe configuration options.
-See `lib/mix/tasks/deploy.ex` for the full details.
+The following sections describe common configuration options.
+See `lib/mix/tasks/deploy.ex` for the details of more obscure options.
 
 If you need to make changes not supported by the config options, then you can
 check the templates into source control from `rel/templates/deploy` and make
@@ -305,7 +336,7 @@ user to start/stop/restart the app using sudo. Default `false`.
 user to start/stop/restart the app using sudo. Default `false`.
 
 Set `restart_method` to `:systemd_flag`, and the library will generate an additional
-unit file which watches for changes to a flag file and restarts the
+systemd unit file which watches for changes to a flag file and restarts the
 main unit. This allows updates to be pushed to the target machine by an
 unprivileged user account which does not have permissions to restart
 processes. `touch` the file `#{flags_dir}/restart.flag` and systemd will restart the unit.
@@ -335,7 +366,7 @@ dirs: [
   :runtime,       # App runtime files which may be deleted between runs, /run/#{ext_name}
                   # Needed for RELEASE_MUTABLE_DIR, runtime-environment or conform
   :configuration, # App configuration, e.g. db passwords, /etc/#{ext_name}
-  # :state,       # App data or state persisted between runs, /var/lib/#{ext_name}
+  # :state,       # App data or state kept between runs, /var/lib/#{ext_name}
   # :cache,       # App cache files which can be deleted, /var/cache/#{ext_name}
   # :logs,        # App external log files, not via journald, /var/log/#{ext_name}
   # :tmp,         # App temp files, /var/tmp/#{ext_name}
@@ -347,9 +378,8 @@ systemd defaults of 755. You can configure them with e.g. `configuration_directo
 See the defaults in `lib/mix/tasks/deploy.ex`.
 
 More recent versions of systemd (after 235) will create these directories at start
-time based on the settings in the unit file.
-
-For earlier systemd versions, `mix_deploy` will create them.
+time based on the settings in the unit file. For earlier systemd versions,
+`deploy-create-dirs` will create them.
 
 `systemd_version`: Sets the systemd version on the target system, default 235.
 This determines which systemd features the library will enable. If you are
@@ -381,21 +411,20 @@ When using multiple releases and symlinks, the deployment process works like thi
 
 4. Restart the app.
 
-If you are only keeping a single version, then you would deploy it to
+If you are only keeping a single version, then you would simply deploy it to
 the `/srv/#{ext_name}/current` dir.
 
 ### Runtime configuration
 
 For configuration, we normally use a combination of build time settings, deploy
-time settings, and runtime settings.  See
+time settings, and runtime settings. This library generates scripts which
+can be called by systemd to get configuration. See
 [mix_systemd](https://github.com/cogini/mix_systemd) for details.
 
 [Conform](https://github.com/bitwalker/conform) is a popular way of making a
-machine-specific config file. Set `conform` to `true`, and the library will
-set `CONFORM_CONF_PATH` to `/etc/#{ext_name}/#{app_name}.conf`. Conform has been
-depreciated in favor of [TOML](https://github.com/bitwalker/toml-elixir), so
-you should use that instead. This is currently only used in the `deploy-remote-console`
-script.
+machine-specific config file. Set `conform` to `true`, and the library will set
+`CONFORM_CONF_PATH` to `/etc/#{ext_name}/#{app_name}.conf`. Conform has, however, been
+depreciated in favor of [TOML](https://github.com/bitwalker/toml-elixir).
 
 `runtime_environment_service`: Default `false`. Set to `true` if you are using a separate
 `runtime-environment.service`.

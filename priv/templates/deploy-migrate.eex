@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# Migrate database on target system
+# Migrate database on target system by running hook script
 
 set -e
 
