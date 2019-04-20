@@ -65,6 +65,10 @@ defmodule Mix.Tasks.Deploy do
       # Staging output directory for generated files
       output_dir: Path.join(build_path, @output_dir),
 
+      # Generate script files under build_path
+      # Otherwise generate scripts under project top "bin" dir
+      output_dir_per_env: false,
+
       # Directory with templates which override defaults
       template_dir: @template_dir,
 
@@ -244,7 +248,7 @@ defmodule Mix.Tasks.Deploy.Generate do
 
     create_flags_dir = cfg[:restart_method] in [:systemd_flag, :touch]
     flags_dir_perms = if cfg[:restart_method] == :touch do
-      0o770 # app needs to be able to delete file at runtime
+      0o770 # app needs to be able to delete the flag file at runtime
     else
       0o750
     end
@@ -254,7 +258,7 @@ defmodule Mix.Tasks.Deploy.Generate do
       {true, cfg[:releases_dir], "$DEPLOY_USER", "$APP_GROUP", 0o750, "Releases"},
       {true, cfg[:scripts_dir], "$DEPLOY_USER", "$APP_GROUP", 0o750, "Target scripts"},
       {create_flags_dir, cfg[:flags_dir], "$DEPLOY_USER", "$APP_GROUP", flags_dir_perms, "Flag files"}
-    ]
+    ] ++
     if cfg[:systemd_version] < 235 do
       # systemd will automatically create directories in newer versions
       # https://www.freedesktop.org/software/systemd/man/systemd.exec.html#RuntimeDirectory=
@@ -283,7 +287,13 @@ defmodule Mix.Tasks.Deploy.Generate do
 
     vars = cfg ++ [create_dirs: dirs, copy_files: files]
 
-    for template <- cfg[:templates], do: write_template(vars, "bin", template)
+    bin_dir = if cfg[:output_dir_per_env] do
+      Path.join(output_dir, "bin")
+    else
+      "bin"
+    end
+
+    for template <- cfg[:templates], do: write_template(vars, bin_dir, template)
 
     if cfg[:sudo_deploy] or cfg[:sudo_app] do
       # Give deploy and/or app user ability to run start/stop commands via sudo
