@@ -103,10 +103,10 @@ These may be called by the systemd startup unit to get the config at runtime bas
 
 The generated scripts are mostly straight bash, with minimal dependencies.
 
-`deploy-runtime-environment-file` and `deploy-runtime-environment-wrap` use
+* `deploy-runtime-environment-file` and `deploy-runtime-environment-wrap` use
 [jq](https://stedolan.github.io/jq/) to parse the [cloud-init](https://cloud-init.io/) JSON file.
-`deploy-sync-config-s3` uses the [AWS CLI](https://aws.amazon.com/cli/) to copy files from an S3 bucket.
-`deploy-set-cookie-ssm` uses the AWS CLI and `jq` to interact with Systems Manager Parameter Store.
+* `deploy-sync-config-s3` uses the [AWS CLI](https://aws.amazon.com/cli/) to copy files from an S3 bucket.
+* `deploy-set-cookie-ssm` uses the AWS CLI and `jq` to interact with Systems Manager Parameter Store.
 
 To install `jq` on Ubuntu:
 
@@ -129,8 +129,7 @@ generate a release. You then run the scripts to set up the runtime environment,
 including systemd unit scripts, extract the release to the target dir and run
 it under systemd.
 
-`deploy-init-local` is a convenience script which runs the other scripts to set up the system.
-Run it like this:
+`deploy-init-local` is a convenience script which runs the other scripts to set up the system:
 
 ```shell
 sudo bin/deploy-init-local
@@ -289,6 +288,7 @@ templates: [
     "deploy-create-users",
     "deploy-enable",
     "deploy-extract-release",
+    "deploy-init-local",
     "deploy-migrate",
     "deploy-runtime-environment-file",
     "deploy-runtime-environment-wrap",
