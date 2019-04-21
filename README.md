@@ -431,15 +431,45 @@ the `/srv/#{ext_name}/current` dir.
 
 ### Runtime configuration
 
-For configuration, we normally use a combination of build time settings, deploy
-time settings, and runtime settings. This library generates scripts which
-can be called by systemd to get configuration. See
-[mix_systemd](https://github.com/cogini/mix_systemd) for details.
+Configuration of an Elixir app can be split into three parts:
 
-[Conform](https://github.com/bitwalker/conform) is a popular way of making a
+**Build time** settings are consistent for all servers, though they may have
+different options between e.g. staging and production. This is handled by the
+normal config files like `config/prod.exs`, which result in an initial fixed
+application environment file in the release.
+
+**Environment / per machine / secrets** settings depend on the environment the
+application is running in, e.g. the hostname of the db server and secrets like
+the db password. We store these external to the application release and load
+them from files or a configuration system like AWS Systems Manager Parameter
+Store or etcd.
+
+This library generates scripts which can be called by systemd to get configuration.
+See [mix_systemd](https://github.com/cogini/mix_systemd) for details.
+
+`deploy-sync-config-s3` is used to sync config files from an S3 bucket to the
+app config dir, e.g. `/etc`. For example, we can use a config file in
+[TOML](https://github.com/toml-lang/toml) format read at startup by the
+[TOML configuration provider](https://github.com/bitwalker/toml-elixir).
+
+[Conform](https://github.com/bitwalker/conform) is a similar way of making a
 machine-specific config file. Set `conform` to `true`, and the library will set
 `CONFORM_CONF_PATH` to `/etc/#{ext_name}/#{app_name}.conf`. Conform has, however, been
 depreciated in favor of [TOML](https://github.com/bitwalker/toml-elixir).
 
-`runtime_environment_service`: Default `false`. Set to `true` if you are using a separate
-`runtime-environment.service`.
+`deploy-set-cookie-ssm` is used to get the Erlang VM cookie from [AWS SSM
+Parameter Store](https://docs.aws.amazon.com/systems-manager/latest/userguide/systems-manager-paramstore.html)
+and write it to a file.
+
+**Runtime** settings are dynamic and may change every time the application starts.
+For example, if we are running in an AWS auto scaling group, the IP address of the
+server normally changes every time it starts.
+
+`deploy-runtime-environment-file` which reads config from `cloud-init` and
+writes it to an environment file `#{runtime_dir}/runtime-environment`.
+Similarly, `deploy-runtime-environment-wrap` gets `cloud-init` metadata, sets
+environment vars, then launches the main start script.
+
+If these are not flexible enough, you can make your own systemd unit which
+is set as a dependency of the app unit, so it will run first. Set
+`runtime_environment_service` to `true` here and configure it in `mix_systemd`.
