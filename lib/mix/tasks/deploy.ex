@@ -129,6 +129,7 @@ defmodule Mix.Tasks.Deploy do
         "deploy-create-users",
         "deploy-enable",
         "deploy-extract-release",
+        "deploy-init-local",
         "deploy-migrate",
         "deploy-runtime-environment-file",
         "deploy-runtime-environment-wrap",
@@ -141,7 +142,6 @@ defmodule Mix.Tasks.Deploy do
         "deploy-start",
         "deploy-stop",
         "deploy-sync-config-s3",
-        # "deploy",
       ]
     ]
 

@@ -129,7 +129,14 @@ generate a release. You then run the scripts to set up the runtime environment,
 including systemd unit scripts, extract the release to the target dir and run
 it under systemd.
 
-Following are example commands:
+`deploy-init-local` is a convenience script which runs the other scripts to set up the system.
+Run it like this:
+
+```shell
+sudo bin/deploy-init-local
+```
+
+It does the following:
 
 ```shell
 # Create users to run the app
@@ -144,12 +151,20 @@ sudo cp bin/* /srv/foo/bin
 # Copy and enable systemd unit files
 sudo bin/deploy-copy-files
 sudo bin/deploy-enable
+```
 
+After the initial setup, build a release as you normally would:
+
+```shell
 # Create release
 MIX_ENV=prod mix release
+```
 
+Then deploy the release to the local machine:
+
+```shell
 # Extract release to target directory, creating current symlink
-sudo bin/deploy-release
+bin/deploy-release
 
 # Restart the systemd unit
 sudo bin/deploy-restart
@@ -158,7 +173,7 @@ sudo bin/deploy-restart
 Roll back the release with the following:
 
 ```shell
-sudo bin/deploy-rollback
+bin/deploy-rollback
 sudo bin/deploy-restart
 ```
 
