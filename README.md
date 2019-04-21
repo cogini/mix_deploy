@@ -52,8 +52,8 @@ chmod +x bin/*
 
 By default, `mix deploy.generate` creates scripts under a `bin` directory at
 the top level of your project. If you need to create different files based on
-the environment, set `output_dir_per_env: true`, and it will generate files
-under e.g. `_build/prod/deploy`.
+the environment, set `output_dir_per_env: true` in the config, and it will
+generate files under e.g. `_build/prod/deploy`.
 
 ## Scripts
 
@@ -68,7 +68,7 @@ This library generates the following scripts:
 
 ### Local deploy scripts
 
-* `deploy-create-users`: Create user accounts, e.g. `app_user` and `deploy_user`
+* `deploy-create-users`: Create OS accounts for app and deploy users
 * `deploy-create-dirs`: Create dirs, e.g. `/srv/foo/releases`
 * `deploy-copy-files`: Copy files to target or staging directory
 * `deploy-release`: Deploy release, extracting to a timestamped dir under `releases`, then making a symlink
@@ -87,8 +87,8 @@ This library generates the following scripts:
   [running a Distillery custom command](https://www.cogini.com/blog/running-ecto-migrations-in-production-releases-with-distillery-custom-commands/).
   This runs under the app user account, not under sudo
 
-* `deploy-remote-console`: Launch a remote console for the app, setting up environment vars.
-  This is run runs interactively under the app user account, not under sudo
+* `deploy-remote-console`: Launch a remote console for the app, setting up the environment properly.
+  This runs interactively under the app user account, not under sudo
 
 ### Environment setup scripts
 
@@ -96,25 +96,25 @@ These may be called by the systemd startup unit to get the config at runtime bas
 
 * `deploy-runtime-environment-file`: Create `#{runtime_dir}/runtime-environment` file on target from `cloud-init` metadata.
 * `deploy-runtime-environment-wrap`: Get runtime environment from `cloud-init` metadata, set environment vars, then launch main script
-* `deploy-set-cookie-ssm`: Get Erlang VM cookie from AWS SSM Parameter Store and write to file
 * `deploy-sync-config-s3`: Sync config files from S3 bucket to app config dir
+* `deploy-set-cookie-ssm`: Get Erlang VM cookie from [AWS SSM Parameter Store](https://docs.aws.amazon.com/systems-manager/latest/userguide/systems-manager-paramstore.html) and write to file
 
 ### Dependencies
 
 The generated scripts are mostly straight bash, with minimal dependencies.
 
 `deploy-runtime-environment-file` and `deploy-runtime-environment-wrap` use
-`jq` to parse the `cloud-init` JSON file. `deploy-set-cookie-ssm` uses the AWS
-CLI and `jq` to interact with Systems Manager Parameter Store.
-`deploy-sync-config-s3` uses the AWS CLI to copy files from an S3 bucket.
+[jq](https://stedolan.github.io/jq/) to parse the [cloud-init](https://cloud-init.io/) JSON file.
+`deploy-sync-config-s3` uses the [AWS CLI](https://aws.amazon.com/cli/) to copy files from an S3 bucket.
+`deploy-set-cookie-ssm` uses the AWS CLI and `jq` to interact with Systems Manager Parameter Store.
 
-Install `jq`:
+To install `jq` on Ubuntu:
 
 ```shell
 apt install jq
 ```
 
-Install the AWS CLI from the OS package manager or via `pip`:
+To install the AWS CLI from the OS package manager on Ubuntu:
 
 ```shell
 apt install awscli
@@ -125,9 +125,9 @@ apt install awscli
 ### Deploy on local machine
 
 With a local deploy, you check out the code on a server, build/test, then
-generate a release. You then run the scripts to set up the runtime
-environment, including systemd unit scripts, extract the release to the target dir
-and run it under systemd.
+generate a release. You then run the scripts to set up the runtime environment,
+including systemd unit scripts, extract the release to the target dir and run
+it under systemd.
 
 Following are example commands:
 
@@ -135,7 +135,7 @@ Following are example commands:
 # Create users to run the app
 sudo bin/deploy-create-users
 
-# Create directory structure under /srv (base_dir)
+# Create deploy dirs under /srv/foo and app dirs like /etc/foo
 sudo bin/deploy-create-dirs
 
 # Copy scripts used at runtime by the systemd unit
@@ -155,7 +155,7 @@ sudo bin/deploy-release
 sudo bin/deploy-restart
 ```
 
-You can roll back the release with the following:
+Roll back the release with the following:
 
 ```shell
 sudo bin/deploy-rollback
@@ -165,16 +165,16 @@ sudo bin/deploy-restart
 This library generates the scripts with paths and users based on the
 application configuration.
 
-By default, the scripts deploy the scripts as the same OS user that
-runs the `mix deploy.generate` command, and run the app under an OS
-user with the same name as the app.
+By default, the scripts deploy the scripts as the same OS user that runs the
+`mix deploy.generate` command, and run the app under an OS user with the same
+name as the app.
 
-You can override the variables using environment vars, e.g. set the `DESTDIR`
-environment var and the copy script will add the `DESTDIR` prefix when copying
+You can override some variables using environment vars at execution time.  For
+example, you can override the user accounts which own the files by setting the
+environment vars `APP_USER`, `APP_GROUP`, and `DEPLOY_USER`.
+Similarly, set `DESTDIR` and the copy script will add a prefix when copying
 files. This lets you copy files to a staging directory, tar it up, then extract
-it on a target machine. Similarly, you can override the user accounts which own
-the files by setting the environment vars `APP_USER`, `APP_GROUP`, and
-`DEPLOY_USER`.
+it on a target machine.
 
 For example:
 
