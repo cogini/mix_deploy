@@ -166,6 +166,12 @@ defmodule Mix.Tasks.Deploy do
       flags_dir: Path.join(cfg[:deploy_dir], "flags"),
       current_dir: Path.join(cfg[:deploy_dir], "current"),
 
+      bin_dir: if cfg[:output_dir_per_env] do
+        Path.join(cfg[:output_dir], "bin")
+      else
+        "bin"
+      end,
+
       runtime_dir: Path.join(cfg[:runtime_directory_base], cfg[:runtime_directory]),
       configuration_dir: Path.join(cfg[:configuration_directory_base], cfg[:configuration_directory]),
       logs_dir: Path.join(cfg[:logs_directory_base], cfg[:logs_directory]),
@@ -289,13 +295,7 @@ defmodule Mix.Tasks.Deploy.Generate do
 
     vars = cfg ++ [create_dirs: dirs, copy_files: files]
 
-    bin_dir = if cfg[:output_dir_per_env] do
-      Path.join(output_dir, "bin")
-    else
-      "bin"
-    end
-
-    for template <- cfg[:templates], do: write_template(vars, bin_dir, template)
+    for template <- cfg[:templates], do: write_template(vars, cfg[:bin_dir], template)
 
     if cfg[:sudo_deploy] or cfg[:sudo_app] do
       # Give deploy and/or app user ability to run start/stop commands via sudo

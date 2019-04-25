@@ -12,7 +12,7 @@ OUTPUT_DIR="${OUTPUT_DIR:-files}"
 VERSION="${VERSION:-<%= version %>}"
 
 APP_NAME="<%= app_name %>"
-SCRIPTS_SRC="<%= output_dir %>"
+BIN_DIR="<%= bin_dir %>"
 
 echo "==> Copying output files to ${OUTPUT_DIR}"
 
@@ -28,7 +28,7 @@ mkdir -p ${OUTPUT_DIR}/systemd
 cp -v _build/${MIX_ENV}/systemd/lib/systemd/system/* "${OUTPUT_DIR}/systemd"
 
 mkdir -p "${OUTPUT_DIR}/bin"
-cp ${SCRIPTS_SRC}/* ${OUTPUT_DIR}/bin
+cp ${BIN_DIR}/* ${OUTPUT_DIR}/bin
 
 # mkdir -p "${OUTPUT_DIR}/static-assets"
 # cp -R priv/static/* "${OUTPUT_DIR}/static-assets"

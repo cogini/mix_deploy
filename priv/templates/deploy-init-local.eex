@@ -10,7 +10,7 @@ set -e
 
 DEPLOY_DIR="<%= deploy_dir %>"
 SCRIPTS_DIR="<%= scripts_dir %>"
-SCRIPTS_DIR_SRC="<%= output_dir %>"
+BIN_DIR="<%= bin_dir %>"
 
 echo "==> Creating OS users"
 $BINDIR/deploy-create-users
@@ -19,7 +19,7 @@ echo "==> Creating app dirs under ${DEPLOY_DIR}"
 $BINDIR/deploy-create-dirs
 
 echo "==> Copying scripts used by systemd"
-cp $SCRIPTS_DIR_SRC/* "$SCRIPTS_DIR"
+cp $BIN_DIR/* "$SCRIPTS_DIR"
 
 echo "==> Copying files"
 $BINDIR/deploy-copy-files
