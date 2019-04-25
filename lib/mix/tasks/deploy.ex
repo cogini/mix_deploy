@@ -140,8 +140,10 @@ defmodule Mix.Tasks.Deploy do
         "deploy-set-cookie-ssm",
         "deploy-set-perms",
         "deploy-start",
+        "deploy-stage-files",
         "deploy-stop",
         "deploy-sync-config-s3",
+        "deploy-sync-assets-s3",
       ]
     ]
 

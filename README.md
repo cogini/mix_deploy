@@ -80,6 +80,8 @@ This library generates the following scripts:
 * `deploy-clean-target`: Delete target dir in preparation for install
 * `deploy-extract-release`: Extract release from tar to target current dir
 * `deploy-set-perms`: Set target file permissions so they can be used by deploy and/or app user
+* `deploy-stage-files`: Copy output files to staging directory
+* `deploy-sync-assets-s3`: Sync `priv/static` files to S3 bucket for CloudFront CDN
 
 ### Custom command scripts
 

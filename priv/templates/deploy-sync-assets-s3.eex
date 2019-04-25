@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+
+# Sync app static assets to S3 bucket for CDN
+
+set -e
+
+export LANG="<%= env_lang %>"
+
+# Env vars
+# ASSETS_S3_BUCKET: bucket name
+
+# aws configure set default.region ${AWS_DEFAULT_REGION}
+# aws s3 cp priv/static s3://${ASSETS_BUCKET} --recursive
+aws s3 sync priv/static s3://${ASSETS_S3_BUCKET}

@@ -1,0 +1,37 @@
+#!/usr/bin/env bash
+
+# Copy output files to staging directory
+# CodeDeploy
+
+set -e
+
+# Environment vars
+export LANG="${LANG:-en_US.UTF-8}"
+export MIX_ENV="${MIX_ENV:-prod}"
+OUTPUT_DIR="${OUTPUT_DIR:-files}"
+VERSION="${VERSION:-<%= version %>}"
+
+APP_NAME="<%= app_name %>"
+SCRIPTS_SRC="<%= output_dir %>"
+
+echo "==> Copying output files to ${OUTPUT_DIR}"
+
+mkdir -p "${OUTPUT_DIR}"
+
+if [ -f appspec.yml ]; then
+    cp -v appspec.yml ${OUTPUT_DIR}
+fi
+
+cp -v "_build/${MIX_ENV}/rel/${APP_NAME}/releases/${VERSION}/${APP_NAME}.tar.gz" "${OUTPUT_DIR}/${APP_NAME}.tar.gz"
+
+mkdir -p ${OUTPUT_DIR}/systemd
+cp -v _build/${MIX_ENV}/systemd/lib/systemd/system/* "${OUTPUT_DIR}/systemd"
+
+mkdir -p "${OUTPUT_DIR}/bin"
+cp ${SCRIPTS_SRC}/* ${OUTPUT_DIR}/bin
+
+# mkdir -p "${OUTPUT_DIR}/static-assets"
+# cp -R priv/static/* "${OUTPUT_DIR}/static-assets"
+
+# mkdir -p ${OUTPUT_DIR}/etc
+# cp rel/etc/environment ${OUTPUT_DIR}/etc/environment
