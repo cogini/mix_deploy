@@ -10,12 +10,13 @@ export LANG="<%= env_lang %>"
 DEPLOY_USER="${DEPLOY_USER:-<%= deploy_user %>}"
 APP_USER="${APP_USER:-<%= app_user %>}"
 
-if ! id -u "$DEPLOY_USER" > /dev/null &>/dev/null; then
-    echo "==> Creating deploy user $DEPLOY_USER"
-    useradd -m -s /bin/bash "$DEPLOY_USER"
-fi
-
 if ! id -u "$APP_USER" > /dev/null &>/dev/null; then
     echo "==> Creating app user $APP_USER"
     useradd -m -s /bin/bash "$APP_USER"
+fi
+
+if ! id -u "$DEPLOY_USER" > /dev/null &>/dev/null; then
+    echo "==> Creating deploy user $DEPLOY_USER"
+    useradd -m -s /bin/bash "$DEPLOY_USER"
+    usermod -a -G "$APP_USER" "$DEPLOY_USER"
 fi
