@@ -76,7 +76,7 @@ This library generates the following scripts:
 
 ### CodeDeploy deploy scripts
 
-* `deploy-create-users`: Create user accounts, e.g. `app_user` and `deploy_user`
+* `deploy-create-users`: Create OS accounts for app and deploy users
 * `deploy-clean-target`: Delete target dir in preparation for install
 * `deploy-extract-release`: Extract release from tar to target current dir
 * `deploy-set-perms`: Set target file permissions so they can be used by deploy and/or app user
