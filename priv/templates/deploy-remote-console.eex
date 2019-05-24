@@ -16,6 +16,7 @@ set -e
 
 # Config vars
 DEPLOY_DIR="<%= deploy_dir %>"
+RUNTIME_DIR="<%= runtime_dir %>"
 APP_NAME="<%= app_name %>"
 export LANG="<%= env_lang %>"
 export RELEASE_MUTABLE_DIR="<%= runtime_dir %>"
