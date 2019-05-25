@@ -7,7 +7,7 @@ set -e
 # Config vars
 export LANG="<%= env_lang %>"
 CONFIG_DIR="<%= configuration_dir %>"
-APP_USER="${APP_USER:-<%= app_user %>}"
+DEPLOY_USER="${DEPLOY_USERR:-<%= deploy_user %>}"
 APP_GROUP="${APP_USER:-<%= app_group %>}"
 
 # Env vars
@@ -20,5 +20,5 @@ umask 700
 # It may be better to explicitly copy files one by one
 aws s3 sync "s3://${CONFIG_S3_BUCKET}/${CONFIG_S3_PREFIX}" "${DESTDIR}${CONFIG_DIR}/"
 
-chown $APP_USER:$APP_GROUP ${DESTDIR}$CONFIG_DIR/*
-chmod 600 ${DESTDIR}$CONFIG_DIR/*
+chown $DEPLOY_USER:$APP_GROUP ${DESTDIR}$CONFIG_DIR/*
+chmod 640 ${DESTDIR}$CONFIG_DIR/*
