@@ -5,22 +5,15 @@
 
 # Exit on errors
 set -e
-# set -o errexit -o xtrace
-
-# CURDIR="$PWD"
-# BINDIR=$(dirname "$0")
-# cd "$BINDIR"; BINDIR="$PWD"; cd "$CURDIR"
-
-# BASEDIR="$BINDIR/.."
-# cd "$BASEDIR/current"
 
 # Config vars
 DEPLOY_DIR="<%= deploy_dir %>"
 RUNTIME_DIR="<%= runtime_dir %>"
 APP_NAME="<%= app_name %>"
 export LANG="<%= env_lang %>"
-export RELEASE_MUTABLE_DIR="<%= runtime_dir %>"
+
 CURRENT_DIR="$DEPLOY_DIR/current"
+export RELEASE_MUTABLE_DIR="<%= runtime_dir %>"
 <%= if conform do %>
 export CONFORM_CONF_PATH="<%= conform_conf_path %>"
 <% end %>

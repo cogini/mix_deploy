@@ -1,16 +1,22 @@
 #!/usr/bin/env bash
 
-# Migrate database on target system by running hook script
+# Get remote console for the app
+# This needs to be run under the app user account
 
+# Exit on errors
 set -e
 
 # Config vars
 DEPLOY_DIR="<%= deploy_dir %>"
 RUNTIME_DIR="<%= runtime_dir %>"
 APP_NAME="<%= app_name %>"
+export LANG="<%= env_lang %>"
 
-CURRENT_DIR="${DEPLOY_DIR}/current"
-cd "$CURRENT_DIR" || exit 1
+CURRENT_DIR="$DEPLOY_DIR/current"
+export RELEASE_MUTABLE_DIR="<%= runtime_dir %>"
+<%= if conform do %>
+export CONFORM_CONF_PATH="<%= conform_conf_path %>"
+<% end %>
 
 RUNTIME_ENVIRONMENT_FILE="${RUNTIME_DIR}/runtime-environment"
 if [ -f "$RUNTIME_ENVIRONMENT_FILE" ]; then
