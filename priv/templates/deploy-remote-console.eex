@@ -18,9 +18,25 @@ export RELEASE_MUTABLE_DIR="<%= runtime_dir %>"
 export CONFORM_CONF_PATH="<%= conform_conf_path %>"
 <% end %>
 
-RUNTIME_ENVIRONMENT_FILE="${RUNTIME_DIR}/runtime-environment"
-if [ -f "$RUNTIME_ENVIRONMENT_FILE" ]; then
-    source "$RUNTIME_ENVIRONMENT_FILE"
+CURRENT_ENV="<%= current_dir %>/etc/environment"
+DEPLOY_ENV="<%= deploy_dir %>/etc/environment"
+CONFIGURATION_ENV="<%= configuration_dir %>/environment"
+RUNTIME_ENV="<%= runtime_dir %>/runtime-environment"
+
+if [ -f "$CURRENT_ENV" ]; then
+    source "$CURRENT_ENV"
+fi
+
+if [ -f "$DEPLOY_ENV" ]; then
+    source "$DEPLOY_ENV"
+fi
+
+if [ -f "$CONFIGURATION_ENV" ]; then
+    source "$CONFIGURATION_ENV"
+fi
+
+if [ -f "$RUNTIME_ENV" ]; then
+    source "$RUNTIME_ENV"
 fi
 
 $CURRENT_DIR/bin/$APP_NAME remote_console
