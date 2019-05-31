@@ -1,8 +1,8 @@
-Cmnd_Alias APP_SYSTEMCTL = /bin/systemctl start <%= ext_name %>, \
-                           /bin/systemctl stop <%= ext_name %>, \
-                           /bin/systemctl restart <%= ext_name %>, \
-                           /bin/systemctl status <%= ext_name %>, \
-                           /bin/systemctl is-active <%= ext_name %>
+Cmnd_Alias APP_SYSTEMCTL = /bin/systemctl start <%= service_name %>, \
+                           /bin/systemctl stop <%= service_name %>, \
+                           /bin/systemctl restart <%= service_name %>, \
+                           /bin/systemctl status <%= service_name %>, \
+                           /bin/systemctl is-active <%= service_name %>
 
 <%= if sudo_deploy do %>
 <%= deploy_user %> ALL=(ALL) NOPASSWD: APP_SYSTEMCTL
