@@ -489,9 +489,10 @@ aws s3 sync "s3://${CONFIG_S3_BUCKET}/${CONFIG_S3_PREFIX}" "${CONFIG_DIR}/"
 ```
 
 `CONFIG_S3_BUCKET` is the source bucket, and `CONFIG_S3_PREFIX` is an optional
-path in the bucket. `CONFIG_DIR` is the target directory, `/etc/foo`.
+path in the bucket. `CONFIG_DIR` is the app configuration dir on the target
+system, `/etc/foo`.
 
-This is configured in `mix_systemd` with the `exec_start_pre` option:
+Set `exec_start_pre` in the `mix_systemd` config:
 
 ```elixir
 config :mix_systemd,
@@ -504,9 +505,10 @@ config :mix_systemd,
 
 For security, the app only has read-only access to its config files, and
 `/etc/foo` has ownership `deploy:foo` and mode 750. We prefix the command
-with "!" so it runs with elevated permissions, not as the foo user.
+with "!" so it runs with elevated permissions, not as the `foo` user.
 
-We need to somehow set the get `CONFIG_S3_BUCKET` in the environment.
+We need to set the `CONFIG_S3_BUCKET` variable in the environment so that
+`deploy-sync-config-s3` can use it.
 
 The systemd unit has `EnvironmentFile` commands which load environment
 variables from a series of files.
@@ -516,8 +518,13 @@ variables from a series of files.
     EnvironmentFile=-/etc/foo/environment
     EnvironmentFile=-/run/foo/runtime-environment
 
-The "-" on the front makes the file optional. In our build environment (CodeBuild),
-we generate `rel/etc/environment`. In `buildspec.yml`:
+The "-" on the front makes the file optional, so it tries to load each in turn.
+Later files override earlier ones. Settings in `/srv/foo/current/etc/environment`
+are the "build" environment, and `/srv/foo/etc/environment` are "deploy".
+Deploy settings take priority, as they may override the build defaults based on
+where we are deploying or what machine.
+
+`post_build` commands in the CodeBuild `buildspec.yml` file generates `rel/etc/environment`:
 
 ```yaml
 post_build:
@@ -531,8 +538,8 @@ post_build:
     - bin/deploy-sync-assets-s3
 ```
 
-In `rel/config.exs` we set up an overlay which adds the `rel/etc/environment`
-file to the release under `etc/environment`, which makes it show up as
+In `rel/config.exs` an overlay adds the `rel/etc/environment` file to the
+release under `etc/environment`, which makes it show up as
 `/srv/foo/current/etc/environment`:
 
 ```elixir
@@ -542,8 +549,8 @@ file to the release under `etc/environment`, which makes it show up as
   ]
 ```
 
-As an alternative, you can set variables in `files/etc/environment` and copy
-that to `/srv/foo/etc/environment` in e.g. an `appspec.yml`:
+You can also set variables in `files/etc/environment` and copy that to
+`/srv/foo/etc/environment` in e.g. a CodeDeploy `appspec.yml`:
 
 ```yaml
 files:
@@ -554,7 +561,3 @@ files:
   - source: etc
     destination: /srv/foo/etc
 ```
-
-Settings in `/srv/foo/current/etc/environment` are considered "build time" environment,
-and `/srv/foo/etc/environment` are "deploy time". They take higher priority, as they
-may override the build defaults based on the deploy environment or machine.
