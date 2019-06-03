@@ -475,3 +475,54 @@ environment vars, then launches the main start script.
 If these are not flexible enough, you can make your own systemd unit which
 is set as a dependency of the app unit, so it will run first. Set
 `runtime_environment_service` to `true` here and configure it in `mix_systemd`.
+
+# Syncing config from S3
+
+Here is a complete example of configuring an app from a config file which
+it pulls from S3 on startup.
+
+We set up an `ExecStartPre` command in the systemd unit file which runs
+`deploy-sync-config-s3` before starting the app. It runs the AWS cli command
+
+```shell
+aws s3 sync "s3://${CONFIG_S3_BUCKET}/${CONFIG_S3_PREFIX}" "${CONFIG_DIR}/"
+```
+
+`CONFIG_S3_BUCKET` is the source bucket, and `CONFIG_S3_PREFIX` is an optional
+path in the bucket. `CONFIG_DIR` is the target directory, `/etc/foo`.
+
+This is configured in `mix_systemd` with the `exec_start_pre` option:
+
+```elixir
+config :mix_systemd,
+  app_user: "foo",
+  app_group: "foo",
+  exec_start_pre: [
+    "!/srv/foo/bin/deploy-sync-config-s3"
+  ]
+```
+
+For security, the app only has read-only access to its config files, and
+`/etc/foo` has ownership `deploy:foo` and mode 750. We prefix the command
+with "!" so it runs with elevated permissions, not as the foo user.
+
+We need to somehow set the get `CONFIG_S3_BUCKET` in the environment.
+
+The systemd unit has `EnvironmentFile` commands which load environment
+variables from a series of files.
+
+    EnvironmentFile=-/srv/foo/current/etc/environment
+    EnvironmentFile=-/srv/foo/etc/environment
+    EnvironmentFile=-/etc/foo/environment
+    EnvironmentFile=-/run/foo/runtime-environment
+
+The "-" on the front makes the file optional. In our build environment (CodeBuild),
+we generate `rel/etc/environment`, then in `rel/config.exs` we set up an overlay
+which adds the file to the release:
+
+```elixir
+  set overlays: [
+    {:mkdir, "etc"},
+    {:copy, "rel/etc/environment", "etc/environment"},
+  ]
+```
