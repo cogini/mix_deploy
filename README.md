@@ -259,7 +259,7 @@ config :mix_systemd,
     "REPLACE_OS_VARS=true",
   ],
   exec_start_pre: [
-    "deploy-set-cookie-ssm"
+    "/srv/foo/bin/deploy-set-cookie-ssm"
   ]
 
 config :mix_deploy,
