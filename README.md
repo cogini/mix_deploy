@@ -517,12 +517,40 @@ variables from a series of files.
     EnvironmentFile=-/run/foo/runtime-environment
 
 The "-" on the front makes the file optional. In our build environment (CodeBuild),
-we generate `rel/etc/environment`, then in `rel/config.exs` we set up an overlay
-which adds the file to the release:
+we generate `rel/etc/environment`. In `buildspec.yml`:
+
+```yaml
+post_build:
+  commands:
+    # Stage build files for CodeDeploy
+    - bin/deploy-stage-files
+    # Get config from build environment to runtime environment
+    - mkdir -p rel/etc
+    - echo "CONFIG_S3_BUCKET=$CONFIG_S3_BUCKET" >> rel/etc/environment
+    # Sync static assets to S3 bucket for CloudFront
+    - bin/deploy-sync-assets-s3
+```
+
+In `rel/config.exs` we set up an overlay which adds the `rel/etc/environment`
+file to the release under `etc/environment`, which makes it show up as
+`/srv/foo/current/etc/environment`:
 
 ```elixir
   set overlays: [
     {:mkdir, "etc"},
     {:copy, "rel/etc/environment", "etc/environment"},
   ]
+```
+
+As an alternative, you can set variables in `files/etc/environment` and copy
+that to `/srv/foo/etc/environment` in e.g. an `appspec.yml`:
+
+```yaml
+files:
+  - source: bin
+    destination: /srv/foo/bin
+  - source: systemd
+    destination: /lib/systemd/system
+  - source: etc
+    destination: /srv/foo/etc
 ```
