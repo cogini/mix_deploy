@@ -554,3 +554,7 @@ files:
   - source: etc
     destination: /srv/foo/etc
 ```
+
+Settings in `/srv/foo/current/etc/environment` are considered "build time" environment,
+and `/srv/foo/etc/environment` are "deploy time". They take higher priority, as they
+may override the build defaults based on the deploy environment or machine.
