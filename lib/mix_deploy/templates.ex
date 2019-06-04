@@ -20,8 +20,7 @@ defmodule MixDeploy.Templates do
     :ok = File.mkdir_p(target_path)
     template_path = Path.join(vars[:template_dir], "#{template}.eex")
     {:ok, data} = template_file(template_path, vars)
-    Mix.Generator.create_file(target_file, data, force: true)
-    :ok
+    :ok = File.write(target_file, data)
   end
 
   @doc "Evaluate template file with bindings"

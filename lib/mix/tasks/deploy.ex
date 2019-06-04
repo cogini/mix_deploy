@@ -308,8 +308,8 @@ defmodule Mix.Tasks.Deploy.Generate do
 
   defp write_template(cfg, dest_dir, template, file) do
     target_file = Path.join(dest_dir, file)
+    Mix.shell.info "Generating #{target_file} from template #{template}"
     Templates.write_template(cfg, dest_dir, template, file)
-    File.chmod(target_file, 0o775)
   end
 end
 
