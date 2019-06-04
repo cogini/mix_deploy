@@ -524,18 +524,13 @@ are the "build" environment, and `/srv/foo/etc/environment` are "deploy".
 Deploy settings take priority, as they may override the build defaults based on
 where we are deploying or what machine.
 
-`post_build` commands in the CodeBuild `buildspec.yml` file generates `rel/etc/environment`:
+`pre_build` commands in the CodeBuild `buildspec.yml` file generates `rel/etc/environment`:
 
 ```yaml
-post_build:
+pre_build:
   commands:
-    # Stage build files for CodeDeploy
-    - bin/deploy-stage-files
-    # Get config from build environment to runtime environment
     - mkdir -p rel/etc
     - echo "CONFIG_S3_BUCKET=$CONFIG_S3_BUCKET" >> rel/etc/environment
-    # Sync static assets to S3 bucket for CloudFront
-    - bin/deploy-sync-assets-s3
 ```
 
 In `rel/config.exs` an overlay adds the `rel/etc/environment` file to the
