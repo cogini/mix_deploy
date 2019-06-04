@@ -518,8 +518,10 @@ variables from a series of files.
     EnvironmentFile=-/etc/foo/environment
     EnvironmentFile=-/run/foo/runtime-environment
 
-The "-" on the front makes the file optional, so it tries to load each in turn.
-Later files override earlier ones. Settings in `/srv/foo/current/etc/environment`
+The systemd unit tries to load each in turn, and later files override earlier ones.
+The "-" on the front makes the file optional.
+
+Settings in `/srv/foo/current/etc/environment`
 are the "build" environment, and `/srv/foo/etc/environment` are "deploy".
 Deploy settings take priority, as they may override the build defaults based on
 where we are deploying or what machine.
