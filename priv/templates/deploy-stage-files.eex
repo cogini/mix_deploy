@@ -34,4 +34,4 @@ cp ${BIN_DIR}/* ${OUTPUT_DIR}/bin
 # cp -R priv/static/* "${OUTPUT_DIR}/static-assets"
 
 mkdir -p ${OUTPUT_DIR}/etc
-# Generate ${OUTPUT_DIR}/etc/environment
+touch "${OUTPUT_DIR}/etc/environment"
