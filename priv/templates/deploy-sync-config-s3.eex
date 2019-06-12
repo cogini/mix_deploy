@@ -15,10 +15,11 @@ APP_GROUP="${APP_USER:-<%= app_group %>}"
 # CONFIG_S3_PREFIX: optional path in prefix
 # DESTDIR, prefix for target files, optional
 
-umask 700
+umask 077
 
 # It may be better to explicitly copy files one by one
 aws s3 sync "s3://${CONFIG_S3_BUCKET}/${CONFIG_S3_PREFIX}" "${DESTDIR}${CONFIG_DIR}/"
 
-chown $DEPLOY_USER:$APP_GROUP ${DESTDIR}$CONFIG_DIR/*
-chmod 640 ${DESTDIR}$CONFIG_DIR/*
+chown -R $DEPLOY_USER:$APP_GROUP ${DESTDIR}$CONFIG_DIR
+find ${DESTDIR}$CONFIG_DIR -type f -exec chmod 640 {} \;
+find ${DESTDIR}$CONFIG_DIR -type d -exec chmod 750 {} \;
