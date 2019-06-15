@@ -15,10 +15,12 @@ APP_GROUP="${APP_USER:-<%= app_group %>}"
 # CONFIG_S3_PREFIX: optional path in prefix
 # DESTDIR, prefix for target files, optional
 
+# Make sure files are created with restrictive file permissions
 umask 077
 
-# It may be better to explicitly copy files one by one
-aws s3 sync --no-progress "s3://${CONFIG_S3_BUCKET}/${CONFIG_S3_PREFIX}" "${DESTDIR}${CONFIG_DIR}/"
+echo "Starting $0"
+
+aws s3 sync --exact-timestamps --no-progress "s3://${CONFIG_S3_BUCKET}/${CONFIG_S3_PREFIX}" "${DESTDIR}${CONFIG_DIR}/"
 
 chown -R $DEPLOY_USER:$APP_GROUP ${DESTDIR}$CONFIG_DIR
 find ${DESTDIR}$CONFIG_DIR -type f -exec chmod 640 {} \;
