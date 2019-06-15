@@ -18,7 +18,7 @@ APP_GROUP="${APP_USER:-<%= app_group %>}"
 umask 077
 
 # It may be better to explicitly copy files one by one
-aws s3 sync "s3://${CONFIG_S3_BUCKET}/${CONFIG_S3_PREFIX}" "${DESTDIR}${CONFIG_DIR}/"
+aws s3 sync --no-progress "s3://${CONFIG_S3_BUCKET}/${CONFIG_S3_PREFIX}" "${DESTDIR}${CONFIG_DIR}/"
 
 chown -R $DEPLOY_USER:$APP_GROUP ${DESTDIR}$CONFIG_DIR
 find ${DESTDIR}$CONFIG_DIR -type f -exec chmod 640 {} \;
