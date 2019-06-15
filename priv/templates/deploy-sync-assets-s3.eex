@@ -11,4 +11,4 @@ export LANG="<%= env_lang %>"
 
 # aws configure set default.region ${AWS_DEFAULT_REGION}
 # aws s3 cp priv/static s3://${ASSETS_BUCKET} --recursive
-aws s3 sync priv/static s3://${ASSETS_S3_BUCKET}
+aws s3 sync --no-progress priv/static s3://${ASSETS_S3_BUCKET}
