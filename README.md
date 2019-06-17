@@ -212,9 +212,11 @@ version: 0.0
 os: linux
 files:
   - source: bin
-    destination: /srv/foo/bin
+    destination: /srv/mix-deploy-example/bin
   - source: systemd
     destination: /lib/systemd/system
+  - source: etc
+    destination: /srv/mix-deploy-example/etc
 hooks:
   ApplicationStop:
     - location: bin/deploy-stop
