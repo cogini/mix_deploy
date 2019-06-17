@@ -11,6 +11,7 @@ defmodule MixDeploy.MixProject do
       description: description(),
       package: package(),
       source_url: "https://github.com/cogini/mix_deploy",
+      homepage_url: "https://github.com/cogini/mix_deploy",
       dialyzer: [
         plt_add_apps: [:mix, :eex]
         # plt_add_deps: true,
