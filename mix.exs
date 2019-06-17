@@ -43,7 +43,7 @@ defmodule MixDeploy.MixProject do
   end
 
   defp description do
-    "Generates deployment scripts from template."
+    "Generates deployment scripts for an application."
   end
 
   defp package do
