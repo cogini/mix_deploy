@@ -25,11 +25,45 @@ Add `mix_deploy` to the list of dependencies in `mix.exs`:
 def deps do
   [
     {:distillery, "~> 2.0"},
-    {:mix_systemd, "~> 0.1.0"},
+    {:mix_systemd, "~> 0.5.0"},
     {:mix_deploy, "~> 0.1.0"},
   ]
 end
 ```
+
+## Configuration
+
+The library gets standard information in `mix.exs`, e.g. the app name and
+version, then calculates default values for its configuration parameters.
+
+By default, with no configuration, the scripts are set up for building and
+deploying on the same machine. The scripts deploy with the same OS user runs
+the `mix deploy.generate` command, and run the app under an OS user with the
+same name as the app.
+
+You can override these parameters using settings in `config/config.exs`, e.g.
+
+```elixir
+config :mix_systemd,
+  app_user: "app",
+  app_group: "app",
+  runtime_environment_wrap: true,
+  env_vars: [
+    "REPLACE_OS_VARS=true",
+  ],
+  exec_start_pre: [
+    "/srv/foo/bin/deploy-set-cookie-ssm"
+  ]
+
+config :mix_deploy,
+  deploy_user: "deploy",
+  deploy_group: "deploy",
+  app_user: "app",
+  app_group: "app"
+```
+
+The library tries to choose smart defaults, so you may not need to configure
+anything.  See below for more options.
 
 ## Usage
 
@@ -241,35 +275,6 @@ hooks:
 ```
 
 ## Configuration
-
-The library gets standard information in `mix.exs`, e.g. the app name and
-version, then calculates default values for its configuration parameters.
-
-By default, with no configuration, the scripts are set up for building and
-deploying on the same machine. The scripts deploy with the same OS user runs
-the `mix deploy.generate` command, and run the app under an OS user with the
-same name as the app.
-
-You can override these parameters using settings in `config/config.exs`, e.g.
-
-```elixir
-config :mix_systemd,
-  app_user: "app",
-  app_group: "app",
-  runtime_environment_wrap: true,
-  env_vars: [
-    "REPLACE_OS_VARS=true",
-  ],
-  exec_start_pre: [
-    "/srv/foo/bin/deploy-set-cookie-ssm"
-  ]
-
-config :mix_deploy,
-  deploy_user: "deploy",
-  deploy_group: "deploy",
-  app_user: "app",
-  app_group: "app"
-```
 
 The following sections describe common configuration options.
 See `lib/mix/tasks/deploy.ex` for the details of more obscure options.
