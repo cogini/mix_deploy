@@ -274,7 +274,7 @@ hooks:
       timeout: 3600
 ```
 
-## Configuration
+## Configuration options
 
 The following sections describe common configuration options.
 See `lib/mix/tasks/deploy.ex` for the details of more obscure options.
