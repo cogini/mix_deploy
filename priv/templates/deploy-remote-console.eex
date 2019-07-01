@@ -39,4 +39,8 @@ if [ -f "$RUNTIME_ENV" ]; then
     source "$RUNTIME_ENV"
 fi
 
-$CURRENT_DIR/bin/$APP_NAME remote_console
+# Elixir 1.9
+$CURRENT_DIR/bin/$APP_NAME remote
+
+# Distillery
+# $CURRENT_DIR/bin/$APP_NAME remote_console

@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 
-# Delete files on target in preparation for install.
-# CodeDeploy BeforeInstall
+# Delete files on target in preparation for re-install
 
 set -e
 

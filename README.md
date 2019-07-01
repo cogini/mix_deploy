@@ -1,21 +1,20 @@
 # mix_deploy
 
-This module provides mix tasks which deploy an Erlang release created
-with [Distillery](https://github.com/bitwalker/distillery).
+This module generates scripts which help deploy an Erlang release created
+with Elixir 1.9's [native release support](https://hexdocs.pm/mix/Mix.Tasks.Release.html).
 
 It supports deployment to the local machine, bare-metal servers
 or cloud servers using e.g. [AWS CodeDeploy](https://aws.amazon.com/codedeploy/).
 
-It works by generating a set of scripts which can be run on the local machine
-or copied to a target machine to handle lifecycle tasks such as creating
-initial directory structure, unpacking release files, managing configuration,
-and starting/stopping,
+It generates scripts which can be run on the local machine or copied to a
+target machine to handle lifecycle tasks such as creating initial directory
+structure, unpacking release files, managing configuration, and starting/stopping,
 
 It uses the [mix_systemd](https://github.com/cogini/mix_systemd)
 library to generate a systemd unit file for the application, and shares
 conventions with it about naming files and systemd unit files.
 
-Here is [a complete example app which uses mix_deploy](https://github.com/cogini/mix-systemd-deploy-example).
+Here is [a complete example app which uses mix_deploy](https://github.com/cogini/mix-deploy-example).
 
 ## Installation
 
@@ -24,9 +23,8 @@ Add `mix_deploy` to the list of dependencies in `mix.exs`:
 ```elixir
 def deps do
   [
-    {:distillery, "~> 2.0"},
-    {:mix_systemd, "~> 0.5.0"},
-    {:mix_deploy, "~> 0.1.0"},
+    {:mix_systemd, "~> 0.6.0"},
+    {:mix_deploy, "~> 0.6.0"},
   ]
 end
 ```
@@ -37,23 +35,16 @@ The library gets standard information in `mix.exs`, e.g. the app name and
 version, then calculates default values for its configuration parameters.
 
 By default, with no configuration, the scripts are set up for building and
-deploying on the same machine. The scripts deploy with the same OS user runs
-the `mix deploy.generate` command, and run the app under an OS user with the
-same name as the app.
+deploying on the same machine. The scripts deploy with the same OS user that
+runs the `mix deploy.generate` command, and run the app under an OS user with
+the same name as the app.
 
 You can override these parameters using settings in `config/config.exs`, e.g.
 
 ```elixir
 config :mix_systemd,
   app_user: "app",
-  app_group: "app",
-  runtime_environment_wrap: true,
-  env_vars: [
-    "REPLACE_OS_VARS=true",
-  ],
-  exec_start_pre: [
-    "/srv/foo/bin/deploy-set-cookie-ssm"
-  ]
+  app_group: "app"
 
 config :mix_deploy,
   deploy_user: "deploy",
@@ -63,12 +54,11 @@ config :mix_deploy,
 ```
 
 The library tries to choose smart defaults, so you may not need to configure
-anything.  See below for more options.
+anything. See below for more options.
 
 ## Usage
 
-This library works similarly to [Distillery](https://hexdocs.pm/distillery/home.html).
-The `init` task copies template files into your project, then the `generate`
+The `deploy.init` task copies template files into your project, then the `deploy.generate`
 task uses them to create the output files.
 
 First, initialize templates under the `rel/templates/deploy` directory by running this command:
@@ -85,9 +75,9 @@ chmod +x bin/*
 ```
 
 By default, `mix deploy.generate` creates scripts under a `bin` directory at
-the top level of your project. If you need to create different files based on
-the environment, set `output_dir_per_env: true` in the config, and it will
-generate files under e.g. `_build/prod/deploy`.
+the top level of your project. If you want to keep them separate, e.g. to
+create different files based on the environment, set `output_dir_per_env: true`
+in the config, and it will generate files under e.g. `_build/prod/deploy`.
 
 ## Scripts
 
@@ -114,13 +104,16 @@ This library generates the following scripts:
 * `deploy-clean-target`: Delete target dir in preparation for install
 * `deploy-extract-release`: Extract release from tar to target current dir
 * `deploy-set-perms`: Set target file permissions so they can be used by deploy and/or app user
+
+### Build server scripts
+
 * `deploy-stage-files`: Copy output files to staging directory
 * `deploy-sync-assets-s3`: Sync `priv/static` files to S3 bucket for CloudFront CDN
 
 ### Custom command scripts
 
 * `deploy-migrate`: Migrate database on target system by
-  [running a Distillery custom command](https://www.cogini.com/blog/running-ecto-migrations-in-production-releases-with-distillery-custom-commands/).
+  [running a custom command](https://www.cogini.com/blog/running-ecto-migrations-in-a-release/).
   This runs under the app user account, not under sudo
 
 * `deploy-remote-console`: Launch a remote console for the app, setting up the environment properly.
@@ -128,12 +121,18 @@ This library generates the following scripts:
 
 ### Environment setup scripts
 
-These may be called by the systemd startup unit to get the config at runtime based on the environment.
+These may be called by the systemd startup unit to get the config at runtime
+based on the environment.
 
-* `deploy-runtime-environment-file`: Create `#{runtime_dir}/runtime-environment` file on target from `cloud-init` metadata.
-* `deploy-runtime-environment-wrap`: Get runtime environment from `cloud-init` metadata, set environment vars, then launch main script
+* `deploy-runtime-environment-file`: Create `#{runtime_dir}/runtime-environment`
+  file on target from `cloud-init` metadata.
+* `deploy-runtime-environment-wrap`: Get runtime environment from `cloud-init`
+  metadata, set environment vars, then launch main script.
+  Probably better done with `rel/env.sh.eex`.
 * `deploy-sync-config-s3`: Sync config files from S3 bucket to app config dir
-* `deploy-set-cookie-ssm`: Get Erlang VM cookie from [AWS SSM Parameter Store](https://docs.aws.amazon.com/systems-manager/latest/userguide/systems-manager-paramstore.html) and write to file
+* `deploy-set-cookie-ssm`: Get Erlang VM cookie from [AWS SSM Parameter
+  Store](https://docs.aws.amazon.com/systems-manager/latest/userguide/systems-manager-paramstore.html)
+  and write to file. Probably better done with `rel/env.sh.eex`.
 
 ### Dependencies
 
@@ -147,13 +146,13 @@ The generated scripts are mostly straight bash, with minimal dependencies.
 To install `jq` on Ubuntu:
 
 ```shell
-apt install jq
+apt-get install jq
 ```
 
 To install the AWS CLI from the OS package manager on Ubuntu:
 
 ```shell
-apt install awscli
+apt-get install awscli
 ```
 
 ## Scenarios
@@ -359,12 +358,11 @@ user to start/stop/restart the app using sudo. Default `false`.
 `sudo_app`: Create an `/etc/sudoers.d/#{ext_name}` file allowing the app user
 user to start/stop/restart the app using sudo. Default `false`.
 
-Set `restart_method` to `:systemd_flag`, and the library will generate an additional
-systemd unit file which watches for changes to a flag file and restarts the
-main unit. This allows updates to be pushed to the target machine by an
-unprivileged user account which does not have permissions to restart
-processes. `touch` the file `#{flags_dir}/restart.flag` and systemd will restart the unit.
-See `mix_systemd` for details.
+`mix_systemd` can generate an additional systemd unit file which watches for
+changes to a flag file and restarts the main unit. This allows updates to be
+pushed to the target machine by an unprivileged user account which does not
+have permissions to restart processes. `touch` the file `#{flags_dir}/restart.flag`
+and systemd will restart the unit.  See `mix_systemd` for details.
 
 ### Environment vars
 
@@ -372,38 +370,36 @@ The library sets a few common env vars:
 
 * `mix_env`: default `Mix.env()`, sets `MIX_ENV`.
 * `env_lang`: default `en_US.UTF-8`, used to set `LANG`.
-* `conform`: default `false`. Sets `CONFORM_CONF_PATH` to `/etc/#{ext_name}/#{app_name}.conf` if `true`.
 
 ### Directories
 
 Modern Linux defines a set of directories which apps use for common
-purposes, e.g. configuration or cache files.
-See https://www.freedesktop.org/software/systemd/man/systemd.exec.html#RuntimeDirectory=
+purposes, e.g. configuration or cache files. App files under `/srv`, configuration under
+`/etc`, transient files under `/run`, data under `/var/lib`.
+See [systemd.exec](https://www.freedesktop.org/software/systemd/man/systemd.exec.html#RuntimeDirectory=) for details.
 
-This library defines these directories based on the app name, e.g. `/etc/#{ext_name}`.
-It only creates directories that the app uses, default `runtime` (`/run/#{ext_name}`)
-and `configuration` (`/etc/#{ext_name}`). If your app uses other dirs, set them in the
-`dirs` var:
+Directories are named based on the app name, e.g. `/etc/#{ext_name}`.
+The `dirs` variable specifies which directories the app uses, by default:
 
 ```elixir
 dirs: [
   :runtime,       # App runtime files which may be deleted between runs, /run/#{ext_name}
-                  # Needed for RELEASE_MUTABLE_DIR, runtime-environment or conform
+                  # Used for RELEASE_TMP, RELEASE_MUTABLE_DIR, runtime-environment
   :configuration, # App configuration, e.g. db passwords, /etc/#{ext_name}
-  # :state,       # App data or state kept between runs, /var/lib/#{ext_name}
+  # :state,       # App data or state persisted between runs, /var/lib/#{ext_name}
   # :cache,       # App cache files which can be deleted, /var/cache/#{ext_name}
   # :logs,        # App external log files, not via journald, /var/log/#{ext_name}
   # :tmp,         # App temp files, /var/tmp/#{ext_name}
 ],
 ```
 
-For security, we set permissions to 750, more restrictive than the
-systemd defaults of 755. You can configure them with e.g. `configuration_directory_mode`.
-See the defaults in `lib/mix/tasks/deploy.ex`.
-
 More recent versions of systemd (after 235) will create these directories at start
 time based on the settings in the unit file. For earlier systemd versions,
 `deploy-create-dirs` will create them.
+
+For security, we set permissions to 750, more restrictive than the
+systemd defaults of 755. You can configure them with e.g. `configuration_directory_mode`.
+See the defaults in `lib/mix/tasks/deploy.ex`.
 
 `systemd_version`: Sets the systemd version on the target system, default 235.
 This determines which systemd features the library will enable. If you are
@@ -443,9 +439,9 @@ the `/srv/#{ext_name}/current` dir.
 Configuration of an Elixir app can be split into three parts:
 
 **Build time** settings are consistent for all servers, though they may have
-different options between e.g. staging and production. This is handled by the
-normal config files like `config/prod.exs`, which result in an initial fixed
-application environment file in the release.
+different options between e.g. staging and production. This is handled by
+config files `config/config.exs` and `config/prod.exs`, which result in an
+initial fixed application environment file in the release.
 
 **Environment / per machine / secrets** settings depend on the environment the
 application is running in, e.g. the hostname of the db server and secrets like
@@ -456,28 +452,29 @@ Store or etcd.
 This library generates scripts which can be called by systemd to get configuration.
 See [mix_systemd](https://github.com/cogini/mix_systemd) for details.
 
-`deploy-sync-config-s3` is used to sync config files from an S3 bucket to the
-app config dir, e.g. `/etc`. For example, we can use a config file in
+`deploy-sync-config-s3` syncs config files from an S3 bucket to the
+app config dir, e.g. `/etc/foo`. For example, we can use a config file in
 [TOML](https://github.com/toml-lang/toml) format read at startup by the
 [TOML configuration provider](https://github.com/bitwalker/toml-elixir).
 
 [Conform](https://github.com/bitwalker/conform) is a similar way of making a
-machine-specific config file. Set `conform` to `true`, and the library will set
-`CONFORM_CONF_PATH` to `/etc/#{ext_name}/#{app_name}.conf`. Conform has, however, been
-depreciated in favor of [TOML](https://github.com/bitwalker/toml-elixir).
+machine-specific config file. Conform has been depreciated in favor of
+[TOML](https://github.com/bitwalker/toml-elixir).
 
-`deploy-set-cookie-ssm` is used to get the Erlang VM cookie from [AWS SSM
+`deploy-set-cookie-ssm` gets the Erlang VM cookie from [AWS SSM
 Parameter Store](https://docs.aws.amazon.com/systems-manager/latest/userguide/systems-manager-paramstore.html)
-and write it to a file.
+and writes it to a file.
 
 **Runtime** settings are dynamic and may change every time the application starts.
 For example, if we are running in an AWS auto scaling group, the IP address of the
 server normally changes every time it starts.
 
-`deploy-runtime-environment-file` which reads config from `cloud-init` and
+`deploy-runtime-environment-file` reads config from `cloud-init` and
 writes it to an environment file `#{runtime_dir}/runtime-environment`.
+
 Similarly, `deploy-runtime-environment-wrap` gets `cloud-init` metadata, sets
-environment vars, then launches the main start script.
+environment vars, then launches the main start script. This is probably best done
+by `rel/env.sh.eex` now.
 
 If these are not flexible enough, you can make your own systemd unit which
 is set as a dependency of the app unit, so it will run first. Set
@@ -541,6 +538,8 @@ pre_build:
     - mkdir -p rel/etc
     - echo "CONFIG_S3_BUCKET=$CONFIG_S3_BUCKET" >> rel/etc/environment
 ```
+
+TODO
 
 In `rel/config.exs` an overlay adds the `rel/etc/environment` file to the
 release under `etc/environment`, which makes it show up as

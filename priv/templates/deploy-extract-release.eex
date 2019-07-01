@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 
 # Extract release from tar to target current dir
-# CodeDeploy AfterInstall
 
 set -e
 

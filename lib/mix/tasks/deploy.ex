@@ -1,12 +1,8 @@
 defmodule Mix.Tasks.Deploy do
-
-  # Name of app, used to get config from app environment
-  @app :mix_deploy
-
-  # Directory under build directory where module stores generated files
+  # Directory under _build where module stores generated files
   @output_dir "deploy"
 
-  # Name of directory where user can override templates
+  # Name of directory for project templates
   @template_dir "rel/templates/deploy"
 
   alias MixDeploy.User
@@ -21,13 +17,19 @@ defmodule Mix.Tasks.Deploy do
     {overrides, _} = OptionParser.parse!(argv, opts)
 
     mix_config = Mix.Project.config()
-    user_config = Application.get_all_env(@app)
+    user_config = Application.get_all_env(:mix_deploy)
 
     app_name = mix_config[:app]
     ext_name = app_name
                |> to_string
                |> String.replace("_", "-")
     service_name = ext_name
+
+    module_name = app_name
+                  |> to_string
+                  |> String.split("_")
+                  |> Enum.map(&String.capitalize/1)
+                  |> Enum.join("")
 
     base_dir = user_config[:base_dir] || "/srv"
 
@@ -44,11 +46,14 @@ defmodule Mix.Tasks.Deploy do
       # Elixir application name
       app_name: app_name,
 
+      # Elixir module name in camel case
+      module_name: module_name,
+
       # Name of directories
       ext_name: ext_name,
 
       # Name of service
-      service_name: ext_name,
+      service_name: service_name,
 
       # App version
       version: mix_config[:version],
@@ -84,7 +89,8 @@ defmodule Mix.Tasks.Deploy do
       systemd_version: 219, # CentOS 7
       # systemd_version: 229, # Ubuntu 16.04
 
-      # Whether to create /etc/suders.d file allowing deploy or app user to restart app
+      # Whether to create /etc/suders.d file allowing deploy an/or app user to
+      # restart app
       sudo_deploy: false,
       sudo_app: false,
 
@@ -92,33 +98,33 @@ defmodule Mix.Tasks.Deploy do
       runtime_environment_service: false, # enable and start app runtime-environment.service
 
       dirs: [
-        :runtime,         # needed for runtime-environment or conform
-        :configuration,   # needed for conform or other external app config file
-        # :logs,          # needed for external log file, not journald
-        # :cache,         # app cache files which can be deleted
-        # :state,         # app state persisted between runs
-        # :tmp,           # app temp files
+        :runtime,         # RELEASE_TMP, RELEASE_MUTABLE_DIR, runtime-environment
+        :configuration,   # Config files, Erlang cookie
+        # :logs,          # External log file, not journald
+        # :cache,         # App cache files which can be deleted
+        # :state,         # App state persisted between runs
+        # :tmp,           # App temp files
       ],
 
-      # These directories may be automatically created by newer versions of
-      # systemd, otherwise we need to create them the app uses them
-      cache_directory: service_name,
+      # Standard directory locations for under systemd for various purposes.
+      # https://www.freedesktop.org/software/systemd/man/systemd.exec.html#RuntimeDirectory=
+      #
+      # Recent versions of systemd will create directories if they don't exist
+      # if they are specified in the unit file.
+      #
+      # For security, we default to modes which are tighter than the systemd
+      # default of 755.
       cache_directory_base: "/var/cache",
       cache_directory_mode: "750",
-      configuration_directory: service_name,
       configuration_directory_base: "/etc",
       configuration_directory_mode: "750",
-      logs_directory: service_name,
       logs_directory_base: "/var/log",
       logs_directory_mode: "750",
-      runtime_directory: service_name,
       runtime_directory_base: "/run",
       runtime_directory_mode: "750",
       runtime_directory_preserve: "no",
-      state_directory: service_name,
       state_directory_base: "/var/lib",
       state_directory_mode: "750",
-      tmp_directory: service_name,
       tmp_directory_base: "/var/tmp",
       tmp_directory_mode: "750",
 
@@ -161,6 +167,13 @@ defmodule Mix.Tasks.Deploy do
 
     # Data calculated from other things
     Keyword.merge([
+      cache_directory: service_name,
+      configuration_directory: service_name,
+      logs_directory: service_name,
+      runtime_directory: service_name,
+      state_directory: service_name,
+      tmp_directory: service_name,
+
       releases_dir: Path.join(cfg[:deploy_dir], "releases"),
       scripts_dir: Path.join(cfg[:deploy_dir], "bin"),
       flags_dir: Path.join(cfg[:deploy_dir], "flags"),
@@ -186,14 +199,10 @@ defmodule Mix.Tasks.Deploy.Init do
   @moduledoc """
   Initialize template files.
 
-  ## Command line options
-
-    * `--template_dir` - target directory
-
   ## Usage
 
       # Copy default templates into your project
-      mix systemd.init
+      mix deploy.init
   """
   @shortdoc "Initialize template files"
   use Mix.Task
@@ -219,10 +228,7 @@ defmodule Mix.Tasks.Deploy.Generate do
 
   ## Usage
 
-      # Create scripts and files for MIX_ENV=dev (the default)
-      mix deploy.generate
-
-      # Create unit files for prod
+      # Create scripts and files for MIX_ENV=prod
       MIX_ENV=prod mix deploy.generate
   """
   @shortdoc "Create deploy scripts and files"
@@ -271,10 +277,10 @@ defmodule Mix.Tasks.Deploy.Generate do
       # systemd will automatically create directories in newer versions
       # https://www.freedesktop.org/software/systemd/man/systemd.exec.html#RuntimeDirectory=
       [
-        # We always need runtime dir, as we use it for RELEASE_MUTABLE_DIR
+        # We always need runtime dir, as we use it for RELEASE_TMP
         {true, cfg[:runtime_dir], "$APP_USER", "$APP_GROUP", 0o750, "systemd RuntimeDirectory"},
 
-        # Needed for conform or other exernal config file
+        # Needed for exernal config file
         {:configuration in cfg[:dirs], cfg[:configuration_dir], "$DEPLOY_USER", "$APP_GROUP", 0o750, "systemd ConfigurationDirectory"},
 
         {:logs  in cfg[:dirs], cfg[:logs_dir],  "$APP_USER", "$APP_GROUP", 0o700, "systemd LogsDirectory"},
