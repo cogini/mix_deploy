@@ -17,8 +17,16 @@ APP_NAME="<%= app_name %>"
 DEPLOY_USER="${DEPLOY_USER:-<%= deploy_user %>}"
 APP_GROUP="${APP_USER:-<%= app_group %>}"
 
+# Whether the release was build with Distillery
+DISTILLERY="${DISTILLERY:-false}"
+
+if [ "$DISTILLERY" = true ] ; then
+    RELEASE_NAME="${RELEASE_NAME:-<%= app_name %>}"
+else
+    RELEASE_NAME="${RELEASE_NAME:-prod}"
+fi
 CURRENT_LINK="${DESTDIR}${DEPLOY_DIR}/current"
-TAR_FILE="_build/${MIX_ENV}/rel/${APP_NAME}/releases/${VERSION}/${APP_NAME}.tar.gz"
+TAR_FILE="_build/${MIX_ENV}/rel/${RELEASE_NAME}/releases/${VERSION}/${RELEASE_NAME}.tar.gz"
 
 TIMESTAMP=$(date +%Y%m%d%H%M%S)
 RELEASE_DIR="${DESTDIR}${DEPLOY_DIR}/releases/${TIMESTAMP}"
