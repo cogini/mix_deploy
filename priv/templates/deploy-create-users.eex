@@ -18,5 +18,6 @@ fi
 if ! id -u "$DEPLOY_USER" > /dev/null &>/dev/null; then
     echo "==> Creating deploy user $DEPLOY_USER"
     useradd -m -s /bin/bash "$DEPLOY_USER"
-    usermod -a -G "$APP_USER" "$DEPLOY_USER"
 fi
+
+usermod -a -G "$APP_USER" "$DEPLOY_USER"
