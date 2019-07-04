@@ -40,3 +40,4 @@ ln -s "$RELEASE_DIR" "$CURRENT_LINK"
 echo "===> Setting file permissions for release binary"
 chmod 750 "${CURRENT_LINK}/bin/${RELEASE_NAME}"
 chmod 750 "${CURRENT_LINK}/releases/${VERSION}"/{elixir,iex}
+chmod 750 "${CURRENT_LINK}/erts-<%= :erlang.system_info(:version) %>/erl"
