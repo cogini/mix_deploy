@@ -13,6 +13,7 @@ export LANG="<%= env_lang %>"
 DEPLOY_DIR="<%= deploy_dir %>"
 DEPLOY_USER="${DEPLOY_USER:-<%= deploy_user %>}"
 APP_GROUP="${APP_USER:-<%= app_group %>}"
+VERSION="<%= version %>"
 
 chmod 750 "$DEPLOY_DIR"
 chown $DEPLOY_USER:$APP_GROUP "$DEPLOY_DIR"
@@ -20,3 +21,4 @@ chown $DEPLOY_USER:$APP_GROUP "$DEPLOY_DIR"
 mkdir -p "$DEPLOY_DIR/bin"
 chmod -R 750 "$DEPLOY_DIR/bin"
 chown -R $DEPLOY_USER:$APP_GROUP "$DEPLOY_DIR/bin"
+chmod 750 "$DEPLOY_DIR/releases/${VERSION}"/{elixir,iex}

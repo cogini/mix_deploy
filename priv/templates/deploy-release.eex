@@ -36,3 +36,6 @@ if [[ -L "$CURRENT_LINK" ]]; then
     rm "$CURRENT_LINK"
 fi
 ln -s "$RELEASE_DIR" "$CURRENT_LINK"
+
+echo "===> Setting file permissions for release binary"
+chmod 750 "${CURRENT_LINK}/bin/${RELEASE_NAME}"
