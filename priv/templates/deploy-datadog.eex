@@ -11,12 +11,34 @@ export LANG="<%= env_lang %>"
 # DESTDIR, prefix for target files, optional
 
 # Config vars
+DEPLOY_DIR="<%= deploy_dir %>"
 LOG_DIR="/var/log/<%= service_name %>"
 DEPLOY_USER="${DEPLOY_USER:-<%= deploy_user %>}"
 APP_GROUP="${APP_USER:-<%= app_group %>}"
 
 echo "==> Creating log dir ${LOG_DIR}"
 mkdir -p "$LOG_DIR"
-chmod -R 664 "$LOG_DIR"
+chmod -R 644 "$LOG_DIR"
 chown -R $DEPLOY_USER:$APP_GROUP "$LOG_DIR"
+setfacl -m u:dd-agent:rx /var/log/<%= service_name %>/<%= service_name %>.log
 
+cat <<EOF >> /etc/logrotate.conf
+/var/log/<%= service_name %>/*.log {
+ rotate 4
+ daily
+ missingok
+ postrotate
+ /usr/bin/setfacl -m u:dd-agent:rx /var/log/<%= service_name %>/<%= service_name %>.log
+ endscript
+}
+EOF
+
+mkdir -p "/etc/datadog-agent/conf.d/<%= service_name %>.d/"
+
+cat <<EOF >> /etc/datadog-agent/conf.d/<%= service_name %>.d/<%= service_name %>.yaml
+logs:
+  - type: file
+    path: /var/log/<%= service_name %>/<%= service_name %>.log
+    service: <%= service_name %>
+    source: <%= service_name %>
+EOF
