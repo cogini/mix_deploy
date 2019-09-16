@@ -156,6 +156,7 @@ defmodule Mix.Tasks.Deploy do
         "deploy-stop",
         "deploy-sync-config-s3",
         "deploy-sync-assets-s3",
+        "deploy-noop"
       ]
     ]
 
