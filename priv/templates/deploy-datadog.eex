@@ -20,6 +20,7 @@ echo "==> Creating log dir ${LOG_DIR}"
 mkdir -p "$LOG_DIR"
 chmod -R 644 "$LOG_DIR"
 chown -R $DEPLOY_USER:$APP_GROUP "$LOG_DIR"
+touch /var/log/<%= service_name %>/<%= service_name %>.log
 setfacl -m u:dd-agent:rx /var/log/<%= service_name %>/<%= service_name %>.log
 
 cat <<EOF >> /etc/logrotate.conf
