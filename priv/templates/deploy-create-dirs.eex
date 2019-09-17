@@ -24,3 +24,9 @@ if [ ! -d "${DESTDIR}<%= path %>" ]; then
 fi
 
 <% end %>
+
+LOG_DIR="/var/log/<%= service_name %>"
+
+echo "==> Creating log dir ${LOG_DIR}"
+chmod -R 644 "$LOG_DIR"
+chown -R $DEPLOY_USER:$APP_GROUP "$LOG_DIR"
