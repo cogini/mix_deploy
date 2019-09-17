@@ -26,7 +26,7 @@ fi
 <% end %>
 
 LOG_DIR="/var/log/<%= service_name %>"
-
 echo "==> Creating log dir ${LOG_DIR}"
+mkdir -p "$LOG_DIR"
 chmod -R 777 "$LOG_DIR"
 chown -R $DEPLOY_USER:$APP_GROUP "$LOG_DIR"
