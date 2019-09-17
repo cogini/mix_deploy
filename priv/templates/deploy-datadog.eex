@@ -32,3 +32,5 @@ logs:
 EOF
 
 chown dd-agent:dd-agent -R /etc/datadog-agent/conf.d/
+
+sudo service datadog-agent restart
