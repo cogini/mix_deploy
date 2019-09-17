@@ -30,3 +30,5 @@ logs:
     service: <%= service_name %>
     source: <%= service_name %>
 EOF
+
+chown dd-agent:dd-agent -R /etc/datadog-agent/conf.d/
