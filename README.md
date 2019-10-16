@@ -58,8 +58,8 @@ anything. See below for more options.
 
 ## Usage
 
-The `deploy.init` task copies template files into your project, then the `deploy.generate`
-task uses them to create the output files.
+The `deploy.init` task copies template files from the library into your
+project, then the `deploy.generate` task uses them to create the output files.
 
 First, initialize templates under the `rel/templates/deploy` directory by running this command:
 
@@ -78,6 +78,9 @@ By default, `mix deploy.generate` creates scripts under a `bin` directory at
 the top level of your project. If you want to keep them separate, e.g. to
 create different files based on the environment, set `output_dir_per_env: true`
 in the config, and it will generate files under e.g. `_build/prod/deploy`.
+
+`mix_deploy` assumes that you are using
+[mix_systemd](https://github.com/cogini/mix_systemd).
 
 ## Scripts
 
@@ -126,8 +129,9 @@ based on the environment.
 
 * `deploy-runtime-environment-file`: Create `#{runtime_dir}/runtime-environment`
   file on target from `cloud-init` metadata.
-* `deploy-runtime-environment-wrap`: Get runtime environment from `cloud-init`
-  metadata, set environment vars, then launch main script.
+* `deploy-runtime-environment-wrap`: Get runtime environment from
+  `cloud-init` [metadata](https://cloudinit.readthedocs.io/en/latest/topics/instancedata.html),
+  set environment vars, then launch main script.
   Probably better done with `rel/env.sh.eex`.
 * `deploy-sync-config-s3`: Sync config files from S3 bucket to app config dir
 * `deploy-set-cookie-ssm`: Get Erlang VM cookie from [AWS SSM Parameter
@@ -278,10 +282,10 @@ hooks:
 The following sections describe common configuration options.
 See `lib/mix/tasks/deploy.ex` for the details of more obscure options.
 
-If you need to make changes not supported by the config options, then you can
-check the templates into source control from `rel/templates/deploy` and make
-your own changes (contributions welcome!). You can also check in the generated
-scripts in the `bin` dir.
+If you need to make changes not supported by the config options (contributions
+welcome!), then you can check the templates into source control from
+`rel/templates/deploy` and make your own changes. You can also check in the
+generated scripts in the `bin` dir.
 
 The list of templates to generate is in the `templates` config var.
 You can modify this list to remove scripts, and they won't be generated.
