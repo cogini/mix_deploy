@@ -9,7 +9,7 @@ set -e
 # Config vars
 DEPLOY_DIR="<%= deploy_dir %>"
 RUNTIME_DIR="<%= runtime_dir %>"
-APP_NAME="<%= app_name %>"
+RELEASE_NAME="<%= app_name %>"
 MODULE_NAME="<%= module_name %>"
 MIGRATE_FUNCTION="${MIGRATE_FUNCTION:-<%= module_name %>.ReleaseTasks.Migrate.run}"
 export LANG="<%= env_lang %>"
@@ -42,7 +42,7 @@ if [ -f "$RUNTIME_ENV" ]; then
 fi
 
 # Elixir 1.9
-$CURRENT_DIR/bin/$APP_NAME eval "$MIGRATE_FUNCTION"
+# $CURRENT_DIR/bin/$RELEASE_NAME eval "$MIGRATE_FUNCTION"
 
 # Distillery custom command
-# $CURRENT_DIR/bin/$APP_NAME migrate
+$CURRENT_DIR/bin/$RELEASE_NAME migrate
