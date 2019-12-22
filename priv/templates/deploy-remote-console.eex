@@ -21,7 +21,7 @@ export CONFORM_CONF_PATH="<%= conform_conf_path %>"
 CURRENT_ENV="<%= current_dir %>/etc/environment"
 DEPLOY_ENV="<%= deploy_dir %>/etc/environment"
 CONFIGURATION_ENV="<%= configuration_dir %>/environment"
-RUNTIME_ENV="<%= runtime_dir %>/runtime-environment"
+RUNTIME_ENV="<%= runtime_dir %>/environment"
 
 if [ -f "$CURRENT_ENV" ]; then
     source "$CURRENT_ENV"
