@@ -1,6 +1,10 @@
 #!/usr/bin/env bash
 
-# Create app dirs on target
+# Create app dirs on target or staging dir
+#
+# This creates the release directory structure, e.g. /srv/foo,
+# and may create app dirs such as /etc/foo when they
+# are not automatically created by systemd.
 
 set -e
 
