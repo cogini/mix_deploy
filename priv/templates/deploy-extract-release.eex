@@ -11,7 +11,7 @@ export LANG="<%= env_lang %>"
 
 # Config vars
 DEPLOY_DIR="<%= deploy_dir %>"
-APP_NAME="<%= app_name %>"
+RELEASE_NAME="<%= app_name %>"
 DEPLOY_USER="${DEPLOY_USER:-<%= deploy_user %>}"
 APP_GROUP="${APP_USER:-<%= app_group %>}"
 
@@ -20,7 +20,7 @@ BINDIR=$(dirname "$0")
 cd "$BINDIR"; BINDIR="$PWD"; cd "$CURDIR"
 
 CURRENT_DIR="${DESTDIR}${DEPLOY_DIR}/current"
-TAR_FILE="$BINDIR/../${APP_NAME}.tar.gz"
+TAR_FILE="$BINDIR/../${RELEASE_NAME}.tar.gz"
 
 echo "==> Removing previous release $CURRENT_DIR"
 rm -rf "$CURRENT_DIR"
