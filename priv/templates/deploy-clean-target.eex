@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 
 # Delete files on target in preparation for re-install
+#
+# This is useful to get a clean slate or when the
+# deploy system has difficulty with existing files on upgrade.
 
 set -e
 
