@@ -1,5 +1,6 @@
 defmodule Mix.Tasks.Deploy do
-  # Directory under _build where module stores generated files
+  # Directory under _build where module stores generated files,
+  # e.g. _build/prod/deploy
   @output_dir "deploy"
 
   # Name of directory for project templates
@@ -9,11 +10,7 @@ defmodule Mix.Tasks.Deploy do
 
   @spec parse_args(OptionParser.argv()) :: Keyword.t
   def parse_args(argv) do
-    opts = [
-      strict: [
-        version: :string,
-      ]
-    ]
+    opts = [strict: [version: :string]]
     {overrides, _} = OptionParser.parse!(argv, opts)
 
     mix_config = Mix.Project.config()
@@ -55,10 +52,13 @@ defmodule Mix.Tasks.Deploy do
       # Name of service
       service_name: service_name,
 
+      # Name of release, separate from app
+      # release_name: app_name,
+
       # App version
       version: mix_config[:version],
 
-      # Base directory on target system
+      # Base directory on target system, e.g. /srv
       base_dir: base_dir,
 
       # Directory for release files on target
@@ -86,19 +86,28 @@ defmodule Mix.Tasks.Deploy do
       conform_conf_path: "/etc/#{ext_name}/#{app_name}.conf",
 
       # Target systemd version
-      systemd_version: 219, # CentOS 7
       # systemd_version: 229, # Ubuntu 16.04
+      # systemd_version: 219, # CentOS 7
+      # systemd_version: 229, # Ubuntu 16.04
+      # systemd_version: 237, # Ubuntu 18.04
+      systemd_version: 235,
 
       # Whether to create /etc/suders.d file allowing deploy an/or app user to
       # restart app
       sudo_deploy: false,
       sudo_app: false,
 
-      restart_method: :systemctl, # :systemd_flag | :systemctl | :touch
-      runtime_environment_service: false, # enable and start app runtime-environment.service
+      restart_method: :systemctl, # :systemctl | :systemd_flag | :touch
+      runtime_environment_service: false, # enable and start app runtime environment.service
+
+      # Elixir 1.9+ releases or Distillery
+      release_system: :mix, # :mix | :distillery
+
+      # Whether release files are read-only to the app user
+      readonly_release: false,
 
       dirs: [
-        :runtime,         # RELEASE_TMP, RELEASE_MUTABLE_DIR, runtime-environment
+        :runtime,         # RELEASE_TMP, RELEASE_MUTABLE_DIR, runtime environment
         :configuration,   # Config files, Erlang cookie
         # :logs,          # External log file, not journald
         # :cache,         # App cache files which can be deleted
