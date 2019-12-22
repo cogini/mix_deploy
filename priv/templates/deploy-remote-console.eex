@@ -9,7 +9,7 @@ set -e
 # Config vars
 DEPLOY_DIR="<%= deploy_dir %>"
 RUNTIME_DIR="<%= runtime_dir %>"
-APP_NAME="<%= app_name %>"
+RELEASE_NAME="<%= app_name %>"
 export LANG="<%= env_lang %>"
 
 CURRENT_DIR="$DEPLOY_DIR/current"
@@ -39,8 +39,5 @@ if [ -f "$RUNTIME_ENV" ]; then
     source "$RUNTIME_ENV"
 fi
 
-# Elixir 1.9
-$CURRENT_DIR/bin/$APP_NAME remote
-
 # Distillery
-# $CURRENT_DIR/bin/$APP_NAME remote_console
+$CURRENT_DIR/bin/$RELEASE_NAME remote_console
