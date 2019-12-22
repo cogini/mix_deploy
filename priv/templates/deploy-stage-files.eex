@@ -8,9 +8,9 @@ set -e
 export LANG="${LANG:-en_US.UTF-8}"
 export MIX_ENV="${MIX_ENV:-prod}"
 OUTPUT_DIR="${OUTPUT_DIR:-files}"
-VERSION="${VERSION:-<%= version %>}"
+RELEASE_VSN="${RELEASE_VSN:-<%= version %>}"
+RELEASE_NAME="${RELEASE_NAME:-<%= app_name %>}"
 
-APP_NAME="<%= app_name %>"
 BIN_DIR="<%= bin_dir %>"
 
 echo "==> Copying output files to ${OUTPUT_DIR}"
@@ -21,7 +21,12 @@ if [ -f appspec.yml ]; then
     cp -v appspec.yml ${OUTPUT_DIR}
 fi
 
-cp -v "_build/${MIX_ENV}/rel/${APP_NAME}/releases/${VERSION}/${APP_NAME}.tar.gz" "${OUTPUT_DIR}/${APP_NAME}.tar.gz"
+<%= case release_system do %>
+<% :mix -> %>
+cp -v "_build/MIX_ENV/rel/${RELEASE_NAME}-${RELEASE_VSN}.tar.gz" "${OUTPUT_DIR}/${RELEASE_NAME}.tar.gz"
+<% :distillery -> %>
+cp -v "_build/${MIX_ENV}/rel/${RELEASE_NAME}/releases/${RELEASE_VSN}/${RELEASE_NAME}.tar.gz" "${OUTPUT_DIR}/${RELEASE_NAME}.tar.gz"
+<% end %>
 
 mkdir -p ${OUTPUT_DIR}/systemd
 cp -v _build/${MIX_ENV}/systemd/lib/systemd/system/* "${OUTPUT_DIR}/systemd"
