@@ -23,7 +23,7 @@ fi
 
 <%= case release_system do %>
 <% :mix -> %>
-cp -v "_build/MIX_ENV/rel/${RELEASE_NAME}-${RELEASE_VSN}.tar.gz" "${OUTPUT_DIR}/${RELEASE_NAME}.tar.gz"
+cp -v "_build/${MIX_ENV}/rel/${RELEASE_NAME}-${RELEASE_VSN}.tar.gz" "${OUTPUT_DIR}/${RELEASE_NAME}.tar.gz"
 <% :distillery -> %>
 cp -v "_build/${MIX_ENV}/rel/${RELEASE_NAME}/releases/${RELEASE_VSN}/${RELEASE_NAME}.tar.gz" "${OUTPUT_DIR}/${RELEASE_NAME}.tar.gz"
 <% end %>
