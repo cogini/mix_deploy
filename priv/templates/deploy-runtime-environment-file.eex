@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# Create runtime-environment file on target from cloud-init metadata
+# Create runtime environment file on target from cloud-init metadata
 # https://cloudinit.readthedocs.io/en/latest/topics/network-config.html#network-configuration-outputs
 
 set -e
@@ -15,15 +15,15 @@ CLOUD_NAME=$(jq -r '.v1.cloud_name' < /run/cloud-init/instance-data.json)
 if [ "$CLOUD_NAME" = "digitalocean" ]; then
     IP_ADDR=$(jq -r '.ds.meta_data.interfaces.public[0].anchor_ipv4.ip_address' < /run/cloud-init/instance-data.json)
 
-    echo "DEFAULT_IPV4=$IP_ADDR" > "${RUNTIME_DIR}/runtime-environment"
+    echo "DEFAULT_IPV4=$IP_ADDR" > "${RUNTIME_DIR}/environment"
 elif [ "$CLOUD_NAME" = "aws" ]; then
     IP_ADDR=$(jq -r '.ds."meta-data"."local-ipv4"' < /run/cloud-init/instance-data.json)
     # IP_ADDR=$(jq -r '.ds."meta-data"."public-ipv4"' < /run/cloud-init/instance-data.json)
 
     AWS_REGION=$(jq -r '.v1.region' < /run/cloud-init/instance-data.json)
 
-    echo "DEFAULT_IPV4=$IP_ADDR" > "${RUNTIME_DIR}/runtime-environment"
-    echo "AWS_REGION=$AWS_REGION" >> "${RUNTIME_DIR}/runtime-environment"
+    echo "DEFAULT_IPV4=$IP_ADDR" > "${RUNTIME_DIR}/environment"
+    echo "AWS_REGION=$AWS_REGION" >> "${RUNTIME_DIR}/environment"
 else
     echo "Unsupported cloud: $CLOUD_NAME"
     exit 1
