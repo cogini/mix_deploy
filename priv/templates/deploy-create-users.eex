@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 
 # Create user accounts on target
+#
+# Useful when deploying locally or on target.
 
 set -e
 
