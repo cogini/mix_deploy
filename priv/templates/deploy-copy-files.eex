@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 
 # Copy files to target or staging directory
+#
+# This is usful when installing on the local machine or packaging files.
 
 set -e
 
