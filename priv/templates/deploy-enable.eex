@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 
 # Enable systemd units on target
+#
+# This has the effect of reloading it if it has changed.
 
 set -e
 
