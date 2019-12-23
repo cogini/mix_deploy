@@ -21,7 +21,12 @@ chmod -R 750 "$DEPLOY_DIR/bin"
 chown -R $DEPLOY_USER:$APP_GROUP "$DEPLOY_DIR/bin"
 
 # Make tmp file under release writable by app user
+<%= case release_system do %>
+<% :mix -> %>
 RELEASE_TMP="${CURRENT_DIR}/tmp"
+<% :distillery -> %>
+RELEASE_TMP="${CURRENT_DIR}/var"
+<% end %>
 mkdir -p "$RELEASE_TMP"
 chmod -R 770 "$RELEASE_TMP"
 chown -R $DEPLOY_USER:$APP_GROUP "$RELEASE_TMP"
