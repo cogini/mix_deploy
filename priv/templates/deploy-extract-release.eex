@@ -4,14 +4,12 @@
 
 set -e
 
-export LANG="<%= env_lang %>"
-
 # Environment vars
 # DESTDIR, prefix for target files, optional
 
 # Config vars
 DEPLOY_DIR="<%= deploy_dir %>"
-RELEASE_NAME="<%= app_name %>"
+RELEASE_NAME="<%= release_name %>"
 DEPLOY_USER="${DEPLOY_USER:-<%= deploy_user %>}"
 APP_GROUP="${APP_USER:-<%= app_group %>}"
 
