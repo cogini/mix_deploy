@@ -1,9 +1,9 @@
 defmodule Mix.Tasks.Deploy do
-  # Directory under _build where module stores generated files,
+  # Directory where `mix deploy.generate` stores output files,
   # e.g. _build/prod/deploy
   @output_dir "deploy"
 
-  # Name of directory for project templates
+  # Directory where `mix deploy.init` copies templates in user project
   @template_dir "rel/templates/deploy"
 
   alias MixDeploy.User
@@ -13,15 +13,21 @@ defmodule Mix.Tasks.Deploy do
     opts = [strict: [version: :string]]
     {overrides, _} = OptionParser.parse!(argv, opts)
 
-    mix_config = Mix.Project.config()
     user_config = Application.get_all_env(:mix_deploy)
+    mix_config = Mix.Project.config()
 
+    # Elixir app name, from mix.exs
     app_name = mix_config[:app]
+
+    # External name, used for files and directories
     ext_name = app_name
                |> to_string
                |> String.replace("_", "-")
+
+    # Name of systemd unit
     service_name = ext_name
 
+    # Elixir camel case module name version of snake case app name
     module_name = app_name
                   |> to_string
                   |> String.split("_")
@@ -35,10 +41,8 @@ defmodule Mix.Tasks.Deploy do
     {{cur_user, _cur_uid}, {cur_group, _cur_gid}, _} = User.get_id()
 
     defaults = [
-      mix_env: Mix.env(),
-
-      # LANG environment var for running scripts
-      env_lang: "en_US.UTF-8",
+      # App version
+      version: mix_config[:version],
 
       # Elixir application name
       app_name: app_name,
@@ -46,17 +50,18 @@ defmodule Mix.Tasks.Deploy do
       # Elixir module name in camel case
       module_name: module_name,
 
-      # Name of directories
+      # Name of release
+      release_name: app_name,
+
+      # External name, used for files and directories
       ext_name: ext_name,
 
       # Name of service
       service_name: service_name,
 
-      # Name of release, separate from app
-      # release_name: app_name,
-
-      # App version
-      version: mix_config[:version],
+      # OS user to own files
+      deploy_user: cur_user,
+      deploy_group: cur_group,
 
       # Base directory on target system, e.g. /srv
       base_dir: base_dir,
@@ -64,47 +69,11 @@ defmodule Mix.Tasks.Deploy do
       # Directory for release files on target
       deploy_dir: "#{base_dir}/#{ext_name}",
 
-      # Mix build_path
-      build_path: build_path,
-
-      # Staging output directory for generated files
-      output_dir: Path.join(build_path, @output_dir),
-
-      # Generate script files under build_path
-      # Otherwise generate scripts under project top "bin" dir
-      output_dir_per_env: false,
-
-      # Directory with templates which override defaults
-      template_dir: @template_dir,
-
-      # OS user to own files and run app
-      deploy_user: cur_user,
-      deploy_group: cur_group,
-
-      # Whether app uses conform
-      conform: false,
-      conform_conf_path: "/etc/#{ext_name}/#{app_name}.conf",
-
       # Target systemd version
-      # systemd_version: 229, # Ubuntu 16.04
       # systemd_version: 219, # CentOS 7
       # systemd_version: 229, # Ubuntu 16.04
       # systemd_version: 237, # Ubuntu 18.04
       systemd_version: 235,
-
-      # Whether to create /etc/suders.d file allowing deploy an/or app user to
-      # restart app
-      sudo_deploy: false,
-      sudo_app: false,
-
-      restart_method: :systemctl, # :systemctl | :systemd_flag | :touch
-      runtime_environment_service: false, # enable and start app runtime environment.service
-
-      # Elixir 1.9+ releases or Distillery
-      release_system: :mix, # :mix | :distillery
-
-      # Whether release files are read-only to the app user
-      readonly_release: false,
 
       dirs: [
         :runtime,         # RELEASE_TMP, RELEASE_MUTABLE_DIR, runtime environment
@@ -123,6 +92,7 @@ defmodule Mix.Tasks.Deploy do
       #
       # For security, we default to modes which are tighter than the systemd
       # default of 755.
+      # Note that these are strings, not integers.
       cache_directory: service_name,
       cache_directory_base: "/var/cache",
       cache_directory_mode: "750",
@@ -142,6 +112,40 @@ defmodule Mix.Tasks.Deploy do
       tmp_directory: service_name,
       tmp_directory_base: "/var/tmp",
       tmp_directory_mode: "750",
+
+      # Mix releases in Elixir 1.9+ or Distillery
+      release_system: :mix, # :mix | :distillery
+
+      # How service is restarted on update
+      restart_method: :systemctl, # :systemctl | :systemd_flag | :touch
+
+      # Mix build_path
+      build_path: build_path,
+
+      # Staging output directory for generated files
+      output_dir: Path.join(build_path, @output_dir),
+
+      # Generate script files under build_path
+      # Otherwise generate scripts under project top "bin" dir
+      output_dir_per_env: false,
+
+      # Directory with templates which override defaults
+      template_dir: @template_dir,
+
+      mix_env: Mix.env(),
+
+      # LANG environment var for running scripts
+      env_lang: "en_US.UTF-8",
+
+      # Whether to create /etc/suders.d file allowing deploy an/or app user to
+      # restart app
+      sudo_deploy: false,
+      sudo_app: false,
+
+      runtime_environment_service: false,
+
+      # Whether app uses conform
+      conform: false,
 
       templates: [
         "deploy-clean-target",
@@ -168,30 +172,24 @@ defmodule Mix.Tasks.Deploy do
       ]
     ]
 
+    # Override values from user config
     cfg = defaults
-             |> Keyword.merge(user_config)
-             |> Keyword.merge(overrides)
+          |> Keyword.merge(user_config)
+          |> Keyword.merge(overrides)
 
-    # Default OS user and group names
+    # Calcualate values from other things
     cfg = Keyword.merge([
       app_user: cfg[:deploy_user],
       app_group: cfg[:deploy_group],
     ], cfg)
 
-    # Mix.shell.info "cfg: #{inspect cfg}"
-
-    # Data calculated from other things
-    Keyword.merge([
+    cfg = Keyword.merge([
       releases_dir: Path.join(cfg[:deploy_dir], "releases"),
       scripts_dir: Path.join(cfg[:deploy_dir], "bin"),
       flags_dir: Path.join(cfg[:deploy_dir], "flags"),
       current_dir: Path.join(cfg[:deploy_dir], "current"),
 
-      bin_dir: if cfg[:output_dir_per_env] do
-        Path.join(cfg[:output_dir], "bin")
-      else
-        "bin"
-      end,
+      bin_dir: if cfg[:output_dir_per_env], Path.join(cfg[:output_dir], "bin"), else: "bin"
 
       runtime_dir: Path.join(cfg[:runtime_directory_base], cfg[:runtime_directory]),
       configuration_dir: Path.join(cfg[:configuration_directory_base], cfg[:configuration_directory]),
@@ -200,12 +198,22 @@ defmodule Mix.Tasks.Deploy do
       state_dir: Path.join(cfg[:state_directory_base], cfg[:state_directory]),
       cache_dir: Path.join(cfg[:cache_directory_base], cfg[:cache_directory]),
     ], cfg)
+
+    cfg = Keyword.merge([
+      conform_conf_path: cfg[:conform_conf_path] || Path.join(cfg[:configuration_dir], #{app_name}.conf"),
+    ], cfg)
+
+    # Mix.shell.info "cfg: #{inspect cfg}"
   end
 end
 
 defmodule Mix.Tasks.Deploy.Init do
   @moduledoc """
   Initialize template files.
+
+  ## Command line options
+
+    * `--template_dir` - target directory
 
   ## Usage
 
