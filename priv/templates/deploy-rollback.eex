@@ -9,7 +9,6 @@ set -e
 # DESTDIR, prefix for target files, optional
 
 # Config vars
-export LANG="<%= env_lang %>"
 DEPLOY_DIR="<%= deploy_dir %>"
 
 RELEASES_DIR="${DESTDIR}${DEPLOY_DIR}/releases"

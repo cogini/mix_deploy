@@ -5,7 +5,6 @@
 set -e
 
 # Environment vars
-export LANG="${LANG:-en_US.UTF-8}"
 export MIX_ENV="${MIX_ENV:-prod}"
 OUTPUT_DIR="${OUTPUT_DIR:-files}"
 RELEASE_VSN="${RELEASE_VSN:-<%= version %>}"
