@@ -7,8 +7,6 @@
 
 set -e
 
-export LANG="<%= env_lang %>"
-
 # Environment vars
 # DESTDIR, prefix for target files, optional
 
