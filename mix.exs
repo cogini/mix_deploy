@@ -4,7 +4,7 @@ defmodule MixDeploy.MixProject do
   def project do
     [
       app: :mix_deploy,
-      version: "0.5.0",
+      version: "0.7.0",
       elixir: "~> 1.6",
       build_embedded: Mix.env() == :prod,
       start_permanent: Mix.env() == :prod,

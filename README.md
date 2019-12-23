@@ -144,9 +144,6 @@ have `rel/env.sh.eex`, these functions are better done there.
   Store](https://docs.aws.amazon.com/systems-manager/latest/userguide/systems-manager-paramstore.html)
   and write to file.
 
-### TODO
-readonly_release
-
 ### Dependencies
 
 The generated scripts are mostly straight bash, with minimal dependencies.
