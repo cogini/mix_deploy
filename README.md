@@ -24,8 +24,7 @@ Add `mix_deploy` to the list of dependencies in `mix.exs`:
 ```elixir
 def deps do
   [
-    {:mix_systemd, "~> 0.6.0"},
-    {:mix_deploy, "~> 0.6.0"},
+    {:mix_deploy, "~> 0.7.0"},
   ]
 end
 ```
@@ -39,11 +38,15 @@ The library tries to choose smart defaults, so you may not need to configure
 anything.
 
 By default, with no configuration, the scripts are set up for building and
-deploying on the same machine. The scripts deploy with the same OS user that
-runs the `mix deploy.generate` command, and run the app under an OS user with
-the same name as the app.
+deploying on the same machine. You can log into a server, check out your code,
+build a release, then deploy it supervised using systemd. The scripts create
+a directory structure under e.g. `/srv/foo` and copy the release there. The
+files are owned by the same OS user that runs the `mix deploy.generate` command.
+It runs the app under an OS user with the same name as the app, e.g. `foo`.
 
-You can override these parameters using settings in `config/config.exs`, e.g.
+You can override these parameters using settings in `config/config.exs`.
+If you are deploying to a remote server as the `deploy` user and running
+the app under the `app` user, the config would be:
 
 ```elixir
 config :mix_systemd,
@@ -89,7 +92,7 @@ The library generates the following scripts:
 
 ### Systemd scripts
 
-These are simple wrappers on systemctl. They are useful for e.g. CodeDeploy
+These are simple wrappers on `systemctl`. They are useful for e.g. CodeDeploy
 hook scripts where we have to run a script without parameters.
 
 * `deploy-start`: Start services
@@ -100,7 +103,8 @@ hook scripts where we have to run a script without parameters.
 ### Local deploy scripts
 
 * `deploy-create-users`: Create OS accounts for app and deploy users
-* `deploy-create-dirs`: Create dirs, including the release dir `/srv/foo` and standard dirs like `/etc/foo`
+* `deploy-create-dirs`: Create dirs, including the release dir `/srv/foo` and
+                        standard dirs like `/etc/foo` or `/var/log/foo` if needed.
 * `deploy-copy-files`: Copy files to target or staging directory, useful for local install or packaging
 * `deploy-release`: Deploy release, extracting to a timestamped dir under `releases`, then making a symlink
 * `deploy-rollback`: Rollback release, resetting the symlink to point to the last release
@@ -108,6 +112,8 @@ hook scripts where we have to run a script without parameters.
 ### CodeDeploy deploy scripts
 
 * `deploy-create-users`: Create OS accounts for app and deploy users
+* `deploy-create-dirs`: Create dirs, including the release dir `/srv/foo` and
+                        standard dirs like `/etc/foo` or `/var/log/foo` if needed.
 * `deploy-clean-target`: Delete files under target dir in preparation for deploying update
 * `deploy-extract-release`: Extract release from tar
 * `deploy-set-perms`: Set target file permissions so they can be used by deploy and/or app user
@@ -120,12 +126,11 @@ hook scripts where we have to run a script without parameters.
 ### Custom command scripts
 
 These scripts set up the environment and then run release commands.
-They run under the app user account, not under sudo.
-Now that Eixir 1.9+ mix releases have `rel/env.sh.eex`, these functions are unnecessary.
+They run under the app user account, not under sudo. They are mainly useful
+with Distillery, they are not needed now that Eixir 1.9+ mix releases have `rel/env.sh.eex`.
 
 * `deploy-migrate`: Migrate database on target system by
   [running a custom command](https://www.cogini.com/blog/running-ecto-migrations-in-a-release/).
-
 * `deploy-remote-console`: Launch a remote console for the app, setting up the environment properly.
 
 ### Environment setup scripts
