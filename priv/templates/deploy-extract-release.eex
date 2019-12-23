@@ -27,6 +27,3 @@ echo "==> Extracting release from tar file $TAR_FILE"
 mkdir -p "$CURRENT_DIR"
 tar -C "$CURRENT_DIR" -xzf "$TAR_FILE"
 chown -R ${DEPLOY_USER}:${APP_GROUP} "${CURRENT_DIR}"
-
-# Clean up archive
-# rm "$TAR_FILE"
