@@ -8,6 +8,7 @@ set -e
 # DESTDIR, prefix for target files, optional
 
 # Config vars
+RELEASE_NAME="<%= release_name %>"
 DEPLOY_DIR="<%= deploy_dir %>"
 CURRENT_DIR="<%= current_dir %>"
 DEPLOY_USER="${DEPLOY_USER:-<%= deploy_user %>}"
@@ -19,6 +20,10 @@ chown $DEPLOY_USER:$APP_GROUP "$DEPLOY_DIR"
 mkdir -p "$DEPLOY_DIR/bin"
 chmod -R 750 "$DEPLOY_DIR/bin"
 chown -R $DEPLOY_USER:$APP_GROUP "$DEPLOY_DIR/bin"
+
+# Make start script executable by app user
+chown -R $DEPLOY_USER:$APP_GROUP "$CURRENT_DIR"
+chmod 750 "$CURRENT_DIR/bin/$RELEASE_NAME"
 
 # Make tmp file under release writable by app user
 <%= case release_system do %>
