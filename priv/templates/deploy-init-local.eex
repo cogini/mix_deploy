@@ -8,6 +8,7 @@ cd "$BINDIR"; BINDIR="$PWD"; cd "$CURDIR"
 
 set -e
 
+# Config vars
 DEPLOY_DIR="<%= deploy_dir %>"
 SCRIPTS_DIR="<%= scripts_dir %>"
 BIN_DIR="<%= bin_dir %>"
