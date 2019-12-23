@@ -5,7 +5,6 @@
 set -e
 
 # Config vars
-export LANG="<%= env_lang %>"
 SERVICE_NAME="<%= service_name %>"
 
 <%= if runtime_environment_service do %>

@@ -5,7 +5,6 @@
 set -e
 
 # Config vars
-export LANG="<%= env_lang %>"
 CONFIG_DIR="<%= configuration_dir %>"
 DEPLOY_USER="${DEPLOY_USER:-<%= deploy_user %>}"
 APP_GROUP="${APP_USER:-<%= app_group %>}"

@@ -4,8 +4,6 @@
 
 set -e
 
-export LANG="<%= env_lang %>"
-
 # Env vars
 # ASSETS_S3_BUCKET: bucket name
 
