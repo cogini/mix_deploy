@@ -9,6 +9,7 @@ set -e
 
 # Config vars
 DEPLOY_DIR="<%= deploy_dir %>"
+CURRENT_DIR="<%= current_dir %>"
 DEPLOY_USER="${DEPLOY_USER:-<%= deploy_user %>}"
 APP_GROUP="${APP_USER:-<%= app_group %>}"
 
@@ -18,3 +19,9 @@ chown $DEPLOY_USER:$APP_GROUP "$DEPLOY_DIR"
 mkdir -p "$DEPLOY_DIR/bin"
 chmod -R 750 "$DEPLOY_DIR/bin"
 chown -R $DEPLOY_USER:$APP_GROUP "$DEPLOY_DIR/bin"
+
+# Make tmp file under release writable by app user
+RELEASE_TMP="${CURRENT_DIR}/tmp"
+mkdir -p "$RELEASE_TMP"
+chmod -R 770 "$RELEASE_TMP"
+chown -R $DEPLOY_USER:$APP_GROUP "$RELEASE_TMP"
