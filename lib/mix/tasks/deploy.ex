@@ -189,7 +189,11 @@ defmodule Mix.Tasks.Deploy do
       flags_dir: Path.join(cfg[:deploy_dir], "flags"),
       current_dir: Path.join(cfg[:deploy_dir], "current"),
 
-      bin_dir: if cfg[:output_dir_per_env], Path.join(cfg[:output_dir], "bin"), else: "bin"
+      bin_dir: if cfg[:output_dir_per_env] do
+        Path.join(cfg[:output_dir], "bin")
+      else
+        "bin"
+      end,
 
       runtime_dir: Path.join(cfg[:runtime_directory_base], cfg[:runtime_directory]),
       configuration_dir: Path.join(cfg[:configuration_directory_base], cfg[:configuration_directory]),
@@ -199,7 +203,7 @@ defmodule Mix.Tasks.Deploy do
       cache_dir: Path.join(cfg[:cache_directory_base], cfg[:cache_directory]),
     ], cfg)
 
-    cfg = Keyword.merge([
+    Keyword.merge([
       conform_conf_path: cfg[:conform_conf_path] || Path.join(cfg[:configuration_dir], "#{app_name}.conf"),
     ], cfg)
 
