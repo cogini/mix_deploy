@@ -36,7 +36,7 @@ defmodule MixDeploy.MixProject do
     [
       {:ex_doc, "~> 0.19.2", only: :dev, runtime: false},
       {:mix_systemd, git: "https://github.com/cogini/mix_systemd.git"},
-      # {:mix_systemd, "~> 0.1.0"}
+      # {:mix_systemd, "~> 0.7.0"}
       # {:dialyxir, "~> 0.5.1", only: [:dev, :test], runtime: false},
     ]
   end
