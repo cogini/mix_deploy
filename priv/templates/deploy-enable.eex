@@ -2,11 +2,9 @@
 
 # Enable systemd units on target
 #
-# This has the effect of reloading it if it has changed.
+# This has the effect of reloading them if they have changed.
 
 set -e
-
-export LANG="<%= env_lang %>"
 
 # Config vars
 SERVICE_NAME="<%= service_name %>"
