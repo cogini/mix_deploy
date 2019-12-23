@@ -200,7 +200,7 @@ defmodule Mix.Tasks.Deploy do
     ], cfg)
 
     cfg = Keyword.merge([
-      conform_conf_path: cfg[:conform_conf_path] || Path.join(cfg[:configuration_dir], #{app_name}.conf"),
+      conform_conf_path: cfg[:conform_conf_path] || Path.join(cfg[:configuration_dir], "#{app_name}.conf"),
     ], cfg)
 
     # Mix.shell.info "cfg: #{inspect cfg}"
