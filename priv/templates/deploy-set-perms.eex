@@ -24,7 +24,7 @@ chown -R $DEPLOY_USER:$APP_GROUP "$DEPLOY_DIR/bin"
 
 # Make programs in release executable by app group
 chown -R $DEPLOY_USER:$APP_GROUP "$CURRENT_DIR"
-find $CURRENT_DIR -executable -type f -exec chmod g+x
+find $CURRENT_DIR -executable -type f -exec chmod g+x {} \;
 
 # Make tmp file under release writable by app user
 <%= case release_system do %>
