@@ -22,15 +22,9 @@ mkdir -p "$DEPLOY_DIR/bin"
 chmod -R 750 "$DEPLOY_DIR/bin"
 chown -R $DEPLOY_USER:$APP_GROUP "$DEPLOY_DIR/bin"
 
-# Make start script executable by app user
+# Make programs in release executable by app group
 chown -R $DEPLOY_USER:$APP_GROUP "$CURRENT_DIR"
-<%= case release_system do %>
-<% :mix -> %>
-chmod 750 "$CURRENT_DIR/bin/$RELEASE_NAME"
-chmod 750 "$CURRENT_DIR/releases/$RELEASE_VSN/elixir"
-<% :distillery -> %>
-chmod 750 "$CURRENT_DIR/bin/$RELEASE_NAME"
-<% end %>
+find $CURRENT_DIR -executable -type f -exec chmod g+x
 
 # Make tmp file under release writable by app user
 <%= case release_system do %>
