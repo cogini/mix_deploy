@@ -9,6 +9,7 @@ set -e
 
 # Config vars
 RELEASE_NAME="<%= release_name %>"
+RELEASE_VSN="<%= version %>"
 DEPLOY_DIR="<%= deploy_dir %>"
 CURRENT_DIR="<%= current_dir %>"
 DEPLOY_USER="${DEPLOY_USER:-<%= deploy_user %>}"
@@ -23,8 +24,13 @@ chown -R $DEPLOY_USER:$APP_GROUP "$DEPLOY_DIR/bin"
 
 # Make start script executable by app user
 chown -R $DEPLOY_USER:$APP_GROUP "$CURRENT_DIR"
+<%= case release_system do %>
+<% :mix -> %>
 chmod 750 "$CURRENT_DIR/bin/$RELEASE_NAME"
-chmod 750 "$CURRENT_DIR/releases/*/elixir"
+chmod 750 "$CURRENT_DIR/releases/$RELEASE_VSN/elixir"
+<% :distillery -> %>
+chmod 750 "$CURRENT_DIR/bin/$RELEASE_NAME"
+<% end %>
 
 # Make tmp file under release writable by app user
 <%= case release_system do %>
