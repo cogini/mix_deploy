@@ -24,6 +24,7 @@ chown -R $DEPLOY_USER:$APP_GROUP "$DEPLOY_DIR/bin"
 # Make start script executable by app user
 chown -R $DEPLOY_USER:$APP_GROUP "$CURRENT_DIR"
 chmod 750 "$CURRENT_DIR/bin/$RELEASE_NAME"
+chmod 750 "$CURRENT_DIR/releases/*/elixir"
 
 # Make tmp file under release writable by app user
 <%= case release_system do %>
