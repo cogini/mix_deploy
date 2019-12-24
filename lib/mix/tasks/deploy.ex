@@ -137,6 +137,13 @@ defmodule Mix.Tasks.Deploy do
       # LANG environment var for running scripts
       env_lang: "C.UTF-8",
 
+      # Misc env vars to set, e.g.
+      # env_vars: [
+      #  "REPLACE_OS_VARS=true",
+      #  {"RELEASE_MUTABLE_DIR", :runtime_dir}
+      # ]
+      env_vars: [],
+
       # Whether to create /etc/suders.d file allowing deploy an/or app user to
       # restart app
       sudo_deploy: false,
@@ -208,11 +215,29 @@ defmodule Mix.Tasks.Deploy do
       cache_dir: Path.join(cfg[:cache_directory_base], cfg[:cache_directory]),
     ], cfg)
 
-    Keyword.merge([
+    cfg = Keyword.merge([
       conform_conf_path: cfg[:conform_conf_path] || Path.join(cfg[:configuration_dir], "#{app_name}.conf"),
     ], cfg)
 
     # Mix.shell.info "cfg: #{inspect cfg}"
+
+    # Expand values in env vars
+    expand_env_vars(cfg)
+  end
+
+  @doc "Expand symbolic vars in env vars"
+  @spec expand_env_vars(Keyword.t) :: Keyword.t
+  def expand_env_vars(cfg) do
+    env_vars =
+      Enum.reduce(cfg[:env_vars], [],
+      fn(value, acc) when is_binary(value) ->
+          [value | acc]
+        ({name, value}, acc) when is_atom(value) ->
+          ["#{name}=#{cfg[value]}" | acc]
+        ({name, value}, acc) ->
+          ["#{name}=#{value}" | acc]
+      end)
+    Keyword.put(cfg, :env_vars, env_vars)
   end
 end
 

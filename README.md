@@ -129,6 +129,7 @@ These scripts set up the environment and then run release commands.
 They run under the app user account, not under sudo. They are mainly useful
 with Distillery, they are not needed now that Eixir 1.9+ mix releases have `rel/env.sh.eex`.
 
+* `set-env`: Just set up environment
 * `deploy-migrate`: Migrate database on target system by
   [running a custom command](https://www.cogini.com/blog/running-ecto-migrations-in-a-release/).
 * `deploy-remote-console`: Launch a remote console for the app, setting up the environment properly.
