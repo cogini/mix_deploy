@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/sh
 
 # Get remote console for the app
 # This needs to be run under the app user account
@@ -6,44 +6,15 @@
 # Exit on errors
 set -e
 
+CURDIR="$PWD"
+BINDIR=$(dirname "$0")
+cd "$BINDIR"; BINDIR="$PWD"; cd "$CURDIR"
+
+. $BINDIR/set-env
+
 # Config vars
-DEPLOY_DIR="<%= deploy_dir %>"
-RUNTIME_DIR="<%= runtime_dir %>"
+CURRENT_DIR="<%= current_dir %>
 RELEASE_NAME="<%= release_name %>"
-export LANG="<%= env_lang %>"
-
-CURRENT_DIR="$DEPLOY_DIR/current"
-
-<%= case release_system do %>
-<% :mix -> %>
-export RELEASE_TMP="<%= runtime_dir %>"
-<% :distillery -> %>
-export RELEASE_MUTABLE_DIR="<%= runtime_dir %>"
-<% end %>
-
-<%= if conform do %>
-export CONFORM_CONF_PATH="<%= conform_conf_path %>"
-<% end %>
-
-CURRENT_ENV="<%= current_dir %>/etc/environment"
-if [ -f "$CURRENT_ENV" ]; then
-    source "$CURRENT_ENV"
-fi
-
-DEPLOY_ENV="<%= deploy_dir %>/etc/environment"
-if [ -f "$DEPLOY_ENV" ]; then
-    source "$DEPLOY_ENV"
-fi
-
-CONFIGURATION_ENV="<%= configuration_dir %>/environment"
-if [ -f "$CONFIGURATION_ENV" ]; then
-    source "$CONFIGURATION_ENV"
-fi
-
-RUNTIME_ENV="<%= runtime_dir %>/environment"
-if [ -f "$RUNTIME_ENV" ]; then
-    source "$RUNTIME_ENV"
-fi
 
 <%= case release_system do %>
 <% :mix -> %>

@@ -1,0 +1,36 @@
+#!/bin/sh
+
+# Set up environment the same way it would be if run under
+# the systemd unit file.
+
+export LANG="${LANG:-C.UTF-1}"
+export MIX_ENV="${MIX_ENV:-prod}"
+<%= if :runtime in dirs do %>RUNTIME_DIR=<%= runtime_dir %><% end %>
+<%= if :configuration in dirs do %>CONFIGURATION_DIR=<%= configuration_dir %><% end %>
+<%= if :logs in dirs do %>LOGS_DIR=<%= logs_dir %><% end %>
+<%= if :cache in dirs do %>CACHE_DIR=<%= cache_dir %><% end %>
+<%= if :state in dirs do %>STATE_DIR=<%= state_dir %><% end %>
+<%= if :tmp in dirs do %>TMP_DIR=<%= tmp_dir %><% end %>
+<%= for env <- env_vars do %>
+<%= env %>
+<% end %>
+
+<%= if conform do %>
+CONFORM_CONF_PATH="<%= conform_conf_path %>"
+<% end %>
+
+if [ -f "<%= current_dir %>/etc/environment" ]; then
+    . "<%= current_dir %>/etc/environment"
+fi
+
+if [ -f "<%= deploy_dir %>/etc/environment" ]; then
+    . "<%= deploy_dir %>/etc/environment"
+fi
+
+if [ -f "<%= configuration_dir %>/etc/environment" ]; then
+    . "<%= configuration_dir %>/etc/environment"
+fi
+
+if [ -f "<%= runtime_dir %>/etc/environment" ]; then
+    . "<%= runtime_dir %>/etc/environment"
+fi
