@@ -135,7 +135,7 @@ defmodule Mix.Tasks.Deploy do
       mix_env: Mix.env(),
 
       # LANG environment var for running scripts
-      env_lang: "en_US.UTF-8",
+      env_lang: "C.UTF-8",
 
       # Whether to create /etc/suders.d file allowing deploy an/or app user to
       # restart app

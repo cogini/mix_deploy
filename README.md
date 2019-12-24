@@ -392,7 +392,7 @@ user to start/stop/restart the app using sudo. Default `false`.
 The library sets a few common env vars:
 
 * `mix_env`: default `Mix.env()`, sets `MIX_ENV`.
-* `env_lang`: default `en_US.UTF-8`, used to set `LANG`.
+* `env_lang`: default `C.UTF-8`, used to set `LANG`.
 
 ### Directories
 
