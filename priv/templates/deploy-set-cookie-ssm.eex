@@ -4,8 +4,6 @@
 
 set -e
 
-export LANG="<%= env_lang %>"
-
 # Env vars
 # APPLICATION_NAME
 # ENVIRONMENT_NAME

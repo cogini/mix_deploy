@@ -4,10 +4,9 @@
 
 set -e
 
-# export LANG="<%= env_lang %>"
-
 # Environment vars
 # DESTDIR, prefix for target files, optional
+
 MIX_ENV="${MIX_ENV:-prod}"
 RELEASE_VSN="${RELEASE_VSN:-<%= version %>}"
 RELEASE_NAME="${RELEASE_NAME:-<%= app_name %>}"
