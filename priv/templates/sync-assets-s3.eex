@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/sh
 
 # Sync app static assets to S3 bucket for CDN
 
