@@ -147,28 +147,32 @@ defmodule Mix.Tasks.Deploy do
       # Whether app uses conform
       conform: false,
 
+      # Prefix for generated files
+      target_prefix: "deploy-",
+
+      # Files to generate
       templates: [
-        "deploy-clean-target",
-        "deploy-copy-files",
-        "deploy-create-dirs",
-        "deploy-create-users",
-        "deploy-enable",
-        "deploy-extract-release",
-        "deploy-init-local",
-        "deploy-migrate",
-        "deploy-runtime-environment-file",
-        "deploy-runtime-environment-wrap",
-        "deploy-release",
-        "deploy-remote-console",
-        "deploy-restart",
-        "deploy-rollback",
-        "deploy-set-cookie-ssm",
-        "deploy-set-perms",
-        "deploy-start",
-        "deploy-stage-files",
-        "deploy-stop",
-        "deploy-sync-config-s3",
-        "deploy-sync-assets-s3",
+        "clean-target",
+        "copy-files",
+        "create-dirs",
+        "create-users",
+        "enable",
+        "extract-release",
+        "init-local",
+        "migrate",
+        "runtime-environment-file",
+        "runtime-environment-wrap",
+        "release",
+        "remote-console",
+        "restart",
+        "rollback",
+        "set-cookie-ssm",
+        "set-perms",
+        "start",
+        "stage-files",
+        "stop",
+        "sync-config-s3",
+        "sync-assets-s3",
       ]
     ]
 
@@ -333,9 +337,10 @@ defmodule Mix.Tasks.Deploy.Generate do
   defp write_template(cfg, dest_dir, template), do: write_template(cfg, dest_dir, template, template)
 
   defp write_template(cfg, dest_dir, template, file) do
-    target_file = Path.join(dest_dir, file)
+    output_file = cfg[:target_prefix] <> file
+    target_file = Path.join(dest_dir, output_file)
     Mix.shell.info "Generating #{target_file} from template #{template}"
-    Templates.write_template(cfg, dest_dir, template, file)
+    Templates.write_template(cfg, dest_dir, template, target_file)
   end
 end
 
