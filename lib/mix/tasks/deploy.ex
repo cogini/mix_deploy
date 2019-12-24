@@ -167,6 +167,7 @@ defmodule Mix.Tasks.Deploy do
         "restart",
         "rollback",
         "set-cookie-ssm",
+        "set-env",
         "set-perms",
         "start",
         "stage-files",
