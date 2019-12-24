@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/sh
 
 # Initialize local system for deployment
 
@@ -12,18 +12,19 @@ set -e
 DEPLOY_DIR="<%= deploy_dir %>"
 SCRIPTS_DIR="<%= scripts_dir %>"
 BIN_DIR="<%= bin_dir %>"
+SCRIPT_PREFIX="${SCRIPT_PREFIX:-"deploy-"}"
 
 echo "==> Creating OS users"
-$BINDIR/deploy-create-users
+$BINDIR/${SCRIPT_PREFIX}create-users
 
 echo "==> Creating app dirs under ${DEPLOY_DIR}"
-$BINDIR/deploy-create-dirs
+$BINDIR/${SCRIPT_PREFIX}create-dirs
 
 echo "==> Copying scripts used by systemd"
 cp $BIN_DIR/* "$SCRIPTS_DIR"
 
 echo "==> Copying files"
-$BINDIR/deploy-copy-files
+$BINDIR/${SCRIPT_PREFIX}copy-files
 
 echo "==> Enabling systemd unit files"
-$BINDIR/deploy-enable
+$BINDIR/${SCRIPT_PREFIX}enable
