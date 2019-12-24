@@ -1,6 +1,8 @@
-#!/usr/bin/env bash
+#!/bin/sh
 
 # Get cookie from AWS SSM Parameter Store and write to file
+
+# Better done with env.sh
 
 set -e
 

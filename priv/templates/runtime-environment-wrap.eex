@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/sh
 
 # Get runtime environment from cloud-init metadata, set environment vars,
 # then launch script
