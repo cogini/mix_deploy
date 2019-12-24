@@ -22,6 +22,9 @@ mkdir -p "$DEPLOY_DIR/bin"
 chmod -R 750 "$DEPLOY_DIR/bin"
 chown -R $DEPLOY_USER:$APP_GROUP "$DEPLOY_DIR/bin"
 
+mkdir -p "$DEPLOY_DIR/etc"
+chmod -R 770 "$DEPLOY_DIR/etc"
+
 # Make programs in release executable by app group
 chown -R $DEPLOY_USER:$APP_GROUP "$CURRENT_DIR"
 find $CURRENT_DIR -executable -type f -exec chmod g+x {} \;
