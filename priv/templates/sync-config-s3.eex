@@ -1,18 +1,18 @@
-#!/usr/bin/env bash
+#!/bin/sh
 
 # Sync config files from S3 bucket to app config dir
 
 set -e
 
+# Env vars
+# CONFIG_S3_BUCKET: bucket name
+# CONFIG_S3_PREFIX: path prefix in bucket, optional, should end with a trailing slash
+# DESTDIR, prefix for target files, optional
+
 # Config vars
 CONFIG_DIR="<%= configuration_dir %>"
 DEPLOY_USER="${DEPLOY_USER:-<%= deploy_user %>}"
 APP_GROUP="${APP_USER:-<%= app_group %>}"
-
-# Env vars
-# CONFIG_S3_BUCKET: bucket name
-# CONFIG_S3_PREFIX: optional path in prefix
-# DESTDIR, prefix for target files, optional
 
 # Make sure files are created with restrictive file permissions
 umask 077
