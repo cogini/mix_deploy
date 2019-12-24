@@ -10,7 +10,9 @@ CURDIR="$PWD"
 BINDIR=$(dirname "$0")
 cd "$BINDIR"; BINDIR="$PWD"; cd "$CURDIR"
 
-. $BINDIR/set-env
+SCRIPT_PREFIX="${SCRIPT_PREFIX:-deploy-}"
+
+. $BINDIR/${SCRIPT_PREFIX}set-env
 
 # Config vars
 RELEASE_NAME="<%= release_name %>"
