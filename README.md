@@ -31,8 +31,10 @@ end
 
 ## Configuration
 
-The library gets standard information from `mix.exs`, e.g. the app name and
-version, then calculates default values for its configuration parameters.
+The library reads the app name from `mix.exs` and calculates default values
+for its configuration parameters. For example, if your app is nomed `foo_bar`,
+it will create a service named `foo-bar`, deployed to `/srv/foo-bar`, running
+under the user `foo-bar`.
 
 The library tries to choose smart defaults, so you may not need to configure
 anything.
@@ -92,28 +94,40 @@ The library generates the following scripts:
 
 ### Systemd scripts
 
-These are simple wrappers on `systemctl`. They are useful for e.g. CodeDeploy
-hook scripts where we have to run a script without parameters.
+These are wrappers on e.g. `/bin/systemctl restart foo`.
+They are useful for e.g. CodeDeploy hook scripts where we have to run a script
+without parameters.
 
 * `deploy-start`: Start services
 * `deploy-stop`: Stop services
 * `deploy-restart`: Restart services
 * `deploy-enable`: Enable systemd units
 
-### Local deploy scripts
+### System setup scripts
+
+These scripts set up the target system for the application.
+Useful for local deploy and automated deploy with e.g. CodeDeploy
 
 * `deploy-create-users`: Create OS accounts for app and deploy users
+
 * `deploy-create-dirs`: Create dirs, including the release dir `/srv/foo` and
                         standard dirs like `/etc/foo` or `/var/log/foo` if needed.
-* `deploy-copy-files`: Copy files to target or staging directory, useful for local install or packaging
-* `deploy-release`: Deploy release, extracting to a timestamped dir under `releases`, then making a symlink
-* `deploy-rollback`: Rollback release, resetting the symlink to point to the last release
+
+### Local deploy scripts
+
+These scripts deploy the app to the same server as it was built on:
+
+* `deploy-copy-files`: Copy files from `_build` to target (`/srv/foo`), or to a
+  staging directory where they can be be packaged for deployment on another machine.
+
+* `deploy-release`: Deploy release, extracting to a timestamped dir under
+  `/srv/foo/releases`, then making a symlink from `/srv/foo/current`
+
+* `deploy-rollback`: Rollback release, resetting the symlink to point to the
+  previous release
 
 ### CodeDeploy deploy scripts
 
-* `deploy-create-users`: Create OS accounts for app and deploy users
-* `deploy-create-dirs`: Create dirs, including the release dir `/srv/foo` and
-                        standard dirs like `/etc/foo` or `/var/log/foo` if needed.
 * `deploy-clean-target`: Delete files under target dir in preparation for deploying update
 * `deploy-extract-release`: Extract release from tar
 * `deploy-set-perms`: Set target file permissions so they can be used by deploy and/or app user
@@ -129,7 +143,7 @@ These scripts set up the environment and then run release commands.
 They run under the app user account, not under sudo. They are mainly useful
 with Distillery, they are not needed now that Eixir 1.9+ mix releases have `rel/env.sh.eex`.
 
-* `set-env`: Just set up environment
+* `set-env`: Just set up environment TODO
 * `deploy-migrate`: Migrate database on target system by
   [running a custom command](https://www.cogini.com/blog/running-ecto-migrations-in-a-release/).
 * `deploy-remote-console`: Launch a remote console for the app, setting up the environment properly.
@@ -174,6 +188,21 @@ apt-get install awscli
 ## Scenarios
 
 ### Deploy on local machine
+
+```elixir
+templates: [
+  "copy-files",
+  "create-dirs",
+  "create-users",
+  "enable",
+  "init-local",
+  "release",
+  "restart",
+  "rollback",
+  "start",
+  "stop",
+]
+```
 
 With a local deploy, you check out the code on a server, build/test, then
 generate a release. You then run the scripts to set up the runtime environment,
@@ -255,6 +284,20 @@ DESTDIR=~/tmp/deploy bin/deploy-copy-files
 Copy the scripts into the target machine, then run them as hooks for a
 deployment system such as [AWS CodeDeploy](https://aws.amazon.com/codedeploy/).
 
+```elixir
+templates: [
+  "create-users",
+  "create-dirs",
+  "clean-target",
+  "extract-release",
+  "set-perms",
+  "stop",
+  "start",
+  "restart",
+  "enable",
+]
+```
+
 Here is an example `appspec.yml` file:
 
 ```yaml
@@ -262,11 +305,12 @@ version: 0.0
 os: linux
 files:
   - source: bin
-    destination: /srv/mix-deploy-example/bin
+    destination: /srv/foo/bin
   - source: systemd
     destination: /lib/systemd/system
   - source: etc
-    destination: /srv/mix-deploy-example/etc
+    destination: /srv/foo/etc
+# https://docs.aws.amazon.com/codedeploy/latest/userguide/reference-appspec-file-structure-hooks.html
 hooks:
   ApplicationStop:
     - location: bin/deploy-stop
@@ -280,14 +324,14 @@ hooks:
     - location: bin/deploy-set-perms
     - location: bin/deploy-enable
   ApplicationStart:
-    - location: bin/deploy-migrate
-      runas: app
-      timeout: 300
+    # - location: bin/deploy-migrate
+    #   runas: app
+    #   timeout: 300
     - location: bin/deploy-start
       timeout: 3600
-  ValidateService:
+  # ValidateService:
     - location: bin/validate-service
-      timeout: 3600
+      timeout: 300
 ```
 
 ## Configuration options
@@ -307,25 +351,25 @@ config vars defined.
 
 ```elixir
 templates: [
-    "deploy-clean-target",
-    "deploy-copy-files",
-    "deploy-create-dirs",
-    "deploy-create-users",
-    "deploy-enable",
-    "deploy-extract-release",
-    "deploy-init-local",
-    "deploy-migrate",
-    "deploy-runtime-environment-file",
-    "deploy-runtime-environment-wrap",
-    "deploy-release",
-    "deploy-remote-console",
-    "deploy-restart",
-    "deploy-rollback",
-    "deploy-set-cookie-ssm",
-    "deploy-set-perms",
-    "deploy-start",
-    "deploy-stop",
-    "deploy-sync-config-s3",
+  "clean-target",
+  "copy-files",
+  "create-dirs",
+  "create-users",
+  "enable",
+  "extract-release",
+  "init-local",
+  "migrate",
+  "runtime-environment-file",
+  "runtime-environment-wrap",
+  "release",
+  "remote-console",
+  "restart",
+  "rollback",
+  "set-cookie-ssm",
+  "set-perms",
+  "start",
+  "stop",
+  "sync-config-s3",
 ]
 ```
 
