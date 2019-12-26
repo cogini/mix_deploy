@@ -8,8 +8,6 @@ set -e
 # DESTDIR, prefix for target files, optional
 
 # Config vars
-RELEASE_NAME="<%= release_name %>"
-RELEASE_VSN="<%= version %>"
 DEPLOY_DIR="<%= deploy_dir %>"
 CURRENT_DIR="<%= current_dir %>"
 DEPLOY_USER="${DEPLOY_USER:-<%= deploy_user %>}"
@@ -19,27 +17,27 @@ APP_GROUP="${APP_USER:-<%= app_group %>}"
 chmod 750 "$DEPLOY_DIR"
 chown $DEPLOY_USER:$APP_GROUP "$DEPLOY_DIR"
 
-# Make programs in bin executable
+# Make programs in bin executable by deploy and app users
 mkdir -p "$DEPLOY_DIR/bin"
 chown -R $DEPLOY_USER:$APP_GROUP "$DEPLOY_DIR/bin"
 chmod -R 750 "$DEPLOY_DIR/bin"
-
-# Make etc dir writable
-mkdir -p "$DEPLOY_DIR/etc"
-chown -R $DEPLOY_USER:$APP_GROUP "$DEPLOY_DIR/etc"
-chmod -R 770 "$DEPLOY_DIR/etc"
 
 # Make programs in release executable by app group
 chown -R $DEPLOY_USER:$APP_GROUP "$CURRENT_DIR"
 find $CURRENT_DIR -executable -type f -exec chmod g+x {} \;
 
-# Make tmp file under release writable by app user
-<%= case release_system do %>
-<% :mix -> %>
-RELEASE_TMP="${CURRENT_DIR}/tmp"
-<% :distillery -> %>
-RELEASE_TMP="${CURRENT_DIR}/var"
-<% end %>
-mkdir -p "$RELEASE_TMP"
-chmod -R 770 "$RELEASE_TMP"
-chown -R $DEPLOY_USER:$APP_GROUP "$RELEASE_TMP"
+# Make deploy etc writable by app user
+# mkdir -p "$DEPLOY_DIR/etc"
+# chown -R $DEPLOY_USER:$APP_GROUP "$DEPLOY_DIR/etc"
+# chmod -R 770 "$DEPLOY_DIR/etc"
+
+# Make release tmp writable by app user
+# <%= case release_system do %>
+# <% :mix -> %>
+# RELEASE_TMP="${CURRENT_DIR}/tmp"
+# <% :distillery -> %>
+# RELEASE_TMP="${CURRENT_DIR}/var"
+# <% end %>
+# mkdir -p "$RELEASE_TMP"
+# chmod -R 770 "$RELEASE_TMP"
+# chown -R $DEPLOY_USER:$APP_GROUP "$RELEASE_TMP"
