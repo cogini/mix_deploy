@@ -654,8 +654,8 @@ config :mix_systemd,
   ],
   runtime_directory_preserve: "yes",
   env_files: [
-    ["!", :deploy_dir, "/etc/environment"],
-    ["!", :configuration_dir, "/environment"],
+    ["-", :deploy_dir, "/etc/environment"],
+    ["-", :configuration_dir, "/environment"],
   ]
   env_vars: [
     ["RELEASE_TMP=", :runtime_dir],
@@ -683,8 +683,8 @@ config :mix_deploy,
       :runtime,       # App runtime files which may be deleted between runs, /run/#{ext_name}
     ],
     env_files: [
-      ["!", :deploy_dir, "/etc/environment"],
-      ["!", :configuration_dir, "/environment"],
+      ["-", :deploy_dir, "/etc/environment"],
+      ["-", :configuration_dir, "/environment"],
     ]
     env_vars: [
       ["RELEASE_TMP=", :runtime_dir],
