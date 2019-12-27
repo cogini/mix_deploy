@@ -13,14 +13,14 @@ export MIX_ENV="${MIX_ENV:-prod}"
 <%= if :state in dirs do %>STATE_DIR="<%= state_dir %>"<% end %>
 <%= if :tmp in dirs do %>TMP_DIR="<%= tmp_dir %>"<% end %>
 
-<%= if conform_conf_path do %>CONFORM_CONF_PATH="<%= conform_conf_path %>"<% end %>
+<%= if conform_conf_path and conform_conf_path != "" do %>CONFORM_CONF_PATH="<%= conform_conf_path %>"<% end %>
 
 <%= for env <- env_vars do %>
 <%= env %>
 <% end %>
 
 <%= for file <- env_files do %>
-if [ -f "<%= file" ]; then
+if [ -f "<%= file %>" ]; then
     . "<%= file %>"
 fi
 <% end %>

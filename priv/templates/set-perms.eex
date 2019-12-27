@@ -34,12 +34,12 @@ find $CURRENT_DIR -executable -type f -exec chmod g+x {} \;
 # chmod -R 770 "$DEPLOY_DIR/etc"
 
 # Make release tmp writable by app user
-# <%= case release_system do
- :mix -> %>
+<%= case release_system do %>
+<% :mix -> %>
 # RELEASE_TMP="${CURRENT_DIR}/tmp"
-# <% :distillery -> %>
+<% :distillery -> %>
 # RELEASE_TMP="${CURRENT_DIR}/var"
-# <% end %>
+<% end %>
 # mkdir -p "$RELEASE_TMP"
 # chmod -R 770 "$RELEASE_TMP"
 # chown -R $DEPLOY_USER:$APP_GROUP "$RELEASE_TMP"
