@@ -138,12 +138,10 @@ defmodule Mix.Tasks.Deploy do
       env_lang: "C.UTF-8",
 
       # Environment files to read, e.g.
-      # env_files: [
-      #   ["-", :configuration_dir, "environment"],
-      # ],
       # The "-" at the beginning means that the file is optional
       env_files: [
-        ["-", :configuration_dir],
+        # ["-", :configuration_dir, "/environment"],
+        # ["-", :deploy_dir, "/etc/environment"],
       ],
 
       # Misc env vars to set, e.g.
