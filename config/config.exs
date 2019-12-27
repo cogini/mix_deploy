@@ -20,54 +20,6 @@ use Mix.Config
 #
 #     config :logger, level: :info
 #
-# config :mix_deploy,
-#   deploy_group: "staff"
-
-# config :mix_deploy,
-#   deploy_group: "staff",
-#   sudo_deploy: true,
-#   sudo_app: true
-
-# config :mix_deploy,
-#   deploy_user: "deploy",
-#   app_user: "foo",
-#   app_group: "foo"
-
-# config :mix_deploy,
-#   conform: true,
-#   # deploy_user: "deploy",
-#   # deploy_group: "deploy",
-#   # app_user: "foo",
-#   # app_group: "foo",
-#   sudo_deploy: true,
-#   sudo_app: true,
-#   # restart_method: :systemctl,
-#   dirs: [
-#     :runtime, # for RELEASE_MUTABLE_DIR, runtime environment or conform
-#     # :configuration, # for conform or other app config file
-#     # :logs, # for external log file, not journald
-#     # :cache, # for app cache files which can be deleted
-#     # :state, # for app state persisted between runs
-#     # :tmp, # for app temp files
-#   ]
-
-# config :mix_systemd,
-#   # Enable restart from flag file
-#   restart_flag: true,
-#   # Enable conform config file
-#   conform: true,
-#   # Enable chroot
-#   chroot: true,
-#   # Enable extra restrictions
-#   paranoia: true,
-#   dirs: [
-#     :runtime, # for runtime environment or conform
-#     # :configuration, # for conform or other app config file
-#     # :logs, # for external log file, not journald
-#     # :cache, # for app cache files which can be deleted
-#     # :state, # for app state persisted between runs
-#     # :tmp, # for app temp files
-#   ]
 
 # It is also possible to import configuration files, relative to this
 # directory. For example, you can emulate configuration per environment
