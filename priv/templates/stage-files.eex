@@ -33,8 +33,7 @@ cp -v _build/${MIX_ENV}/systemd/lib/systemd/system/* "${OUTPUT_DIR}/systemd"
 mkdir -p "${OUTPUT_DIR}/bin"
 cp ${BIN_DIR}/* ${OUTPUT_DIR}/bin
 
+mkdir -p ${OUTPUT_DIR}/etc
+
 # mkdir -p "${OUTPUT_DIR}/static-assets"
 # cp -R priv/static/* "${OUTPUT_DIR}/static-assets"
-
-mkdir -p ${OUTPUT_DIR}/etc
-touch "${OUTPUT_DIR}/etc/environment"

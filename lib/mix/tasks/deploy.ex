@@ -160,8 +160,14 @@ defmodule Mix.Tasks.Deploy do
 
       runtime_environment_service_script: nil,
 
-      # Path to conform config file
+      # Path to conform config file, used to set CONFOM_CONF_PATH
       conform_conf_path: nil,
+
+      # Files to copy when deploying
+      copy_files: [
+        # {"config/environment", :configuration_dir, "$DEPLOY_USER", "$APP_GROUP", "640"},
+        # {"rel/etc/environment", [:deploy_dir, "/etc"], "$DEPLOY_USER", "$APP_GROUP", "640"},
+      ],
 
       # Prefix for generated script files
       target_prefix: "deploy-",
@@ -369,10 +375,9 @@ defmodule Mix.Tasks.Deploy.Generate do
       []
     end
 
-    files = [
-      # {"bin/deploy", Path.join(cfg[:scripts_dir], "deploy"), "$DEPLOY_USER", "$APP_GROUP", 0o750},
-      # {"bin/remote_console", Path.join(cfg[:scripts_dir], "remote_console"), "$DEPLOY_USER", "$APP_GROUP", 0o750},
-    ]
+    files = for {src, dst, user, group, mode} <- cfg[:copy_files] do
+      {src, Mix.Tasks.Deploy.expand_vars(dst, cfg), user, group, mode}
+    end
 
     vars = cfg ++ [create_dirs: dirs, copy_files: files]
 

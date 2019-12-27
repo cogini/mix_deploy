@@ -37,7 +37,17 @@ generate a release. You then run scripts to set up the runtime environment,
 including systemd unit scripts, extract the release to the target dir and run
 it under systemd.
 
-1. Configure [mix_deploy](https://github.com/cogini/mix_deploy) and
+1. Configure the app
+
+[Set up a database](https://www.cogini.com/blog/multiple-databases-with-digital-ocean-managed-databases-service/).
+
+Follow the Phoenix config process in https://hexdocs.pm/phoenix/deployment.html and
+https://hexdocs.pm/phoenix/releases.html. Make the app read its config from
+environment variables.
+
+Create a file with these environment vars and put it in `config/environment`.
+
+2. Configure [mix_deploy](https://github.com/cogini/mix_deploy) and
    [mix_systemd](https://github.com/cogini/mix_systemd) in `config/configure.exs`
 
 ```elixir
@@ -48,6 +58,9 @@ config :mix_systemd,
 config :mix_deploy,
     app_user: "app",
     app_group: "app"
+    copy_files: [
+        {"config/environment", :configuration_dir, "$DEPLOY_USER", "$APP_GROUP", "640"},
+    ],
     templates: [
         "init-local",
         "create-users",
@@ -101,22 +114,6 @@ sudo cp bin/* /srv/foo/bin
 # Copy and enable systemd unit files
 sudo bin/deploy-copy-files
 sudo bin/deploy-enable
-```
-
-4. Configure the app
-
-[Set up a database](https://www.cogini.com/blog/multiple-databases-with-digital-ocean-managed-databases-service/).
-
-Follow the Phoenix config process in https://hexdocs.pm/phoenix/deployment.html and
-https://hexdocs.pm/phoenix/releases.html. Make the app read its config from
-environment variables.
-
-Create a file with these environment vars and put it in `/etc/foo/environment`.
-
-```shell
-sudo cp config/environment /etc/foo/environment
-sudo chown deploy:foo /etc/foo/environment
-sudo chmod 640 /etc/foo/environment
 ```
 
 5. Build the Elixir release
