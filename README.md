@@ -52,6 +52,9 @@ Create a file with these environment vars and put it in `config/environment`.
 
 ```elixir
 config :mix_systemd,
+    env_files: [
+      ["-", :deploy_dir, "/etc/environment"],
+    ],
     app_user: "app",
     app_group: "app"
 
@@ -59,7 +62,13 @@ config :mix_deploy,
     app_user: "app",
     app_group: "app"
     copy_files: [
-        {"config/environment", :configuration_dir, "$DEPLOY_USER", "$APP_GROUP", "640"},
+        %{
+            src: "config/environment",
+            dst: :configuration_dir,
+            user: "$DEPLOY_USER",
+            group: "$APP_GROUP",
+            mode: "640"
+        },
     ],
     templates: [
         "init-local",
