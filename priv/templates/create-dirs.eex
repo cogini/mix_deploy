@@ -23,7 +23,7 @@ if [ ! -d "${DESTDIR}<%= path %>" ]; then
   echo "==> Creating dir ${DESTDIR}<%= path %>"
   mkdir -p "${DESTDIR}<%= path %>"
   chown <%= user %>:<%= group %> "${DESTDIR}<%= path %>"
-  chmod <%= Integer.to_string(mode, 8) %> "${DESTDIR}<%= path %>"
+  chmod <%= mode %> "${DESTDIR}<%= path %>"
 fi
 
 <% end %>

@@ -6,8 +6,6 @@ defmodule Mix.Tasks.Deploy do
   # Directory where `mix deploy.init` copies templates in user project
   @template_dir "rel/templates/deploy"
 
-  alias MixDeploy.User
-
   @spec parse_args(OptionParser.argv()) :: Keyword.t
   def parse_args(argv) do
     opts = [strict: [version: :string]]
@@ -38,12 +36,9 @@ defmodule Mix.Tasks.Deploy do
 
     build_path = Mix.Project.build_path()
 
-    {{cur_user, _cur_uid}, {cur_group, _cur_gid}, _} = User.get_id()
+    {{cur_user, _cur_uid}, {cur_group, _cur_gid}, _} = MixDeploy.User.get_id()
 
     defaults = [
-      # App version
-      version: mix_config[:version],
-
       # Elixir application name
       app_name: app_name,
 
@@ -63,6 +58,9 @@ defmodule Mix.Tasks.Deploy do
       deploy_user: cur_user,
       deploy_group: cur_group,
 
+      # App version
+      version: mix_config[:version],
+
       # Base directory on target system, e.g. /srv
       base_dir: base_dir,
 
@@ -76,8 +74,8 @@ defmodule Mix.Tasks.Deploy do
       systemd_version: 235,
 
       dirs: [
-        :runtime,         # RELEASE_TMP, RELEASE_MUTABLE_DIR, runtime environment
-        :configuration,   # Config files, Erlang cookie
+        # :runtime,       # App runtime files which may be deleted between runs, /run/#{ext_name}
+        # :configuration, # Config files, Erlang cookie
         # :logs,          # External log file, not journald
         # :cache,         # App cache files which can be deleted
         # :state,         # App state persisted between runs
@@ -87,12 +85,11 @@ defmodule Mix.Tasks.Deploy do
       # Standard directory locations for under systemd for various purposes.
       # https://www.freedesktop.org/software/systemd/man/systemd.exec.html#RuntimeDirectory=
       #
-      # Recent versions of systemd will create directories if they don't exist
-      # if they are specified in the unit file.
+      # Recent versions of systemd (since 235) will create directories if they
+      # don't exist if they are configured in the unit file.
       #
-      # For security, we default to modes which are tighter than the systemd
-      # default of 755.
-      # Note that these are strings, not integers.
+      # For security, modes are tighter than the systemd default of 755.
+      # Note that these are strings, not integers, as they are actually octal.
       cache_directory: service_name,
       cache_directory_base: "/var/cache",
       cache_directory_mode: "750",
@@ -105,7 +102,9 @@ defmodule Mix.Tasks.Deploy do
       runtime_directory: service_name,
       runtime_directory_base: "/run",
       runtime_directory_mode: "750",
-      runtime_directory_preserve: "no",
+      # Whether to preserve the runtime dir on app restart
+      # https://www.freedesktop.org/software/systemd/man/systemd.exec.html#RuntimeDirectoryPreserve=
+      runtime_directory_preserve: "no", # "no" | "yes" | "restart"
       state_directory: service_name,
       state_directory_base: "/var/lib",
       state_directory_mode: "750",
@@ -113,7 +112,7 @@ defmodule Mix.Tasks.Deploy do
       tmp_directory_base: "/var/tmp",
       tmp_directory_mode: "750",
 
-      # Mix releases in Elixir 1.9+ or Distillery
+      # Elixir 1.9+ mix releases or Distillery
       release_system: :mix, # :mix | :distillery
 
       # How service is restarted on update
@@ -125,9 +124,10 @@ defmodule Mix.Tasks.Deploy do
       # Staging output directory for generated files
       output_dir: Path.join(build_path, @output_dir),
 
-      # Generate script files under build_path
-      # Otherwise generate scripts under project top "bin" dir
-      output_dir_per_env: false,
+      # Directory where scripts will be generated in build
+      # Default is top level bin dir in project
+      # Set to [:output_dir, "bin"] to generate under _build/prod/deploy/bin
+      bin_dir: "bin",
 
       # Directory with templates which override defaults
       template_dir: @template_dir,
@@ -137,10 +137,19 @@ defmodule Mix.Tasks.Deploy do
       # LANG environment var for running scripts
       env_lang: "C.UTF-8",
 
+      # Environment files to read, e.g.
+      # env_files: [
+      #   ["-", :configuration_dir, "environment"],
+      # ],
+      # The "-" at the beginning means that the file is optional
+      env_files: [
+        ["-", :configuration_dir],
+      ],
+
       # Misc env vars to set, e.g.
       # env_vars: [
       #  "REPLACE_OS_VARS=true",
-      #  {"RELEASE_MUTABLE_DIR", :runtime_dir}
+      #  ["RELEASE_MUTABLE_DIR=", :runtime_dir]
       # ]
       env_vars: [],
 
@@ -149,39 +158,57 @@ defmodule Mix.Tasks.Deploy do
       sudo_deploy: false,
       sudo_app: false,
 
-      runtime_environment_service: false,
+      runtime_environment_service_script: nil,
 
-      # Whether app uses conform
-      conform: false,
+      # Path to conform config file
+      conform_conf_path: nil,
 
-      # Prefix for generated files
+      # Prefix for generated script files
       target_prefix: "deploy-",
 
       # Files to generate
       templates: [
-        "clean-target",
-        "copy-files",
-        "create-dirs",
-        "create-users",
-        "enable",
-        "extract-release",
-        "init-local",
-        "migrate",
-        "runtime-environment-file",
-        "runtime-environment-wrap",
-        "release",
-        "remote-console",
-        "restart",
-        "rollback",
-        "set-cookie-ssm",
-        "set-env",
-        "set-perms",
+        # systemd scripts
         "start",
-        "stage-files",
         "stop",
-        "sync-config-s3",
-        "sync-assets-s3",
-      ]
+        "restart",
+        "enable",
+
+        # Setup scripts
+        "create-users",
+        "create-dirs",
+
+        # "clean-target",
+        "copy-files",
+        # "extract-release",
+        "init-local",
+        # "migrate",
+        # "runtime-environment-file",
+        # "runtime-environment-wrap",
+        "release",
+        # "remote-console",
+        "rollback",
+        # "set-cookie-ssm",
+        # "set-env",
+        # "set-perms",
+        # "stage-files",
+        # "sync-config-s3",
+        # "sync-assets-s3",
+      ],
+
+      # Config keys which have variable expansion
+      expand_keys: [
+        :env_files,
+        :env_vars,
+        :runtime_environment_service_script,
+        :conform_conf_path,
+        :pid_file,
+        :root_directory,
+        :bin_dir
+      ],
+
+      # Add your keys here
+      expand_keys_extra: []
     ]
 
     # Override values from user config
@@ -191,54 +218,69 @@ defmodule Mix.Tasks.Deploy do
 
     # Calcualate values from other things
     cfg = Keyword.merge([
+      releases_dir: cfg[:releases_dir] || Path.join(cfg[:deploy_dir], "releases"),
+      scripts_dir: cfg[:scripts_dir] || Path.join(cfg[:deploy_dir], "bin"),
+      flags_dir: cfg[:flags_dir] || Path.join(cfg[:deploy_dir], "flags"),
+      current_dir: cfg[:current_dir] || Path.join(cfg[:deploy_dir], "current"),
+
+      runtime_dir: cfg[:runtime_dir] || Path.join(cfg[:runtime_directory_base], cfg[:runtime_directory]),
+      configuration_dir: cfg[:configuration_dir] || Path.join(cfg[:configuration_directory_base], cfg[:configuration_directory]),
+      logs_dir: cfg[:logs_dir] || Path.join(cfg[:logs_directory_base], cfg[:logs_directory]),
+      tmp_dir: cfg[:logs_dir] || Path.join(cfg[:tmp_directory_base], cfg[:tmp_directory]),
+      state_dir: cfg[:state_dir] || Path.join(cfg[:state_directory_base], cfg[:state_directory]),
+      cache_dir: cfg[:cache_dir] || Path.join(cfg[:cache_directory_base], cfg[:cache_directory]),
+
+      # Loation of pid file when running as a daemon
+      pid_file: cfg[:pid_file] || Path.join([cfg[:runtime_directory_base], cfg[:runtime_directory], "#{app_name}.pid"]),
+
+      # Chroot dir
+      root_directory: cfg[:root_directory] || Path.join(cfg[:deploy_dir], "current"),
+
+      # OS user that app runs as
       app_user: cfg[:deploy_user],
       app_group: cfg[:deploy_group],
     ], cfg)
 
-    cfg = Keyword.merge([
-      releases_dir: Path.join(cfg[:deploy_dir], "releases"),
-      scripts_dir: Path.join(cfg[:deploy_dir], "bin"),
-      flags_dir: Path.join(cfg[:deploy_dir], "flags"),
-      current_dir: Path.join(cfg[:deploy_dir], "current"),
-
-      bin_dir: if cfg[:output_dir_per_env] do
-        Path.join(cfg[:output_dir], "bin")
-      else
-        "bin"
-      end,
-
-      runtime_dir: Path.join(cfg[:runtime_directory_base], cfg[:runtime_directory]),
-      configuration_dir: Path.join(cfg[:configuration_directory_base], cfg[:configuration_directory]),
-      logs_dir: Path.join(cfg[:logs_directory_base], cfg[:logs_directory]),
-      tmp_dir: Path.join(cfg[:tmp_directory_base], cfg[:tmp_directory]),
-      state_dir: Path.join(cfg[:state_directory_base], cfg[:state_directory]),
-      cache_dir: Path.join(cfg[:cache_directory_base], cfg[:cache_directory]),
-    ], cfg)
-
-    cfg = Keyword.merge([
-      conform_conf_path: cfg[:conform_conf_path] || Path.join(cfg[:configuration_dir], "#{app_name}.conf"),
-    ], cfg)
-
     # Mix.shell.info "cfg: #{inspect cfg}"
 
-    # Expand values in env vars
-    expand_env_vars(cfg)
+    expand_keys(cfg, cfg[:expand_keys] ++ cfg[:expand_keys_extra])
   end
 
-  @doc "Expand symbolic vars in env vars"
-  @spec expand_env_vars(Keyword.t) :: Keyword.t
-  def expand_env_vars(cfg) do
-    env_vars =
-      Enum.reduce(cfg[:env_vars], [],
-      fn(value, acc) when is_binary(value) ->
-          [value | acc]
-        ({name, value}, acc) when is_atom(value) ->
-          ["#{name}=#{cfg[value]}" | acc]
-        ({name, value}, acc) ->
-          ["#{name}=#{value}" | acc]
+  @doc "Expand cfg vars in keys"
+  @spec expand_keys(Keyword.t, list(atom)) :: Keyword.t
+  def expand_keys(cfg, keys) do
+    Enum.reduce(Keyword.take(cfg, keys), cfg,
+      fn({key, value}, acc) ->
+        Keyword.put(acc, key, expand_value(value, acc))
       end)
-    Keyword.put(cfg, :env_vars, env_vars)
   end
+
+  @doc "Expand vars in value or list of values"
+  @spec expand_value(term, Keyword.t) :: binary
+  def expand_value(values, cfg) when is_list(values) do
+    Enum.map(values, &expand_vars(&1, cfg))
+  end
+  def expand_value(value, cfg), do: expand_vars(value, cfg)
+
+  @doc "Expand references in values"
+  @spec expand_vars(term, Keyword.t) :: binary
+  def expand_vars(value, _cfg) when is_binary(value), do: value
+  def expand_vars(nil, _cfg), do: ""
+  def expand_vars(key, cfg) when is_atom(key) do
+    case Keyword.fetch(cfg, key) do
+      {:ok, value} ->
+        expand_vars(value, cfg)
+      :error ->
+        to_string(key)
+    end
+  end
+  def expand_vars(terms, cfg) when is_list(terms) do
+    terms
+    |> Enum.map(&expand_vars(&1, cfg))
+    |> Enum.join("")
+  end
+  def expand_vars(value, _cfg), do: to_string(value)
+
 end
 
 defmodule Mix.Tasks.Deploy.Init do
@@ -286,59 +328,33 @@ defmodule Mix.Tasks.Deploy.Generate do
 
   alias MixDeploy.Templates
 
-  def flags_dir(cfg) do
-    if cfg[:restart_method] in [:systemd_flag, :touch] do
-      perms = if cfg[:restart_method] == :touch do
-        0o770 # app needs to be able to delete file at runtime
-      else
-        0o750
-      end
-      [{cfg[:flags_dir], cfg[:deploy_user], cfg[:app_group], perms, "Flag files"}]
-    else
-      []
-    end
-  end
-
   @spec run(OptionParser.argv()) :: no_return
   def run(args) do
     cfg = Mix.Tasks.Deploy.parse_args(args)
     ext_name = cfg[:ext_name]
     output_dir = cfg[:output_dir]
 
-    # deploy_user = cfg[:deploy_user]
-    # # deploy_group = cfg[:deploy_group]
-    # app_user = cfg[:app_user]
-    # app_group = cfg[:app_group]
-
     create_flags_dir = cfg[:restart_method] in [:systemd_flag, :touch]
-    flags_dir_perms = if cfg[:restart_method] == :touch do
-      0o770 # app needs to be able to delete the flag file at runtime
-    else
-      0o750
-    end
+    # app needs to be able to delete the flag file at runtime
+    flags_dir_mode = if cfg[:restart_method] == :touch, do: "770", else: "750"
 
     dirs = [
-      {true, cfg[:deploy_dir], "$DEPLOY_USER", "$APP_GROUP", 0o750, "Base dir"},
-      {true, cfg[:releases_dir], "$DEPLOY_USER", "$APP_GROUP", 0o750, "Releases"},
-      {true, cfg[:scripts_dir], "$DEPLOY_USER", "$APP_GROUP", 0o750, "Target scripts"},
-      {create_flags_dir, cfg[:flags_dir], "$DEPLOY_USER", "$APP_GROUP", flags_dir_perms, "Flag files"}
+      {true, cfg[:deploy_dir], "$DEPLOY_USER", "$APP_GROUP", "750", "Base dir"},
+      {true, cfg[:releases_dir], "$DEPLOY_USER", "$APP_GROUP", "750", "Releases"},
+      {true, cfg[:scripts_dir], "$DEPLOY_USER", "$APP_GROUP", "750", "Target scripts"},
+      {create_flags_dir, cfg[:flags_dir], "$DEPLOY_USER", "$APP_GROUP", flags_dir_mode, "Flag files"}
     ] ++
     if cfg[:systemd_version] < 235 do
       # systemd will automatically create directories in newer versions
       # https://www.freedesktop.org/software/systemd/man/systemd.exec.html#RuntimeDirectory=
       [
-        # We always need runtime dir, as we use it for RELEASE_TMP
-        {true, cfg[:runtime_dir], "$APP_USER", "$APP_GROUP", 0o750, "systemd RuntimeDirectory"},
-
-        # Needed for exernal config file
-        {:configuration in cfg[:dirs], cfg[:configuration_dir], "$DEPLOY_USER", "$APP_GROUP", 0o750, "systemd ConfigurationDirectory"},
-
-        {:logs  in cfg[:dirs], cfg[:logs_dir],  "$APP_USER", "$APP_GROUP", 0o700, "systemd LogsDirectory"},
-        {:state in cfg[:dirs], cfg[:state_dir], "$APP_USER", "$APP_GROUP", 0o700, "systemd StateDirectory"},
-        {:cache in cfg[:dirs], cfg[:cache_dir], "$APP_USER", "$APP_GROUP", 0o700, "systemd CacheDirectory"},
-
+        {:runtime in cfg[:dirs], cfg[:runtime_dir], "$APP_USER", "$APP_GROUP", cfg[:runtime_directory_mode], "systemd RuntimeDirectory"},
+        {:configuration in cfg[:dirs], cfg[:configuration_dir], "$DEPLOY_USER", "$APP_GROUP", cfg[:confguration_directory_mode], "systemd ConfigurationDirectory"},
+        {:logs  in cfg[:dirs], cfg[:logs_dir],  "$APP_USER", "$APP_GROUP", cfg[:logs_directory_mode], "systemd LogsDirectory"},
+        {:state in cfg[:dirs], cfg[:state_dir], "$APP_USER", "$APP_GROUP", cfg[:state_directory_mode], "systemd StateDirectory"},
+        {:cache in cfg[:dirs], cfg[:cache_dir], "$APP_USER", "$APP_GROUP", cfg[:cache_directory_mode], "systemd CacheDirectory"},
         # Better handled by PrivateTmp in newer systemd
-        {:tmp in cfg[:dirs], cfg[:tmp_dir], "$APP_USER", "$APP_GROUP", 0o700, "Temp directory"},
+        {:tmp in cfg[:dirs], cfg[:tmp_dir], "$APP_USER", "$APP_GROUP", cfg[:tmp_directory_mode], "Temp directory"},
       ]
     else
       []

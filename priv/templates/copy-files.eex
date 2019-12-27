@@ -2,7 +2,7 @@
 
 # Copy files to target or staging directory
 #
-# This is usful when installing on the local machine or packaging files.
+# This is useful when installing on the local machine or packaging files.
 
 set -e
 
@@ -19,7 +19,7 @@ EXT_NAME="<%= ext_name %>"
 echo "==> Copying file ${DESTDIR}<%= dst %>"
 cp <%= src %> "${DESTDIR}<%= dst %>"
 chown <%= user %>:<%= group %> "${DESTDIR}<%= dst %>"
-chmod <%= Integer.to_string(mode, 8) %> "${DESTDIR}<%= dst %>"
+chmod <%= mode %> "${DESTDIR}<%= dst %>"
 
 <% end %>
 echo "==> Copying systemd unit files for $SERVICE_NAME"
