@@ -17,7 +17,7 @@ echo "==> Enabling systemd unit ${SERVICE_NAME}-restart"
 /bin/systemctl enable "${SERVICE_NAME}-restart"
 <% end %>
 
-<%= if runtime_environment_service_script and runtime_environment_service_script != "" do %>
+<%= if runtime_environment_service_script && runtime_environment_service_script != "" do %>
 echo "==> Enabling systemd unit ${SERVICE_NAME}-runtime-environment"
 /bin/systemctl enable "${SERVICE_NAME}-runtime-environment"
 <% end %>

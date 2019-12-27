@@ -7,7 +7,7 @@ set -e
 # Config vars
 SERVICE_NAME="<%= service_name %>"
 
-<%= if runtime_environment_service_script and runtime_environment_service_script != "" do %>
+<%= if runtime_environment_service_script && runtime_environment_service_script != "" do %>
 /bin/systemctl start "${SERVICE_NAME}-runtime-environment"
 <% end %>
 /bin/systemctl start "${SERVICE_NAME}"
