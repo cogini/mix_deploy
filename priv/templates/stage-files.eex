@@ -5,7 +5,7 @@
 set -e
 
 # Environment vars
-export MIX_ENV="${MIX_ENV:-prod}"
+MIX_ENV="${MIX_ENV:-prod}"
 OUTPUT_DIR="${OUTPUT_DIR:-files}"
 RELEASE_VSN="${RELEASE_VSN:-<%= version %>}"
 RELEASE_NAME="${RELEASE_NAME:-<%= app_name %>}"

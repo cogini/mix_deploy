@@ -17,13 +17,12 @@ DEPLOY_GROUP="${DEPLOY_GROUP:-<%= deploy_group %>}"
 APP_USER="${APP_USER:-<%= app_user %>}"
 APP_GROUP="${APP_GROUP:-<%= app_group %>}"
 
-<%= for {enabled, path, user, group, mode, comment} <- create_dirs, enabled == true do %>
-# <%= comment %>
-if [ ! -d "${DESTDIR}<%= path %>" ]; then
-  echo "==> Creating dir ${DESTDIR}<%= path %>"
-  mkdir -p "${DESTDIR}<%= path %>"
-  chown <%= user %>:<%= group %> "${DESTDIR}<%= path %>"
-  chmod <%= mode %> "${DESTDIR}<%= path %>"
+<%= for dir <- create_dirs, dir[:enabled] != false do %>
+# <%= dir.comment %>
+if [ ! -d "${DESTDIR}<%= dir.path %>" ]; then
+  echo "==> Creating dir ${DESTDIR}<%= dir.path %>"
+  mkdir -p "${DESTDIR}<%= dir.path %>"
+  <%= if dir[:user] do %>chown <%= dir.user %>:<%= dir.group %> "${DESTDIR}<%= dir.path %>"<% end %>
+  <%= if dir[:mode] do %>chmod <%= dir.mode %> "${DESTDIR}<%= dir.path %>"<% end %>
 fi
-
 <% end %>

@@ -163,10 +163,14 @@ defmodule Mix.Tasks.Deploy do
       # Path to conform config file, used to set CONFOM_CONF_PATH
       conform_conf_path: nil,
 
-      # Files to copy when deploying
+      # User dirs to create
+      create_dirs: [],
+
+      # Files to copy when deploying locally
+      # User files to copy
       copy_files: [
-        # {"config/environment", :configuration_dir, "$DEPLOY_USER", "$APP_GROUP", "640"},
-        # {"rel/etc/environment", [:deploy_dir, "/etc"], "$DEPLOY_USER", "$APP_GROUP", "640"},
+        # %{src: "config/environment", dst: :configuration_dir, user: "$DEPLOY_USER", group: "$APP_GROUP", mode: "640"},
+        # %{src: "rel/etc/environment", dst: [:deploy_dir, "/etc"], user: "$DEPLOY_USER", group: "$APP_GROUP", mode: "640"},
       ],
 
       # Prefix for generated script files
@@ -349,34 +353,123 @@ defmodule Mix.Tasks.Deploy.Generate do
     ext_name = cfg[:ext_name]
     output_dir = cfg[:output_dir]
 
-    create_flags_dir = cfg[:restart_method] in [:systemd_flag, :touch]
-    # app needs to be able to delete the flag file at runtime
-    flags_dir_mode = if cfg[:restart_method] == :touch, do: "770", else: "750"
-
-    dirs = [
-      {true, cfg[:deploy_dir], "$DEPLOY_USER", "$APP_GROUP", "750", "Base dir"},
-      {true, cfg[:releases_dir], "$DEPLOY_USER", "$APP_GROUP", "750", "Releases"},
-      {true, cfg[:scripts_dir], "$DEPLOY_USER", "$APP_GROUP", "750", "Target scripts"},
-      {create_flags_dir, cfg[:flags_dir], "$DEPLOY_USER", "$APP_GROUP", flags_dir_mode, "Flag files"}
+    dirs = cfg[:create_dirs] ++ [
+      %{
+        path: cfg[:deploy_dir],
+        user: "$DEPLOY_USER",
+        group: "$APP_GROUP",
+        mode: "750",
+        comment: "Base dir"
+      },
+      %{
+        path: cfg[:releases_dir],
+        user: "$DEPLOY_USER",
+        group: "$APP_GROUP",
+        mode: "750",
+        comment: "Releases"
+      },
+      %{
+        path: cfg[:scripts_dir],
+        user: "$DEPLOY_USER",
+        group: "$APP_GROUP",
+        mode: "750",
+        comment: "Target scripts"
+      },
+      %{
+        enabled: cfg[:restart_method] in [:systemd_flag, :touch],
+        path: cfg[:flags_dir],
+        user: "$DEPLOY_USER",
+        group: "$APP_GROUP",
+        mode: (if cfg[:restart_method] == :touch, do: "770", else: "750"),
+        comment: "Flag files"
+      },
+      %{
+        path: "/lib/systemd/system",
+        comment: "systemd unit files"
+      },
+      %{
+        enabled: cfg[:sudo_app] or cfg[:sudo_deploy],
+        path: "/etc/sudoers.d",
+        comment: "sudoers config"
+      },
     ] ++
     if cfg[:systemd_version] < 235 do
       # systemd will automatically create directories in newer versions
       # https://www.freedesktop.org/software/systemd/man/systemd.exec.html#RuntimeDirectory=
       [
-        {:runtime in cfg[:dirs], cfg[:runtime_dir], "$APP_USER", "$APP_GROUP", cfg[:runtime_directory_mode], "systemd RuntimeDirectory"},
-        {:configuration in cfg[:dirs], cfg[:configuration_dir], "$DEPLOY_USER", "$APP_GROUP", cfg[:confguration_directory_mode], "systemd ConfigurationDirectory"},
-        {:logs  in cfg[:dirs], cfg[:logs_dir],  "$APP_USER", "$APP_GROUP", cfg[:logs_directory_mode], "systemd LogsDirectory"},
-        {:state in cfg[:dirs], cfg[:state_dir], "$APP_USER", "$APP_GROUP", cfg[:state_directory_mode], "systemd StateDirectory"},
-        {:cache in cfg[:dirs], cfg[:cache_dir], "$APP_USER", "$APP_GROUP", cfg[:cache_directory_mode], "systemd CacheDirectory"},
+        %{
+          enabled: :runtime in cfg[:dirs],
+          path: cfg[:runtime_directory_mode],
+          user: "$APP_USER",
+          group: "$APP_GROUP",
+          mode: cfg[:runtime_directory_mode],
+          comment: "systemd RuntimeDirectory",
+        },
+        %{
+          enabled: :configuration in cfg[:dirs],
+          path: cfg[:configuration_dir],
+          user: "$DEPLOY_USER",
+          group: "$APP_GROUP",
+          mode: cfg[:confguration_directory_mode],
+          comment: "systemd ConfigurationDirectory",
+        },
+        %{
+          enabled: :logs in cfg[:dirs],
+          path: cfg[:logs_dir],
+          user: "$APP_USER",
+          group: "$APP_GROUP",
+          mode: cfg[:logs_directory_mode],
+          comment: "systemd LogsDirectory",
+        },
+        %{
+          enabled: :state in cfg[:dirs],
+          path: cfg[:state_dir],
+          user: "$APP_USER",
+          group: "$APP_GROUP",
+          mode: cfg[:state_directory_mode],
+          comment: "systemd StateDirectory",
+        },
+        %{
+          enabled: :cache in cfg[:dirs],
+          path: cfg[:cache_dir],
+          user: "$APP_USER",
+          group: "$APP_GROUP",
+          mode: cfg[:cache_directory_mode],
+          comment: "systemd CacheDirectory",
+        },
         # Better handled by PrivateTmp in newer systemd
-        {:tmp in cfg[:dirs], cfg[:tmp_dir], "$APP_USER", "$APP_GROUP", cfg[:tmp_directory_mode], "Temp directory"},
+        %{
+          enabled: :tmp in cfg[:dirs],
+          path: cfg[:tmp_dir],
+          user: "$APP_USER",
+          group: "$APP_GROUP",
+          mode: cfg[:tmp_directory_mode],
+          comment: "Temp directory",
+        },
       ]
     else
       []
     end
 
-    files = for {src, dst, user, group, mode} <- cfg[:copy_files] do
-      {src, Mix.Tasks.Deploy.expand_vars(dst, cfg), user, group, mode}
+    files = cfg[:copy_files] ++ [
+      %{
+        src: ["_build/", :mix_env, "/systemd/lib/systemd/system/*"],
+        dst: "/lib/systemd/system/",
+        mode: "600",
+      },
+      %{
+        enabled: cfg[:sudo_deploy] or cfg[:sudo_app],
+        src: ["_build/", :mix_env, "/deploy/etc/sudoers.d/", :ext_name],
+        dst: ["/etc/sudoers.d/", :ext_name],
+        mode: "600",
+      },
+    ]
+
+    files = for file <- files, file[:enabled] != false do
+      %{file |
+        src: Mix.Tasks.Deploy.expand_vars(file.src, cfg),
+        dst: Mix.Tasks.Deploy.expand_vars(file.dst, cfg)
+      }
     end
 
     vars = cfg ++ [create_dirs: dirs, copy_files: files]

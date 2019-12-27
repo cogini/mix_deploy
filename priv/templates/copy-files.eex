@@ -9,27 +9,16 @@ set -e
 # Environment vars
 # DESTDIR, prefix for target files, optional
 
-MIX_ENV="${MIX_ENV:-prod}"
-
 # Config vars
-SERVICE_NAME="<%= service_name %>"
-EXT_NAME="<%= ext_name %>"
+DEPLOY_USER="${DEPLOY_USER:-<%= deploy_user %>}"
+DEPLOY_GROUP="${DEPLOY_GROUP:-<%= deploy_group %>}"
+APP_USER="${APP_USER:-<%= app_user %>}"
+APP_GROUP="${APP_GROUP:-<%= app_group %>}"
 
-<%= for {src, dst, user, group, mode} <- copy_files do %>
-echo "==> Copying file ${DESTDIR}<%= dst %>"
-cp <%= src %> "${DESTDIR}<%= dst %>"
-chown <%= user %>:<%= group %> "${DESTDIR}<%= dst %>"
-chmod <%= mode %> "${DESTDIR}<%= dst %>"
+<%= for file <- copy_files, file[:enabled] != false do %>
+echo "==> Copying file ${DESTDIR}<%= file.dst %>"
+cp <%= file.src %> "${DESTDIR}<%= file.dst %>"
+<%= if file[:user] do %>chown <%= file.user %>:<%= file.group %> "${DESTDIR}<%= file.dst %>"<% end %>
+<%= if file[:mode] do %>chmod <%= file.mode %> "${DESTDIR}<%= file.dst %>"<% end %>
 
-<% end %>
-echo "==> Copying systemd unit files for $SERVICE_NAME"
-mkdir -p "${DESTDIR}/lib/systemd/system"
-cp _build/${MIX_ENV}/systemd/lib/systemd/system/* "${DESTDIR}/lib/systemd/system/"
-chmod 644 ${DESTDIR}/lib/systemd/system/${SERVICE_NAME}*
-
-<%= if sudo_deploy or sudo_app do %>
-echo "==> Copying sudoers.d/${EXT_NAME}"
-mkdir -p "${DESTDIR}/etc/sudoers.d"
-cp "_build/${MIX_ENV}/deploy/etc/sudoers.d/${EXT_NAME}" "${DESTDIR}/etc/sudoers.d/"
-chmod 600 "${DESTDIR}/etc/sudoers.d/${EXT_NAME}"
 <% end %>
