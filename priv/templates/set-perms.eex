@@ -11,11 +11,13 @@ set -e
 DEPLOY_DIR="<%= deploy_dir %>"
 CURRENT_DIR="<%= current_dir %>"
 DEPLOY_USER="${DEPLOY_USER:-<%= deploy_user %>}"
-APP_GROUP="${APP_USER:-<%= app_group %>}"
+DEPLOY_GROUP="${DEPLOY_GROUP:-<%= deploy_group %>}"
+APP_USER="${APP_USER:-<%= app_user %>}"
+APP_GROUP="${APP_GROUP:-<%= app_group %>}"
 
 # Allow deploy user to manage deploy dir
-chmod 750 "$DEPLOY_DIR"
 chown $DEPLOY_USER:$APP_GROUP "$DEPLOY_DIR"
+chmod 750 "$DEPLOY_DIR"
 
 # Make programs in bin executable by deploy and app users
 mkdir -p "$DEPLOY_DIR/bin"
