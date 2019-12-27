@@ -257,7 +257,7 @@ These scripts run on the build server.
 
 * `deploy-sync-assets-s3`: Sync `priv/static` files to S3 bucket for CloudFront CDN
 
-### Custom command scripts
+### Release command scripts
 
 These scripts set up the environment and then run release commands.
 When you are setting up the environment using files and env vars
@@ -270,7 +270,7 @@ mix releases have `rel/env.sh.eex`, you can set them there just as well.
   [running a custom command](https://www.cogini.com/blog/running-ecto-migrations-in-a-release/).
 * `deploy-remote-console`: Launch remote console for the app
 
-### Environment setup scripts
+### Runtime environment scripts
 
 These scripts are called by the systemd unit to set get the application config
 at runtime prior to starting the app. They are more most useful with Distillery.
@@ -349,21 +349,25 @@ deployment system such as [AWS CodeDeploy](https://aws.amazon.com/codedeploy/).
 ```elixir
 config :mix_deploy,
     app_user: "app",
-    app_group: "app"
+    app_group: "app",
     templates: [
+      "stop",
       "create-users",
       "create-dirs",
       "clean-target",
       "extract-release",
       "set-perms",
-      "stop",
+      "migrate",
+      "enable",
       "start",
       "restart",
-      "enable",
-    ]
+    ],
+    ...
 ```
 
-Here is an example `appspec.yml` file:
+Here is an example
+[appspec.yml](https://docs.aws.amazon.com/codedeploy/latest/userguide/reference-appspec-file-structure-hooks.html)
+file:
 
 ```yaml
 version: 0.0
@@ -375,7 +379,6 @@ files:
     destination: /lib/systemd/system
   - source: etc
     destination: /srv/foo/etc
-# https://docs.aws.amazon.com/codedeploy/latest/userguide/reference-appspec-file-structure-hooks.html
 hooks:
   ApplicationStop:
     - location: bin/deploy-stop
@@ -389,9 +392,9 @@ hooks:
     - location: bin/deploy-set-perms
     - location: bin/deploy-enable
   ApplicationStart:
-    # - location: bin/deploy-migrate
-    #   runas: app
-    #   timeout: 300
+    - location: bin/deploy-migrate
+      runas: app
+      timeout: 300
     - location: bin/deploy-start
       timeout: 3600
   # ValidateService:

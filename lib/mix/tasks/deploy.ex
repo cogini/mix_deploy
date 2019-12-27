@@ -168,32 +168,41 @@ defmodule Mix.Tasks.Deploy do
 
       # Files to generate
       templates: [
-        # systemd scripts
-        "start",
-        "stop",
-        "restart",
-        "enable",
+        # Systemd wrappers
+        # "start",
+        # "stop",
+        # "restart",
+        # "enable",
 
-        # Setup scripts
-        "create-users",
-        "create-dirs",
+        # System setup
+        # "create-users",
+        # "create-dirs",
 
+        # Local deploy
+        # "init-local",
+        # "copy-files",
+        # "release",
+        # "rollback",
+
+        # CodeDeploy
         # "clean-target",
-        "copy-files",
         # "extract-release",
-        "init-local",
+        # "set-perms",
+
+        # CodeBuild
+        # "stage-files",
+        # "sync-assets-s3",
+
+        # Release commands
+        # "set-env",
+        # "remote-console",
         # "migrate",
+
+        # Runtime environment
+        # "sync-config-s3",
         # "runtime-environment-file",
         # "runtime-environment-wrap",
-        "release",
-        # "remote-console",
-        "rollback",
         # "set-cookie-ssm",
-        # "set-env",
-        # "set-perms",
-        # "stage-files",
-        # "sync-config-s3",
-        # "sync-assets-s3",
       ],
 
       # Config keys which have variable expansion
