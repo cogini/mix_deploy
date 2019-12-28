@@ -13,14 +13,24 @@ defmodule MixDeploy.MixProject do
       source_url: "https://github.com/cogini/mix_deploy",
       homepage_url: "https://github.com/cogini/mix_deploy",
       dialyzer: [
-        plt_add_apps: [:mix, :eex]
+        plt_add_apps: [:mix, :eex],
         # plt_add_deps: true,
         # flags: ["-Werror_handling", "-Wrace_conditions"],
         # flags: ["-Wunmatched_returns", :error_handling, :race_conditions, :underspecs],
         # ignore_warnings: "dialyzer.ignore-warnings"
       ],
       deps: deps(),
-      docs: docs()
+      docs: docs(),
+      releases: releases(),
+    ]
+  end
+
+  defp releases do
+    [
+      mix_deploy: [
+        include_executables_for: [:unix],
+        steps: [:assemble, :tar]
+      ]
     ]
   end
 
