@@ -1,4 +1,6 @@
 defmodule Mix.Tasks.Deploy do
+  @moduledoc false
+
   # Directory where `mix deploy.generate` stores output files,
   # e.g. _build/prod/deploy
   @output_dir "deploy"

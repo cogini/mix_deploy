@@ -1,19 +1,18 @@
 # mix_deploy
 
-This module generates scripts which help deploy an Erlang release created with
-Elixir 1.9's [native release support](https://hexdocs.pm/mix/Mix.Tasks.Release.html)
-or [Distillery](https://hexdocs.pm/distillery/home.html).
-
+This module generates scripts which help deploy an Erlang release,
+handling tasks such as creating initial directory structure, unpacking
+release files, managing configuration, and starting/stopping.
 It supports deployment to the local machine, bare-metal servers
-or cloud servers using e.g. [AWS CodeDeploy](https://aws.amazon.com/codedeploy/).
+or cloud servers using e.g.
+[AWS CodeDeploy](https://aws.amazon.com/codedeploy/).
 
-It generates scripts which can be run on the local machine or copied to a
-target machine to handle lifecycle tasks such as creating initial directory
-structure, unpacking release files, managing configuration, and starting/stopping,
-
-It asumes that [mix_systemd](https://github.com/cogini/mix_systemd)
-is used to generate a systemd unit file for the application, and shares
-conventions with it about naming files.
+It supports releases created with Elixir 1.9's
+[native release support](https://hexdocs.pm/mix/Mix.Tasks.Release.html)
+and [Distillery](https://hexdocs.pm/distillery/home.html). It assumes that
+[mix_systemd](https://github.com/cogini/mix_systemd) is used to generate a
+systemd unit file for the application, and shares conventions with it about
+naming files.
 
 ## Installation
 
@@ -30,73 +29,82 @@ end
 ## Example
 
 The most straightforward way to deploy an app is on a server at e.g.
-[Digital Ocean](https://m.do.co/c/150575a88316).
-
-With a local deploy, you check out the code on a server, build/test, then
-generate a release. You then run scripts to set up the runtime environment,
+[Digital Ocean](https://m.do.co/c/150575a88316). You can build and deploy on
+the same machine, checking out the code on a server, building/testing, then
+generating a release.  You then run scripts to set up the runtime environment,
 including systemd unit scripts, extract the release to the target dir and run
 it under systemd.
 
-1. Configure the app
+### Configure the app
 
-[Set up a database](https://www.cogini.com/blog/multiple-databases-with-digital-ocean-managed-databases-service/).
+Follow the Phoenix config process for
+[deployment](https://hexdocs.pm/phoenix/deployment.html) and
+[releases](https://hexdocs.pm/phoenix/releases.html). Make the app read its
+config from environment variables. Create a file with these environment vars
+and put it in `config/environment`.
 
-Follow the Phoenix config process in https://hexdocs.pm/phoenix/deployment.html and
-https://hexdocs.pm/phoenix/releases.html. Make the app read its config from
-environment variables.
-
-Create a file with these environment vars and put it in `config/environment`.
-
-2. Configure [mix_deploy](https://github.com/cogini/mix_deploy) and
-   [mix_systemd](https://github.com/cogini/mix_systemd) in `config/configure.exs`
+### Configure `mix_deploy` and `mix_systemd` in `config/configure.exs`
 
 ```elixir
 config :mix_systemd,
-    env_files: [
-      ["-", :deploy_dir, "/etc/environment"],
-    ],
-    app_user: "app",
-    app_group: "app"
+  env_files: [
+    # Read app config from the file /srv/foo/etc/environment
+    ["-", :deploy_dir, "/etc/environment"],
+  ],
+  # Set individual vars
+  env_vars: [
+    "PORT=8080"
+  ],
+  # The app runs under this OS user account
+  app_user: "app",
+  app_group: "app"
 
 config :mix_deploy,
-    app_user: "app",
-    app_group: "app"
-    copy_files: [
-        %{
-            src: "config/environment",
-            dst: :configuration_dir,
-            user: "$DEPLOY_USER",
-            group: "$APP_GROUP",
-            mode: "640"
-        },
-    ],
-    templates: [
-        "init-local",
-        "create-users",
-        "create-dirs",
-        "copy-files",
-        "enable",
-        "release",
-        "restart",
-        "rollback",
-        "start",
-        "stop",
-    ]
+  app_user: "app",
+  app_group: "app"
+  # When deploying, copy config/environment to /srv/foo/etc/environment
+  copy_files: [
+    %{
+      src: "config/environment",
+      dst: [:deploy_dir, "/etc/environment"],
+      user: "$DEPLOY_USER",
+      group: "$APP_GROUP",
+      mode: "640"
+    },
+  ],
+  # Generate these scripts in bin
+  templates: [
+    "init-local",
+    "create-users",
+    "create-dirs",
+    "copy-files",
+    "enable",
+    "release",
+    "restart",
+    "rollback",
+    "start",
+    "stop",
+  ]
 ```
 
-2. Initialize `mix_systemd` and `mix_deploy` and generate scripts.
-
-`systemd.generate` creates a systemd unit file for the app.
-`deploy.generate` creates scripts to deploy it in `bin`.
+### Initialize `mix_systemd` and `mix_deploy` and generate output.
 
 ```shell
+# Initialize mix_systemd templates
 mix systemd.init
-MIX_ENV=prod mix systemd.generate
+
+# Initialize mix_deploy templates
 mix deploy.init
+
+# Create a systemd unit file for the app under _build
+MIX_ENV=prod mix systemd.generate
+
+# Creates scripts to deploy it in `bin`
 MIX_ENV=prod mix deploy.generate
+chmod +x bin/*
 ```
 
-3. Set up the system.
+### Set up the system.
 
 This creates the app OS user, directory structure under `/srv/foo`, and the
 systemd unit file which supervises the app.
@@ -112,22 +120,22 @@ It does the following:
 
 ```shell
 # Create users to run the app
-sudo bin/deploy-create-users
+bin/deploy-create-users
 
-# Create deploy dirs under /srv/foo and app dirs like /etc/foo
-sudo bin/deploy-create-dirs
+# Create deploy dirs under /srv/foo
+bin/deploy-create-dirs
 
 # Copy scripts used at runtime by the systemd unit
-sudo cp bin/* /srv/foo/bin
+cp bin/* /srv/foo/bin
 
 # Copy and enable systemd unit files
-sudo bin/deploy-copy-files
-sudo bin/deploy-enable
+bin/deploy-copy-files
+bin/deploy-enable
 ```
 
-5. Build the Elixir release
+### Build the Elixir release
 
-This creates a tar file containing the app, the libries it depends on, and
+This creates a tar file containing the app, the libraries it depends on, and
 scripts to start and manage it.
 
 ```shell
@@ -135,11 +143,11 @@ scripts to start and manage it.
 MIX_ENV=prod mix release
 ```
 
-6. Deploy the release to the local machine:
+### Deploy the release to the local machine:
 
 ```shell
 # Extract release to target directory, creating current symlink
-sudo bin/deploy-release
+bin/deploy-release
 
 # Restart the systemd unit
 sudo bin/deploy-restart
@@ -152,12 +160,12 @@ bin/deploy-rollback
 sudo bin/deploy-restart
 ```
 
-7. Try it out
+### Try it out
 
 Your app should now be running:
 
 ```shell
-curl -v http://localhost:4000/
+curl -v http://localhost:8080/
 ```
 
 If it is not, have a look at the logs.
@@ -204,7 +212,7 @@ The library tries to choose smart defaults, so it should require minimal
 configuration for standard cases. It reads the app name from `mix.exs` and
 calculates default values for its configuration parameters.
 
-If your app is nomed `foo_bar`, it will create a service named `foo-bar`,
+If your app is named `foo_bar`, it will create a service named `foo-bar`,
 deployed to `/srv/foo-bar`, running under the user `foo-bar`.
 
 By default, with no configuration, the library doesn't generate any output
@@ -228,7 +236,6 @@ These scripts set up the target system for the application. They are useful for
 local and automated deploy.
 
 * `deploy-create-users`: Create OS accounts for app and deploy users
-
 * `deploy-create-dirs`: Create dirs, including the release dir `/srv/foo` and
                         standard dirs like `/etc/foo` or `/var/log/foo`.
 
@@ -238,10 +245,8 @@ These scripts deploy the app to the same server as it was built on:
 
 * `deploy-copy-files`: Copy files from `_build` to target `/srv/foo`, or to a
   staging directory for packaging
-
 * `deploy-release`: Deploy release, extracting to a timestamped dir under
   `/srv/foo/releases`, then making a symlink from `/srv/foo/current`
-
 * `deploy-rollback`: Rollback release, resetting the symlink to point to the
   previous release
 
@@ -259,16 +264,13 @@ These scripts run on the target machine as lifecycle hooks.
 
 These scripts run on the build server.
 
-* `deploy-stage-files`: Copy output files to staging directory
-
-* `deploy-sync-assets-s3`: Sync `priv/static` files to S3 bucket for CloudFront CDN
+* `deploy-stage-files`: Copy output files to staging directory, default `files`
 
 ### Release command scripts
 
 These scripts set up the environment and then run release commands.
-When you are setting up the environment using files and env vars
-in the systemd unit, you need the same vars when running the commands.
-They are mainly useful with Distillery. Now that Eixir 1.9+
+They make the config match the values set via files or vars in the systemd
+unit. They are mainly useful with Distillery. Now that Eixir 1.9+
 mix releases have `rel/env.sh.eex`, you can set them there just as well.
 
 * `set-env`: Set up environment
@@ -279,8 +281,8 @@ mix releases have `rel/env.sh.eex`, you can set them there just as well.
 ### Runtime environment scripts
 
 These scripts are called by the systemd unit to set get the application config
-at runtime prior to starting the app. They are more most useful with Distillery.
-Eixir 1.9+ now supports
+at runtime prior to starting the app. They are more most useful with Distillery,
+as Eixir 1.9+ now supports
 [runtime configuration](https://hexdocs.pm/mix/Mix.Tasks.Release.html#module-runtime-configuration)
 via `config/releases.exs` and `rel/env.sh.eex`.
 
@@ -304,11 +306,9 @@ The generated scripts are mostly straight bash, with minimal dependencies.
 
 * `deploy-sync-config-s3` uses the [AWS CLI](https://aws.amazon.com/cli/)
   to copy files from an S3 bucket.
-
 * `deploy-runtime-environment-file` and `deploy-runtime-environment-wrap` use
    [jq](https://stedolan.github.io/jq/) to parse the
    [cloud-init](https://cloud-init.io/) JSON file.
-
 * `deploy-set-cookie-ssm` uses the AWS CLI and `jq` to interact with
   Systems Manager Parameter Store.
 
@@ -354,20 +354,20 @@ deployment system such as [AWS CodeDeploy](https://aws.amazon.com/codedeploy/).
 
 ```elixir
 config :mix_deploy,
-    app_user: "app",
-    app_group: "app",
-    templates: [
-      "stop",
-      "create-users",
-      "create-dirs",
-      "clean-target",
-      "extract-release",
-      "set-perms",
-      "migrate",
-      "enable",
-      "start",
-      "restart",
-    ],
+  app_user: "app",
+  app_group: "app",
+  templates: [
+    "stop",
+    "create-users",
+    "create-dirs",
+    "clean-target",
+    "extract-release",
+    "set-perms",
+    "migrate",
+    "enable",
+    "start",
+    "restart",
+  ],
     ...
 ```
 
@@ -414,8 +414,8 @@ The following sections describe common configuration options.
 See `lib/mix/tasks/deploy.ex` for the details of more obscure options.
 
 If you need to make changes not supported by the config options,
-then you can check the templates into source control from
-`rel/templates/deploy` and make your own changes. You can also check in the
+then you can check the templates in `rel/templates/deploy`
+into source control and make your own changes. Or you can check in the
 generated scripts in the `bin` dir. Contributions are welcome!
 
 The list of templates to generate is in the `templates` config var.
@@ -463,8 +463,8 @@ to a user like `deploy` or same as the app user.
 
 `restart_method`: `:systemctl | :systemd_flag | :touch`, default `:systemctl`
 
-The normal situation is that the app will be restarted using `systemctl`, e.g.
-`systemctl restart #{service_name}`.
+The normal situation is that the app will be restarted using e.g.
+`systemctl restart foo`.
 
 With `:systemd_flag`, an additional systemd unit file watches for
 changes to a flag file and restarts the main unit. This allows updates to be
@@ -473,11 +473,12 @@ have permissions to restart processes. Touch the file `#{flags_dir}/restart.flag
 and systemd will restart the unit.  See `mix_systemd` for details.
 
 With `:touch`, the app itself watches the file `#{flags_dir}/restart.flag`.
-If it channges, the app shuts iself down, relying on systemd to notice and restart it.
+If it changes, the app shuts itself down, relying on systemd to notice and restart it.
 
-`sudo_deploy`: Creates `/etc/sudoers.d/#{ext_name}` file wich allows the deploy
+`sudo_deploy`: Creates `/etc/sudoers.d/#{ext_name}` file which allows the deploy
 user to start/stop/restart the app using sudo. Default `false`. Note that
-systemctl must be specified with the full path, e.g. `sudo /bin/systemctl restart foo`.
+when you must call systemctl with the full path, e.g. `sudo /bin/systemctl restart foo`
+for this to work.
 
 `sudo_app`: Creates `/etc/sudoers.d/#{ext_name}` file allowing the app user
 user to start/stop/restart the app using sudo. Default `false`.
@@ -491,7 +492,7 @@ The library sets a few common env vars:
 
 ### Directories
 
-Modern Linux defines a set of directories which apps use for common
+Modern Linux standards define a set of directories which apps use for common
 purposes, e.g. configuration or cache files. App files are under `/srv`,
 configuration under `/etc`, transient files under `/run`, data under
 `/var/lib`. See
@@ -560,12 +561,12 @@ If you are only keeping a single version, then deploy it to the
 
 Configuration of an Elixir app can be split into three parts:
 
-**Build time** settings are consistent for all servers, though they may have
+*Build time* settings are consistent for all servers, though they may have
 different options between e.g. staging and production. This is handled by
 config files `config/config.exs` and `config/prod.exs`, which result in an
 initial fixed application environment file in the release.
 
-**Environment / per machine / secrets** settings depend on the environment the
+*Environment / per machine / secrets* settings depend on the environment the
 application is running in, e.g. the hostname of the db server and secrets like
 the db password. We store these external to the application release file and load
 them from files or a configuration system like AWS Systems Manager Parameter
@@ -632,27 +633,67 @@ mkdir -p rel/etc
 echo "CONFIG_S3_BUCKET=cogini-foo-dev-app-config" >> rel/etc/environment
 ```
 
-```shell
-sudo mkdir -p /srv/foo/etc
-sudo cp rel/etc/environment /srv/foo/etc
-sudo chown deploy:foo /srv/foo/etc/environment
-sudo chmod 640 /srv/foo/etc/environment
-```
-
 Set `exec_start_pre` in the `mix_systemd` config:
 
 ```elixir
 config :mix_systemd,
   app_user: "app",
   app_group: "app",
+  # systemd runs this before starting the app as root
   exec_start_pre: [
     ["!", :deploy_dir, "/bin/deploy-sync-config-s3"]
+  ],
+  dirs: [
+    # Create /etc/foo
+    :configuration,
+    # Create /run/foo
+    :runtime,
+  ],
+  # systemd should not clean up /run/foo
+  runtime_directory_preserve: "yes",
+  # Load env from /srv/foo/etc/environment and /etc/foo/environment
+  env_files: [
+    ["-", :deploy_dir, "/etc/environment"],
+    ["-", :configuration_dir, "/environment"],
+  ],
+  # deploy-copy-files will copy the env file to /srv/foo/etc
+  # more likely it is done by e.g. appspec.yml
+  copy_files: [
+    %{
+      src: "rel/etc/environment",
+      dst: [:deploy_dir, "/etc"],
+      user: "$DEPLOY_USER",
+      group: "$APP_GROUP",
+      mode: "640"
+    },
+  ],
+  env_vars: [
+    # Temp files are in /run/foo
+    ["RELEASE_TMP=", :runtime_dir],
+  ]
+
+config :mix_deploy,
+  app_user: "app",
+  app_group: "app"
+  templates: [
+    "init-local",
+    "create-users",
+    "create-dirs",
+    "copy-files",
+    "enable",
+    "release",
+    "restart",
+    "rollback",
+    "start",
+    "stop",
+
+    "sync-config-s3",
   ],
   dirs: [
     :configuration,
     :runtime,
   ],
-  runtime_directory_preserve: "yes",
+  # Set env config in e.g. deploy-set-env to match above.
   env_files: [
     ["-", :deploy_dir, "/etc/environment"],
     ["-", :configuration_dir, "/environment"],
@@ -660,35 +701,6 @@ config :mix_systemd,
   env_vars: [
     ["RELEASE_TMP=", :runtime_dir],
   ]
-
-config :mix_deploy,
-    app_user: "app",
-    app_group: "app"
-    templates: [
-        "init-local",
-        "create-users",
-        "create-dirs",
-        "copy-files",
-        "enable",
-        "release",
-        "restart",
-        "rollback",
-        "start",
-        "stop",
-
-        "sync-config-s3",
-    ],
-    dirs: [
-      :configuration, # App configuration, e.g. db passwords, /etc/#{ext_name}
-      :runtime,       # App runtime files which may be deleted between runs, /run/#{ext_name}
-    ],
-    env_files: [
-      ["-", :deploy_dir, "/etc/environment"],
-      ["-", :configuration_dir, "/environment"],
-    ]
-    env_vars: [
-      ["RELEASE_TMP=", :runtime_dir],
-    ]
 ```
 
 For security, the app only has read-only access to its config files, and
@@ -696,15 +708,14 @@ For security, the app only has read-only access to its config files, and
 with "!" so it runs with elevated permissions, not as the `foo` user.
 
 We need to set the `CONFIG_S3_BUCKET` variable in the environment so that
-`deploy-sync-config-s3` can use it. We can set it in the `mix_systemd` config
-or put it in `/etc/foo/environment`.
+`deploy-sync-config-s3` can use it. We can set it in `env_vars`
+or put it in the file `/etc/foo/environment`.
 
 * `/srv/foo/etc/environment` settings are configured at deploy time.
-
 * `/etc/foo/environment` settings might come from an S3
 bucket.
-
-* `/run/foo/environment` settings are generated dynamically.
+* `/run/foo/environment` settings might be generated dynamically, e.g. getting
+  the IP address.
 
 For example, `post_build` commands in the CodeBuild CI `buildspec.yml` file
 can generate a config file `files/etc/environment`:

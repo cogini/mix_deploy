@@ -1,9 +1,7 @@
 defmodule MixDeploy.Templates do
-  @moduledoc """
-  Template functions.
+  @moduledoc false
 
-  These functions generate output files from templates.
-  """
+  # These functions generate output files from templates.
 
   # Name of app, used to get config from app environment
   @app :mix_deploy

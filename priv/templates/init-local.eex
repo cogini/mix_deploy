@@ -21,6 +21,7 @@ echo "==> Creating app dirs under ${DEPLOY_DIR}"
 $BINDIR/${SCRIPT_PREFIX}create-dirs
 
 echo "==> Copying scripts used by systemd"
+chmod +x $BIN_DIR/*
 cp $BIN_DIR/* "$SCRIPTS_DIR"
 
 echo "==> Copying files"

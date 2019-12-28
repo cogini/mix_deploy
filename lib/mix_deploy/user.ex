@@ -1,5 +1,7 @@
 defmodule MixDeploy.User do
-  @moduledoc "Get information about OS users and groups"
+  @moduledoc false
+
+  # Get information about OS users and groups
 
   @typep name_id() :: {String.t, non_neg_integer}
   @typep os_type :: {atom, atom}
