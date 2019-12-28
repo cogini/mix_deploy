@@ -6,9 +6,10 @@ defmodule Mix.Tasks.Deploy do
   # Directory where `mix deploy.init` copies templates in user project
   @template_dir "rel/templates/deploy"
 
+  # Generate cfg from mix.exs and app config
   @spec parse_args(OptionParser.argv()) :: Keyword.t
   def parse_args(argv) do
-    opts = [strict: [version: :string]]
+    opts = [switches: [version: :string]]
     {overrides, _} = OptionParser.parse!(argv, opts)
 
     user_config = Application.get_all_env(:mix_deploy)
@@ -126,7 +127,7 @@ defmodule Mix.Tasks.Deploy do
 
       # Directory where scripts will be generated in build
       # Default is top level bin dir in project
-      # Set to [:output_dir, "bin"] to generate under _build/prod/deploy/bin
+      # Set to `[:output_dir, "bin"]` to generate under `_build/prod/deploy/bin`
       bin_dir: "bin",
 
       # Directory with templates which override defaults
@@ -138,24 +139,32 @@ defmodule Mix.Tasks.Deploy do
       env_lang: "C.UTF-8",
 
       # Environment files to read, e.g.
+      # env files to read, e.g.
       # The "-" at the beginning means that the file is optional
       env_files: [
         # ["-", :configuration_dir, "/environment"],
         # ["-", :deploy_dir, "/etc/environment"],
       ],
 
-      # Misc env vars to set, e.g.
-      # env_vars: [
-      #  "REPLACE_OS_VARS=true",
-      #  ["RELEASE_MUTABLE_DIR=", :runtime_dir]
-      # ]
-      env_vars: [],
+      # Misc env vars to set
+      env_vars: [
+        #  PORT=8080
 
-      # Whether to create /etc/suders.d file allowing deploy an/or app user to
-      # restart app
+        #  Use runtime dir for tmp files
+        #  ["RELEASE_TMP=", :runtime_dir]
+
+        #  Distillery
+        #  Use runtime dir for tmp and startup log
+        #  ["RELEASE_MUTABLE_DIR=", :runtime_dir]
+        #  "REPLACE_OS_VARS=true",
+      ],
+
+      # Whether to create /etc/suders.d file which allows deploy and/or app user to
+      # restart app by running sudo with specific commands
       sudo_deploy: false,
       sudo_app: false,
 
+      # Script run by envronment config systemd unit
       runtime_environment_service_script: nil,
 
       # Path to conform config file, used to set CONFOM_CONF_PATH
@@ -258,12 +267,15 @@ defmodule Mix.Tasks.Deploy do
       app_group: cfg[:deploy_group],
     ], cfg)
 
-    # Mix.shell.info "cfg: #{inspect cfg}"
+    # for {key, value} <- cfg do
+    #   Mix.shell.info "cfg: #{key} #{inspect value}"
+    # end
 
     expand_keys(cfg, cfg[:expand_keys] ++ cfg[:expand_keys_extra])
   end
 
-  @doc "Expand cfg vars in keys"
+  # Expand cfg vars in keys
+  @doc false
   @spec expand_keys(Keyword.t, list(atom)) :: Keyword.t
   def expand_keys(cfg, keys) do
     Enum.reduce(Keyword.take(cfg, keys), cfg,
@@ -272,14 +284,16 @@ defmodule Mix.Tasks.Deploy do
       end)
   end
 
-  @doc "Expand vars in value or list of values"
+  # Expand vars in value or list of values
+  @doc false
   @spec expand_value(term, Keyword.t) :: binary
   def expand_value(values, cfg) when is_list(values) do
     Enum.map(values, &expand_vars(&1, cfg))
   end
   def expand_value(value, cfg), do: expand_vars(value, cfg)
 
-  @doc "Expand references in values"
+  # Expand references in values
+  @doc false
   @spec expand_vars(term, Keyword.t) :: binary
   def expand_vars(value, _cfg) when is_binary(value), do: value
   def expand_vars(nil, _cfg), do: ""
@@ -318,7 +332,6 @@ defmodule Mix.Tasks.Deploy.Init do
 
   @app :mix_deploy
 
-  @spec run(OptionParser.argv()) :: no_return
   def run(args) do
     cfg = Mix.Tasks.Deploy.parse_args(args)
 
@@ -345,11 +358,8 @@ defmodule Mix.Tasks.Deploy.Generate do
 
   alias MixDeploy.Templates
 
-  @spec run(OptionParser.argv()) :: no_return
   def run(args) do
     cfg = Mix.Tasks.Deploy.parse_args(args)
-    ext_name = cfg[:ext_name]
-    output_dir = cfg[:output_dir]
 
     dirs = cfg[:create_dirs] ++ [
       %{
@@ -476,8 +486,7 @@ defmodule Mix.Tasks.Deploy.Generate do
 
     if cfg[:sudo_deploy] or cfg[:sudo_app] do
       # Give deploy and/or app user ability to run start/stop commands via sudo
-      # root:root 600
-      write_template(cfg, Path.join(output_dir, "/etc/sudoers.d"), "sudoers", ext_name)
+      write_template(cfg, Path.join(cfg[:output_dir], "/etc/sudoers.d"), "sudoers", cfg[:ext_name])
     end
   end
 
@@ -503,68 +512,64 @@ defmodule Mix.Tasks.Deploy.Local do
 
   This module looks for configuration in the mix project, to get the app and version,
   and under the application environment under `mix_deploy`.
-
-  * `base_dir` sets the base directory, default `/srv`.
-  * `deploy_dir` sets the target directory completely manually, ignoring `base_dir` and `app`.
   ```
   """
-
   use Mix.Task
 
-  @spec run(OptionParser.argv()) :: no_return
   def run(args) do
-    # IO.puts (inspect args)
-    config = Mix.Tasks.Deploy.parse_args(args)
-    deploy_release(config)
-  end
+    cfg = Mix.Tasks.Deploy.parse_args(args)
 
-  @spec deploy_release(Keyword.t) :: no_return
-  def deploy_release(cfg) do
     release_dir = Path.join(cfg[:releases_dir], create_timestamp())
     Mix.shell.info "Deploying release to #{release_dir}"
     :ok = File.mkdir_p(release_dir)
 
-    app = to_string(cfg[:app_name])
-    tar_file = Path.join([cfg[:build_path], "rel", app, "releases", cfg[:version], "#{app}.tar.gz"])
+    release_name = to_string(cfg[:release_name])
+    version = cfg[:version]
+    tar_file =
+      case cfg[:release_system] do
+        :mix ->
+          Path.join([cfg[:build_path], "#{release_name}-#{version}.tar.gz"])
+        :distillery ->
+          Path.join([cfg[:build_path], "rel", release_name, "releases", version, "#{release_name}.tar.gz"])
+      end
+
     Mix.shell.info "Extracting tar #{tar_file}"
     :ok = :erl_tar.extract(to_charlist(tar_file), [{:cwd, release_dir}, :compressed])
 
-    current_link = cfg[:current_path]
+    current_link = cfg[:current_dir]
     if File.exists?(current_link) do
+      # Mix.shell.info "Removing current link: #{current_link}"
       :ok = File.rm(current_link)
     end
     :ok = File.ln_s(release_dir, current_link)
   end
 
-  def create_timestamp do
+  @spec create_timestamp() :: binary
+  defp create_timestamp do
     {{year, month, day}, {hour, minute, second}} = :calendar.now_to_universal_time(:os.timestamp())
     timestamp = :io_lib.format("~4..0B~2..0B~2..0B~2..0B~2..0B~2..0B", [year, month, day, hour, minute, second])
     timestamp |> List.flatten |> to_string
   end
-
 end
 
 defmodule Mix.Tasks.Deploy.Local.Rollback do
   @moduledoc """
   Update current symlink to point to the previous release directory.
   """
-
   use Mix.Task
 
   def run(args) do
     cfg = Mix.Tasks.Deploy.parse_args(args)
-
-    dirs = cfg[:releases_path] |> File.ls! |> Enum.sort |> Enum.reverse
-
+    dirs = cfg[:releases_dir] |> File.ls! |> Enum.sort |> Enum.reverse
     rollback(dirs, cfg)
   end
 
   @spec rollback([Path.t], Keyword.t) :: :ok
   defp rollback([_current, prev | _rest], cfg) do
-    release_path = Path.join(cfg[:releases_path], prev)
+    release_path = Path.join(cfg[:releases_dir], prev)
     current_dir = cfg[:current_dir]
-    Mix.shell.info "Making link from #{release_path} to #{current_dir}"
     :ok = remove_link(current_dir)
+    Mix.shell.info "Making link from #{release_path} to #{current_dir}"
     :ok = File.ln_s(release_path, current_dir)
   end
   defp rollback(dirs, _cfg) do
