@@ -8,15 +8,23 @@ defmodule Mix.Tasks.Deploy do
   # Directory where `mix deploy.init` copies templates in user project
   @template_dir "rel/templates/deploy"
 
-  # Generate cfg from mix.exs and app config
+  @app :mix_deploy
+
+  @doc "Generate cfg from mix.exs and app config"
   @spec parse_args(OptionParser.argv()) :: Keyword.t
   def parse_args(argv) do
-    opts = [switches: [version: :string]]
+    opts = [strict: [version: :string]]
     {overrides, _} = OptionParser.parse!(argv, opts)
 
-    user_config = Application.get_all_env(:mix_deploy)
+    user_config = Application.get_all_env(@app) |> Keyword.merge(overrides)
     mix_config = Mix.Project.config()
 
+    create_config(mix_config, user_config)
+  end
+
+  @doc "Generate cfg based on params"
+  @spec create_config(Keyword.t, Keyword.t) :: Keyword.t
+  def create_config(mix_config, user_config) do
     # Elixir app name, from mix.exs
     app_name = mix_config[:app]
 
@@ -240,9 +248,7 @@ defmodule Mix.Tasks.Deploy do
     ]
 
     # Override values from user config
-    cfg = defaults
-          |> Keyword.merge(user_config)
-          |> Keyword.merge(overrides)
+    cfg = Keyword.merge(defaults, user_config)
 
     # Calcualate values from other things
     cfg = Keyword.merge([
@@ -313,7 +319,6 @@ defmodule Mix.Tasks.Deploy do
     |> Enum.join("")
   end
   def expand_vars(value, _cfg), do: to_string(value)
-
 end
 
 defmodule Mix.Tasks.Deploy.Init do
@@ -334,6 +339,7 @@ defmodule Mix.Tasks.Deploy.Init do
 
   @app :mix_deploy
 
+  @impl Mix.Task
   def run(args) do
     cfg = Mix.Tasks.Deploy.parse_args(args)
 
@@ -343,7 +349,6 @@ defmodule Mix.Tasks.Deploy.Init do
     :ok = File.mkdir_p(template_dir)
     {:ok, _files} = File.cp_r(app_dir, template_dir)
   end
-
 end
 
 defmodule Mix.Tasks.Deploy.Generate do
@@ -352,7 +357,7 @@ defmodule Mix.Tasks.Deploy.Generate do
 
   ## Usage
 
-      # Create scripts and files for MIX_ENV=prod
+      # Create scripts and files
       MIX_ENV=prod mix deploy.generate
   """
   @shortdoc "Create deploy scripts and files"
@@ -360,6 +365,7 @@ defmodule Mix.Tasks.Deploy.Generate do
 
   alias MixDeploy.Templates
 
+  @impl Mix.Task
   def run(args) do
     cfg = Mix.Tasks.Deploy.parse_args(args)
 

@@ -7,22 +7,23 @@ defmodule MixDeploy.Templates do
   @app :mix_deploy
 
   @doc "Generate file from template"
-  @spec write_template(Keyword.t, Path.t, String.t) :: :ok
+  @spec write_template(Keyword.t, Path.t, binary) :: boolean
   def write_template(vars, target_path, template) do
     write_template(vars, target_path, template, template)
   end
 
-  @spec write_template(Keyword.t, Path.t, String.t, Path.t) :: :ok
+  @spec write_template(Keyword.t, Path.t, binary, binary) :: boolean
   def write_template(vars, target_path, template, filename) do
     target_file = Path.join(target_path, filename)
     :ok = File.mkdir_p(target_path)
     template_path = Path.join(vars[:template_dir], "#{template}.eex")
     {:ok, data} = template_file(template_path, vars)
-    :ok = File.write(target_file, data)
+    # :ok = File.write(target_file, data)
+    Mix.Generator.create_file(target_file, data, force: true)
   end
 
   @doc "Evaluate template file with bindings"
-  @spec template_file(String.t, Keyword.t) :: {:ok, String.t} | {:error, term}
+  @spec template_file(Path.t, Keyword.t) :: {:ok, binary} | {:error, term}
   def template_file(template_file, bindings \\ []) do
     {:ok, EEx.eval_file(template_file, bindings, [trim: true])}
   rescue
@@ -31,7 +32,7 @@ defmodule MixDeploy.Templates do
   end
 
   @doc "Find template matching name and eval"
-  @spec template_name(Path.t, Keyword.t) :: {:ok, String.t} | {:error, term}
+  @spec template_name(Path.t, Keyword.t) :: {:ok, binary} | {:error, term}
   def template_name(name, vars \\ []) do
     template_file = "#{name}.eex"
     override_file = Path.join(vars[:template_dir], template_file)
