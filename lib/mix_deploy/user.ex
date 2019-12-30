@@ -3,7 +3,7 @@ defmodule MixDeploy.User do
 
   # Get information about OS users and groups
 
-  @typep name_id() :: {String.t, non_neg_integer}
+  @typep name_id() :: {binary, non_neg_integer}
   @typep os_type :: {atom, atom}
 
   @doc "Get user and group of current user from OS id command"
@@ -21,12 +21,12 @@ defmodule MixDeploy.User do
   end
 
   @doc "Get uid for user"
-  @spec get_uid(String.t) :: non_neg_integer
+  @spec get_uid(binary) :: non_neg_integer
   def get_uid(name) do
     get_uid(:os.type(), name)
   end
 
-  @spec get_uid(os_type(), String.t) :: non_neg_integer
+  @spec get_uid(os_type(), binary) :: non_neg_integer
   defp get_uid({:unix, :linux}, name) do
     {:ok, info} = get_user_info(name)
     info.uid
@@ -37,12 +37,12 @@ defmodule MixDeploy.User do
   end
 
   @doc "Get gid for group"
-  @spec get_gid(String.t) :: non_neg_integer
+  @spec get_gid(binary) :: non_neg_integer
   def get_gid(name) do
     get_gid(:os.type(), name)
   end
 
-  @spec get_gid(os_type(), String.t) :: non_neg_integer
+  @spec get_gid(os_type(), binary) :: non_neg_integer
   defp get_gid({:unix, :linux}, name) do
     {:ok, info} = get_user_info(name)
     info.uid
@@ -79,10 +79,10 @@ defmodule MixDeploy.User do
     {:ok, %{name: name, password: pw, gid: String.to_integer(gid), members: members}}
   end
 
-  @spec get_passwd_record({atom, atom}, String.t) :: {:ok, String.t}
+  @spec get_passwd_record({:unix, :darwin | :linux}, binary) :: {:ok, binary}
   defp get_passwd_record({:unix, :linux}, name) do
     {data, 0} = System.cmd("getent", ["passwd", name])
-    {:ok, data}
+    {:ok, to_string(data)}
   end
   defp get_passwd_record({:unix, :darwin}, name) do
     path = "/Users/#{name}"
@@ -93,10 +93,10 @@ defmodule MixDeploy.User do
     {:ok, Enum.join([name, "x"] ++ values, ":") <> "\n"}
   end
 
-  @spec get_group_record({atom, atom}, String.t) :: {:ok, String.t}
+  @spec get_group_record({:unix, :linux | :darwin}, binary) :: {:ok, binary}
   defp get_group_record({:unix, :linux}, name) do
     {record, 0} = System.cmd("getent", ["group", name])
-    {:ok, record}
+    {:ok, to_string(record)}
   end
   defp get_group_record({:unix, :darwin}, name) do
     path = "/Groups/#{name}"
@@ -108,7 +108,7 @@ defmodule MixDeploy.User do
   end
 
   @doc "Call macOS dscl command to read information"
-  @spec dscl_read(String.t, String.t) :: {:ok, String.t} | {:error, :not_found}
+  @spec dscl_read(binary, binary) :: {:ok, binary} | {:error, :not_found}
   def dscl_read(path, key) do
     case System.cmd("dscl", ["-q", ".", "-read", path, key]) do
       {data, 0} ->
@@ -119,13 +119,13 @@ defmodule MixDeploy.User do
     end
   end
 
-  @spec dscl_format_group_members(String.t) :: String.t
+  @spec dscl_format_group_members(binary) :: binary
   defp dscl_format_group_members(""), do: ""
   defp dscl_format_group_members(members) do
     Enum.join(Regex.split(~r/\s+/, String.trim(members), trim: true), ",")
   end
 
-  @spec parse_group_members(String.t) :: [String.t]
+  @spec parse_group_members(binary) :: [binary]
   defp parse_group_members(""), do: []
   defp parse_group_members(members), do: String.split(members, ",")
 end
