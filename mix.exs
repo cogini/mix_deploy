@@ -46,9 +46,9 @@ defmodule MixDeploy.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:ex_doc, "~> 0.19.2", only: :dev, runtime: false},
-      {:mix_systemd, git: "https://github.com/cogini/mix_systemd.git"},
-      # {:mix_systemd, "~> 0.7.0"}
+      {:ex_doc, "~> 0.21.2", only: :dev, runtime: false},
+      # {:mix_systemd, git: "https://github.com/cogini/mix_systemd.git"},
+      {:mix_systemd, "~> 0.7"}
       # {:dialyxir, "~> 0.5.1", only: [:dev, :test], runtime: false},
     ]
   end
@@ -68,8 +68,8 @@ defmodule MixDeploy.MixProject do
   defp docs do
     [
       source_url: @github,
-      extras: ["README.md"],
-      api_reference: false,
+      extras: ["README.md", "CHANGELOG.md"],
+      # api_reference: false,
       source_url_pattern: "https://mydomain.org/user_or_team/repo_name/blob/master/%{path}#L%{line}",
     ]
   end
