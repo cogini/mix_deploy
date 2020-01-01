@@ -70,7 +70,7 @@ defmodule MixDeploy.MixProject do
       source_url: @github,
       extras: ["README.md", "CHANGELOG.md"],
       # api_reference: false,
-      source_url_pattern: "https://mydomain.org/user_or_team/repo_name/blob/master/%{path}#L%{line}",
+      source_url_pattern: "#{@github}/blob/master/%{path}#L%{line}",
     ]
   end
 end
