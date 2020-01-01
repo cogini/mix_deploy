@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.7.1] - 2020-01-01
+### Fixed
+- Updated path to tar file, closes https://github.com/cogini/mix_deploy/pull/2
+
 ## [0.7.0] - 2020-01-01
 ### Added
 - Support Elixir 1.9 `mix release`
