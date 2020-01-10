@@ -11,12 +11,17 @@ defmodule MixDeploy.User do
   def get_id do
     {data, 0} = System.cmd("id", [])
     [[user], [group], groups] = for pair <- String.split(String.trim(data), " ") do
-      [_name, pairs] = String.split(pair, "=")
-      for pair <- String.split(pairs, ",") do
-        [num, name] = Regex.run(~R/^(\d+)\(([a-zA-Z1-9_.]+)\)$/, pair, capture: :all_but_first)
-        {name, String.to_integer(num)}
+      case String.split(pair, "=") do
+        ["context", _] -> nil
+
+        [_name, pairs] ->
+          for pair <- String.split(pairs, ",") do
+            [num, name] = Regex.run(~R/^(\d+)\(([a-zA-Z1-9_.-]+)\)$/, pair, capture: :all_but_first)
+            {name, String.to_integer(num)}
+          end
       end
     end
+    |> Enum.reject(& is_nil/1)
     {user, group, groups}
   end
 
