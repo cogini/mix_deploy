@@ -19,7 +19,7 @@ RELEASE_NAME="${RELEASE_NAME:-<%= release_name %>}"
 
 <%= case release_system do %>
 <% :mix -> %>
-MIGRATE_FUNCTION="${MIGRATE_FUNCTION:-<%= module_name %>.ReleaseTasks.Migrate.run}"
+MIGRATE_FUNCTION="${MIGRATE_FUNCTION:-<%= module_name %>.Release.migrate}"
 $CURRENT_DIR/bin/$RELEASE_NAME eval "$MIGRATE_FUNCTION"
 <% :distillery -> %>
 $CURRENT_DIR/bin/$RELEASE_NAME migrate
