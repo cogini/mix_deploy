@@ -256,6 +256,7 @@ defmodule Mix.Tasks.Deploy do
       scripts_dir: cfg[:scripts_dir] || Path.join(cfg[:deploy_dir], "bin"),
       flags_dir: cfg[:flags_dir] || Path.join(cfg[:deploy_dir], "flags"),
       current_dir: cfg[:current_dir] || Path.join(cfg[:deploy_dir], "current"),
+      etc_dir: cfg[:current_dir] || Path.join(cfg[:deploy_dir], "etc"),
 
       runtime_dir: cfg[:runtime_dir] || Path.join(cfg[:runtime_directory_base], cfg[:runtime_directory]),
       configuration_dir: cfg[:configuration_dir] || Path.join(cfg[:configuration_directory_base], cfg[:configuration_directory]),
@@ -398,6 +399,13 @@ defmodule Mix.Tasks.Deploy.Generate do
         group: "$APP_GROUP",
         mode: (if cfg[:restart_method] == :touch, do: "770", else: "750"),
         comment: "Flag files"
+      },
+      %{
+        path: cfg[:etc_dir],
+        user: "$DEPLOY_USER",
+        group: "$APP_GROUP",
+        mode: "750",
+        comment: "Release config"
       },
       %{
         path: "/lib/systemd/system",
