@@ -502,7 +502,7 @@ defmodule Mix.Tasks.Deploy.Generate do
 
   defp write_template(cfg, dest_dir, template, file) do
     output_file = cfg[:target_prefix] <> file
-    target_file = Path.join(dest_dir, output_file)
+    # target_file = Path.join(dest_dir, output_file)
     # Mix.shell.info "Generating #{target_file} from template #{template}"
     Templates.write_template(cfg, dest_dir, template, output_file)
   end
