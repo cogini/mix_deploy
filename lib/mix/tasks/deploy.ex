@@ -415,7 +415,7 @@ defmodule Mix.Tasks.Deploy.Generate do
       [
         %{
           enabled: :runtime in cfg[:dirs],
-          path: cfg[:runtime_directory_mode],
+          path: cfg[:runtime_dir],
           user: "$APP_USER",
           group: "$APP_GROUP",
           mode: cfg[:runtime_directory_mode],
