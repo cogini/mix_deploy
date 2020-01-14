@@ -10,7 +10,7 @@ OUTPUT_DIR="${OUTPUT_DIR:-files}"
 
 # Config vars
 RELEASE_VSN="${RELEASE_VSN:-<%= version %>}"
-RELEASE_NAME="${RELEASE_NAME:-<%= app_name %>}"
+RELEASE_NAME="${RELEASE_NAME:-<%= release_name %>}"
 BIN_DIR="<%= bin_dir %>"
 
 echo "==> Copying output files to ${OUTPUT_DIR}"

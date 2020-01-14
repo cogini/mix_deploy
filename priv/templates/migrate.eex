@@ -15,7 +15,7 @@ SCRIPT_PREFIX="${SCRIPT_PREFIX:-deploy-}"
 . $BINDIR/${SCRIPT_PREFIX}set-env
 
 # Config vars
-RELEASE_NAME="<%= release_name %>"
+RELEASE_NAME="${RELEASE_NAME:-<%= release_name %>}"
 
 <%= case release_system do %>
 <% :mix -> %>

@@ -9,7 +9,7 @@ set -e
 
 MIX_ENV="${MIX_ENV:-prod}"
 RELEASE_VSN="${RELEASE_VSN:-<%= version %>}"
-RELEASE_NAME="${RELEASE_NAME:-<%= app_name %>}"
+RELEASE_NAME="${RELEASE_NAME:-<%= release_name %>}"
 
 # Config vars
 DEPLOY_DIR="<%= deploy_dir %>"
