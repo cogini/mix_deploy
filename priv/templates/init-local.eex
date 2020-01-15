@@ -9,20 +9,19 @@ cd "$BINDIR"; BINDIR="$PWD"; cd "$CURDIR"
 set -e
 
 # Config vars
-DEPLOY_DIR="<%= deploy_dir %>"
-SCRIPTS_DIR="<%= scripts_dir %>"
-BIN_DIR="<%= bin_dir %>"
+SCRIPTS_DIR="${SCRIPTS_DIR:-"<%= scripts_dir %>"}"
+SCRIPTS_SRC="${SCRIPTS_SRC:-"<%= bin_dir %>"}"
 SCRIPT_PREFIX="${SCRIPT_PREFIX:-"deploy-"}"
 
 echo "==> Creating OS users"
 $BINDIR/${SCRIPT_PREFIX}create-users
 
-echo "==> Creating app dirs under ${DEPLOY_DIR}"
+echo "==> Creating app dirs"
 $BINDIR/${SCRIPT_PREFIX}create-dirs
 
-echo "==> Copying scripts used by systemd"
-chmod +x $BIN_DIR/*
-cp $BIN_DIR/* "$SCRIPTS_DIR"
+echo "==> Copying scripts to ${SCRIPTS_DIR}"
+chmod +x $SCRIPTS_SRC/*
+cp $SCRIPTS_SRC/* "$SCRIPTS_DIR"
 
 echo "==> Copying files"
 $BINDIR/${SCRIPT_PREFIX}copy-files
