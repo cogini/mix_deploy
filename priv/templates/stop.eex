@@ -5,7 +5,7 @@
 set -e
 
 # Config vars
-SERVICE_NAME="<%= service_name %>"
+SERVICE_NAME="${SERVICE_NAME:-<%= service_name %>}"
 
 # Stop service if it is running
 if /bin/systemctl is-active "${SERVICE_NAME}"; then

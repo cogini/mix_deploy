@@ -8,7 +8,7 @@ set -e
 # DESTDIR, prefix for target files, optional
 
 # Config vars
-DEPLOY_DIR="<%= deploy_dir %>"
+CURRENT_DIR="${CURRENT_DIR:-<%= current_dir %>}"
 RELEASE_NAME="${RELEASE_NAME:-<%= release_name %>}"
 DEPLOY_USER="${DEPLOY_USER:-<%= deploy_user %>}"
 APP_GROUP="${APP_USER:-<%= app_group %>}"
@@ -17,13 +17,13 @@ CURDIR="$PWD"
 BINDIR=$(dirname "$0")
 cd "$BINDIR"; BINDIR="$PWD"; cd "$CURDIR"
 
-CURRENT_DIR="${DESTDIR}${DEPLOY_DIR}/current"
+TARGET_DIR="${DESTDIR}${CURRENT_DIR}"
 TAR_FILE="$BINDIR/../${RELEASE_NAME}.tar.gz"
 
-echo "==> Removing previous release $CURRENT_DIR"
-rm -rf "$CURRENT_DIR"
+echo "==> Removing previous release $TARGET_DIR"
+rm -rf "$TARGET_DIR"
 
 echo "==> Extracting release from tar file $TAR_FILE"
-mkdir -p "$CURRENT_DIR"
-tar -C "$CURRENT_DIR" -xzf "$TAR_FILE"
-chown -R ${DEPLOY_USER}:${APP_GROUP} "${CURRENT_DIR}"
+mkdir -p "$TARGET_DIR"
+tar -C "$TARGET_DIR" -xzf "$TAR_FILE"
+chown -R ${DEPLOY_USER}:${APP_GROUP} "${TARGET_DIR}"

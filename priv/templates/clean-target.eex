@@ -11,9 +11,9 @@ set -e
 # DESTDIR, prefix for target files, optional
 
 # Config vars
-DEPLOY_DIR="<%= deploy_dir %>"
-SERVICE_NAME="<%= service_name %>"
+DEPLOY_DIR="${DEPLOY_DIR:-<%= deploy_dir %>}"
+SERVICE_NAME="${SERVICE_NAME:-<%= service_name %>}"
 
 rm -rf "${DESTDIR}${DEPLOY_DIR}"
 
-rm -f $DESTDIR/lib/systemd/system/${SERVICE_NAME}*
+rm -f ${DESTDIR}/lib/systemd/system/${SERVICE_NAME}*

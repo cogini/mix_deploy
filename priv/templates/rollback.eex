@@ -11,10 +11,10 @@ set -e
 # Config vars
 DEPLOY_DIR="<%= deploy_dir %>"
 
-RELEASES_DIR="${DESTDIR}${DEPLOY_DIR}/releases"
-CURRENT_LINK="${DESTDIR}${DEPLOY_DIR}/current"
+RELEASES_DIR="${DESTDIR}${RELEASES_DIR:-<%= releases_dir %>}"
+CURRENT_LINK="${DESTDIR}${CURRENT_DIR:-<%= current_dir %>}"
 # TODO: error handling
-PREV_DIR=$(find "${RELEASES_DIR}" -maxdepth 1 | sort | tail -2 | head -1)
+PREV_DIR=$(find -H "${RELEASES_DIR}" -maxdepth 1 | sort | tail -2 | head -1)
 PREV_NAME=$(basename "${PREV_DIR}")
 RELEASE="${RELEASE:-$PREV_NAME}"
 

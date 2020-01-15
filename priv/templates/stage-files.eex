@@ -11,7 +11,7 @@ OUTPUT_DIR="${OUTPUT_DIR:-files}"
 # Config vars
 RELEASE_VSN="${RELEASE_VSN:-<%= version %>}"
 RELEASE_NAME="${RELEASE_NAME:-<%= release_name %>}"
-BIN_DIR="<%= bin_dir %>"
+SCRIPTS_SRC="<%= bin_dir %>"
 
 echo "==> Copying output files to ${OUTPUT_DIR}"
 
@@ -32,7 +32,7 @@ mkdir -p ${OUTPUT_DIR}/systemd
 cp -v _build/${MIX_ENV}/systemd/lib/systemd/system/* "${OUTPUT_DIR}/systemd"
 
 mkdir -p "${OUTPUT_DIR}/bin"
-cp ${BIN_DIR}/* ${OUTPUT_DIR}/bin
+cp ${SCRIPTS_SRC}/* ${OUTPUT_DIR}/bin
 
 mkdir -p ${OUTPUT_DIR}/etc
 

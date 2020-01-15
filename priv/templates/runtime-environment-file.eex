@@ -6,7 +6,7 @@
 set -e
 
 # Config vars
-RUNTIME_DIR="<%= runtime_dir %>"
+RUNTIME_DIR="${RUNTIME_DIR:-<%= runtime_dir %>}"
 
 mkdir -p "$RUNTIME_DIR"
 

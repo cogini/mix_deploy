@@ -5,6 +5,6 @@
 set -e
 
 # Config vars
-SERVICE_NAME="<%= service_name %>"
+SERVICE_NAME="${SERVICE_NAME:-<%= service_name %>}"
 
 /bin/systemctl restart "${SERVICE_NAME}"
