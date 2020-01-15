@@ -10,7 +10,7 @@ CURDIR="$PWD"
 BINDIR=$(dirname "$0")
 cd "$BINDIR"; BINDIR="$PWD"; cd "$CURDIR"
 
-SCRIPT_PREFIX="${SCRIPT_PREFIX:-deploy-}"
+SCRIPT_PREFIX="${SCRIPT_PREFIX:-"deploy-"}"
 
 . $BINDIR/${SCRIPT_PREFIX}set-env
 

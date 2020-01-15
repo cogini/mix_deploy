@@ -10,9 +10,9 @@ set -e
 # DESTDIR, prefix for target files, optional
 
 # Config vars
-CONFIG_DIR="<%= configuration_dir %>"
-DEPLOY_USER="${DEPLOY_USER:-<%= deploy_user %>}"
-APP_GROUP="${APP_USER:-<%= app_group %>}"
+CONFIG_DIR="${CONFIG_DIR:-"<%= configuration_dir %>"}"
+DEPLOY_USER="${DEPLOY_USER:-"<%= deploy_user %>"}"
+APP_GROUP="${APP_USER:-"<%= app_group %>"}"
 
 # Make sure files are created with restrictive file permissions
 umask 077
@@ -21,6 +21,6 @@ echo "Starting $0"
 
 aws s3 sync --exact-timestamps --no-progress "s3://${CONFIG_S3_BUCKET}/${CONFIG_S3_PREFIX}" "${DESTDIR}${CONFIG_DIR}/"
 
-chown -R $DEPLOY_USER:$APP_GROUP ${DESTDIR}$CONFIG_DIR
-find ${DESTDIR}$CONFIG_DIR -type f -exec chmod 640 {} \;
-find ${DESTDIR}$CONFIG_DIR -type d -exec chmod 750 {} \;
+chown -R $DEPLOY_USER:$APP_GROUP "${DESTDIR}$CONFIG_DIR"
+find -H "${DESTDIR}$CONFIG_DIR" -type f -exec chmod 640 {} \;
+find -H "${DESTDIR}$CONFIG_DIR" -type d -exec chmod 750 {} \;

@@ -5,12 +5,12 @@
 set -e
 
 # Environment vars
-MIX_ENV="${MIX_ENV:-prod}"
-OUTPUT_DIR="${OUTPUT_DIR:-files}"
+MIX_ENV="${MIX_ENV:-"prod"}"
+OUTPUT_DIR="${OUTPUT_DIR:-"files"}"
 
 # Config vars
-RELEASE_VSN="${RELEASE_VSN:-<%= version %>}"
-RELEASE_NAME="${RELEASE_NAME:-<%= release_name %>}"
+RELEASE_VSN="${RELEASE_VSN:-"<%= version %>"}"
+RELEASE_NAME="${RELEASE_NAME:-"<%= release_name %>"}"
 SCRIPTS_SRC="<%= bin_dir %>"
 
 echo "==> Copying output files to ${OUTPUT_DIR}"

@@ -7,8 +7,8 @@
 set -e
 
 # Config vars
-DEPLOY_USER="${DEPLOY_USER:-<%= deploy_user %>}"
-APP_USER="${APP_USER:-<%= app_user %>}"
+DEPLOY_USER="${DEPLOY_USER:-"<%= deploy_user %>"}"
+APP_USER="${APP_USER:-"<%= app_user %>"}"
 
 if ! id -u "$APP_USER" > /dev/null &>/dev/null; then
     echo "==> Creating app user $APP_USER"

@@ -11,8 +11,8 @@ set -e
 # DESTDIR, prefix for target files, optional
 
 # Config vars
-DEPLOY_DIR="${DEPLOY_DIR:-<%= deploy_dir %>}"
-SERVICE_NAME="${SERVICE_NAME:-<%= service_name %>}"
+DEPLOY_DIR="${DEPLOY_DIR:-"<%= deploy_dir %>"}"
+SERVICE_NAME="${SERVICE_NAME:-"<%= service_name %>"}"
 
 rm -rf "${DESTDIR}${DEPLOY_DIR}"
 

@@ -9,7 +9,7 @@ set -e
 # DESTDIR, prefix for target files, optional
 
 # Config vars
-DEPLOY_DIR="<%= deploy_dir %>"
+DEPLOY_DIR="${DEPLOY_DIR:-"<%= deploy_dir %>"}"
 
 RELEASES_DIR="${DESTDIR}${RELEASES_DIR:-<%= releases_dir %>}"
 CURRENT_LINK="${DESTDIR}${CURRENT_DIR:-<%= current_dir %>}"

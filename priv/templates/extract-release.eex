@@ -8,10 +8,10 @@ set -e
 # DESTDIR, prefix for target files, optional
 
 # Config vars
-CURRENT_DIR="${CURRENT_DIR:-<%= current_dir %>}"
-RELEASE_NAME="${RELEASE_NAME:-<%= release_name %>}"
-DEPLOY_USER="${DEPLOY_USER:-<%= deploy_user %>}"
-APP_GROUP="${APP_USER:-<%= app_group %>}"
+CURRENT_DIR="${CURRENT_DIR:-"<%= current_dir %>"}"
+RELEASE_NAME="${RELEASE_NAME:-"<%= release_name %>"}"
+DEPLOY_USER="${DEPLOY_USER:-"<%= deploy_user %>"}"
+APP_GROUP="${APP_USER:-"<%= app_group %>"}"
 
 CURDIR="$PWD"
 BINDIR=$(dirname "$0")

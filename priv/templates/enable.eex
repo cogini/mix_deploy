@@ -7,7 +7,7 @@
 set -e
 
 # Config vars
-SERVICE_NAME="${SERVICE_NAME:-<%= service_name %>}"
+SERVICE_NAME="${SERVICE_NAME:-"<%= service_name %>"}"
 
 echo "==> Enabling systemd unit $SERVICE_NAME"
 /bin/systemctl enable "${SERVICE_NAME}"

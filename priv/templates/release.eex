@@ -8,15 +8,15 @@ set -e
 # DESTDIR, prefix for target files, optional
 
 MIX_ENV="${MIX_ENV:-prod}"
-RELEASE_VSN="${RELEASE_VSN:-<%= version %>}"
-RELEASE_NAME="${RELEASE_NAME:-<%= release_name %>}"
+RELEASE_VSN="${RELEASE_VSN:-"<%= version %>"}"
+RELEASE_NAME="${RELEASE_NAME:-"<%= release_name %>"}"
 
 # Config vars
-DEPLOY_USER="${DEPLOY_USER:-<%= deploy_user %>}"
-APP_GROUP="${APP_USER:-<%= app_group %>}"
+DEPLOY_USER="${DEPLOY_USER:-"<%= deploy_user %>"}"
+APP_GROUP="${APP_USER:-"<%= app_group %>"}"
 
-CURRENT_DIR="${CURRENT_DIR:-<%= current_dir %>}"
-RELEASES_DIR="${RELEASES_DIR:-<%= releases_dir %>}"
+CURRENT_DIR="${CURRENT_DIR:-"<%= current_dir %>"}"
+RELEASES_DIR="${RELEASES_DIR:-"<%= releases_dir %>"}"
 
 CURRENT_LINK="${DESTDIR}${CURRENT_DIR}"
 
