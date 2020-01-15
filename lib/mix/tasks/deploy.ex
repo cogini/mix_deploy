@@ -496,6 +496,10 @@ defmodule Mix.Tasks.Deploy.Generate do
       }
     end
 
+    dirs = for dir <- dirs, dir[:enabled] != false do
+      %{dir | path: Mix.Tasks.Deploy.expand_vars(dir.path, cfg)}
+    end
+
     vars = cfg ++ [create_dirs: dirs, copy_files: files]
 
     for template <- cfg[:templates], do: write_template(vars, cfg[:bin_dir], template)
