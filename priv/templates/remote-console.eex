@@ -1,22 +1,21 @@
 #!/bin/sh
 
-# Get remote console for the app
-# This needs to be run under the app user account
+# Run remote console
+
+# This is normally run under the app user account.
+# It is primarily useful for Distillery, which may
+# need to load environment vars before starting.
+# mix releases can use env.sh
+
+# The release will, in general, need to have a writable directory to process
+# the application environment, set with RELEASE_TMP or RELEASE_MUTABLE_DIR
 
 # Exit on errors
 set -e
 
-CURDIR="$PWD"
-BINDIR=$(dirname "$0")
-cd "$BINDIR"; BINDIR="$PWD"; cd "$CURDIR"
-
-SCRIPT_PREFIX="${SCRIPT_PREFIX:-"deploy-"}"
-
-. $BINDIR/${SCRIPT_PREFIX}set-env
-
 # Config vars
-CURRENT_DIR="${CURRENT_DIR:-<%= current_dir %>}"
-RELEASE_NAME="${RELEASE_NAME:-<%= release_name %>}"
+CURRENT_DIR="${CURRENT_DIR:-"<%= current_dir %>"}"
+RELEASE_NAME="${RELEASE_NAME:-"<%= release_name %>"}"
 
 <%= case release_system do %>
 <% :mix -> %>

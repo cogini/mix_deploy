@@ -1,18 +1,15 @@
 #!/bin/sh
 
-# Get remote console for the app
-# This needs to be run under the app user account
+# Run database migrations before starting
+
+# This is normally run under the app OS user.
+# It assumes that config is loaded by release config providers and env.sh.
+
+# The release will, in general, need to have a writable directory to process
+# the application environment, set with RELEASE_TMP or RELEASE_MUTABLE_DIR
 
 # Exit on errors
 set -e
-
-CURDIR="$PWD"
-BINDIR=$(dirname "$0")
-cd "$BINDIR"; BINDIR="$PWD"; cd "$CURDIR"
-
-SCRIPT_PREFIX="${SCRIPT_PREFIX:-deploy-}"
-
-. $BINDIR/${SCRIPT_PREFIX}set-env
 
 # Config vars
 CURRENT_DIR="${CURRENT_DIR:-"<%= current_dir %>"}"
@@ -23,5 +20,7 @@ RELEASE_NAME="${RELEASE_NAME:-"<%= release_name %>"}"
 MIGRATE_FUNCTION="${MIGRATE_FUNCTION:-"<%= module_name %>.Release.migrate"}"
 $CURRENT_DIR/bin/$RELEASE_NAME eval "$MIGRATE_FUNCTION"
 <% :distillery -> %>
+# Run Distillery custom command
+# https://hexdocs.pm/distillery/extensibility/custom_commands.html
 $CURRENT_DIR/bin/$RELEASE_NAME migrate
 <% end %>
