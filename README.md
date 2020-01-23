@@ -561,7 +561,7 @@ converted to `"!/srv/foo/bin/myscript"`.
 Config vars set a few common env vars:
 
 * `mix_env`: default `Mix.env()`, sets `MIX_ENV`
-* `env_lang`: default `C.UTF-8`, used to set `LANG`
+* `env_lang`: default `en_US.UTF-8`, used to set `LANG`
 
 In addition, you can set `env_vars` and `env_files` the same way
 as for `mix_systemd`. The `set-env` script will then set these

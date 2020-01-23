@@ -3,7 +3,7 @@
 # Set up environment the same way it would be if run under
 # the systemd unit file.
 
-export LANG="${LANG:-"C.UTF-8"}"
+export LANG="${LANG:-"en_US.UTF-8"}"
 export MIX_ENV="${MIX_ENV:-"prod"}"
 
 <%= if :runtime in dirs do %>RUNTIME_DIR="${RUNTIME_DIR:-"<%= runtime_dir %>"}"<% end %>
