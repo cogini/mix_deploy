@@ -17,6 +17,7 @@ export MIX_ENV="${MIX_ENV:-"prod"}"
 
 <%= for env <- env_vars do %>
 <%= env %>
+
 <% end %>
 
 <% env_files = Enum.map(env_files,
