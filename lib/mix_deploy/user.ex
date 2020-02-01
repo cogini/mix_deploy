@@ -10,18 +10,24 @@ defmodule MixDeploy.User do
   @spec get_id() :: {user :: name_id(), group :: name_id(), groups :: [name_id()]}
   def get_id do
     {data, 0} = System.cmd("id", [])
-    [[user], [group], groups] = for pair <- String.split(String.trim(data), " ") do
-      case String.split(pair, "=") do
-        ["context", _] -> nil
 
-        [_name, pairs] ->
-          for pair <- String.split(pairs, ",") do
-            [num, name] = Regex.run(~R/^(\d+)\(([a-zA-Z1-9_.-]+)\)$/, pair, capture: :all_but_first)
-            {name, String.to_integer(num)}
-          end
+    [[user], [group], groups] =
+      for pair <- String.split(String.trim(data), " ") do
+        case String.split(pair, "=") do
+          ["context", _] ->
+            nil
+
+          [_name, pairs] ->
+            for pair <- String.split(pairs, ",") do
+              [num, name] =
+                Regex.run(~R/^(\d+)\(([a-zA-Z1-9_.-]+)\)$/, pair, capture: :all_but_first)
+
+              {name, String.to_integer(num)}
+            end
+        end
       end
-    end
-    |> Enum.reject(& is_nil/1)
+      |> Enum.reject(&is_nil/1)
+
     {user, group, groups}
   end
 
@@ -36,6 +42,7 @@ defmodule MixDeploy.User do
     {:ok, info} = get_user_info(name)
     info.uid
   end
+
   defp get_uid({:unix, :darwin}, name) do
     {:ok, uid} = dscl_read("/Users/#{name}", "PrimaryGroupID")
     String.to_integer(uid)
@@ -52,6 +59,7 @@ defmodule MixDeploy.User do
     {:ok, info} = get_user_info(name)
     info.uid
   end
+
   defp get_gid({:unix, :darwin}, name) do
     {:ok, gid} = dscl_read("/Groups/#{name}", "PrimaryGroupID")
     String.to_integer(gid)
@@ -63,15 +71,17 @@ defmodule MixDeploy.User do
     {:ok, record} = get_passwd_record(:os.type(), name)
     # "jake:x:1003:1005:ansible-jake:/home/jake:/bin/bash\n"
     [name, pw, uid, gid, gecos, home, shell] = String.split(String.trim(record), ":")
-    {:ok, %{
-      user: name,
-      password: pw,
-      uid: String.to_integer(uid),
-      gid: String.to_integer(gid),
-      gecos: gecos,
-      home: home,
-      shell: shell
-    }}
+
+    {:ok,
+     %{
+       user: name,
+       password: pw,
+       uid: String.to_integer(uid),
+       gid: String.to_integer(gid),
+       gecos: gecos,
+       home: home,
+       shell: shell
+     }}
   end
 
   @doc "Get OS group info from /etc/group"
@@ -89,12 +99,16 @@ defmodule MixDeploy.User do
     {data, 0} = System.cmd("getent", ["passwd", name])
     {:ok, to_string(data)}
   end
+
   defp get_passwd_record({:unix, :darwin}, name) do
     path = "/Users/#{name}"
-    values = for key <- ["UniqueID", "PrimaryGroupID", "RealName", "NFSHomeDirectory", "UserShell"] do
-      {:ok, value} = dscl_read(path, key)
-      value
-    end
+
+    values =
+      for key <- ["UniqueID", "PrimaryGroupID", "RealName", "NFSHomeDirectory", "UserShell"] do
+        {:ok, value} = dscl_read(path, key)
+        value
+      end
+
     {:ok, Enum.join([name, "x"] ++ values, ":") <> "\n"}
   end
 
@@ -103,6 +117,7 @@ defmodule MixDeploy.User do
     {record, 0} = System.cmd("getent", ["group", name])
     {:ok, to_string(record)}
   end
+
   defp get_group_record({:unix, :darwin}, name) do
     path = "/Groups/#{name}"
     {:ok, gid} = dscl_read(path, "PrimaryGroupID")
@@ -119,6 +134,7 @@ defmodule MixDeploy.User do
       {data, 0} ->
         [_key, value] = Regex.split(~r/\s+/, String.trim(data), multiline: true, parts: 2)
         {:ok, value}
+
       _ ->
         {:error, :not_found}
     end
@@ -126,6 +142,7 @@ defmodule MixDeploy.User do
 
   @spec dscl_format_group_members(binary) :: binary
   defp dscl_format_group_members(""), do: ""
+
   defp dscl_format_group_members(members) do
     Enum.join(Regex.split(~r/\s+/, String.trim(members), trim: true), ",")
   end

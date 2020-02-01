@@ -16,14 +16,14 @@ defmodule MixDeploy.MixProject do
       homepage_url: @github,
       docs: docs(),
       dialyzer: [
-        plt_add_apps: [:mix, :eex],
+        plt_add_apps: [:mix, :eex]
         # plt_add_deps: true,
         # flags: ["-Werror_handling", "-Wrace_conditions"],
         # flags: ["-Wunmatched_returns", :error_handling, :race_conditions, :underspecs],
         # ignore_warnings: "dialyzer.ignore-warnings"
       ],
       deps: deps(),
-      releases: releases(),
+      releases: releases()
     ]
   end
 
@@ -70,7 +70,7 @@ defmodule MixDeploy.MixProject do
       source_url: @github,
       extras: ["README.md", "CHANGELOG.md"],
       # api_reference: false,
-      source_url_pattern: "#{@github}/blob/master/%{path}#L%{line}",
+      source_url_pattern: "#{@github}/blob/master/%{path}#L%{line}"
     ]
   end
 end
