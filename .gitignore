@@ -24,3 +24,4 @@ mix_deploy-*.tar
 
 /rel/templates/
 /bin/
+.elixir_ls
