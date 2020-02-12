@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.7.4] - 2020-02-12
+### Changed
+- Update mix_systemd and ex_doc
+
 ## [0.7.3] - 2020-01-24
 ### Fixed
 - Fix problem with newlines in set-env
