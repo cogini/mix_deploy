@@ -6,7 +6,7 @@ defmodule MixDeploy.MixProject do
   def project do
     [
       app: :mix_deploy,
-      version: "0.7.4",
+      version: "0.7.6",
       elixir: "~> 1.6",
       build_embedded: Mix.env() == :prod,
       start_permanent: Mix.env() == :prod,
@@ -46,7 +46,7 @@ defmodule MixDeploy.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:ex_doc, "~> 0.21.3", runtime: false},
+      {:ex_doc, "~> 0.21", only: :dev, runtime: false},
       # {:mix_systemd, git: "https://github.com/cogini/mix_systemd.git"},
       {:mix_systemd, "~> 0.7"}
       # {:dialyxir, "~> 0.5.1", only: [:dev, :test], runtime: false},

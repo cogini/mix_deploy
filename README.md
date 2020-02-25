@@ -146,7 +146,7 @@ bin/deploy-enable
 
 ### Build the Elixir release
 
-Create the release, a a tar file containing the app, the libraries it depends
+Create the release, a tar file containing the app, the libraries it depends
 on, and scripts to manage it.
 
 ```shell
@@ -211,9 +211,8 @@ create different files based on the environment, set `bin_dir` to
 
 ## Configuration
 
-The library tries to choose smart defaults, so it should require minimal
-configuration for standard cases. It reads the app name from `mix.exs` and
-calculates default values for its configuration parameters.
+The library tries to choose smart defaults. It reads the app name from
+`mix.exs` and calculates default values for its configuration parameters.
 
 If your app is named `foo_bar`, it will create a service named `foo-bar`,
 deployed to `/srv/foo-bar`, running under the user `foo-bar`.
@@ -278,7 +277,7 @@ These scripts run on the build server.
 
 These scripts set up the environment and then run release commands.
 They make the config match the environment vars set at runtime in the systemd
-unit. With Eixir 1.9+ you can source `/srv/foo/bin/set-env` in `rel/env.sh.eex`.
+unit. With Elixir 1.9+ you can source `/srv/foo/bin/set-env` in `rel/env.sh.eex`.
 The other scripts are mainly useful with Distillery.
 
 * `set-env`: Set up environment
@@ -291,7 +290,7 @@ The other scripts are mainly useful with Distillery.
 These scripts are called by the systemd unit to set get the application config
 at runtime prior to starting the app. They are more most useful with Distillery.
 
-Eixir 1.9+ mix releases support
+Elixir 1.9+ mix releases support
 [runtime configuration](https://hexdocs.pm/mix/Mix.Tasks.Release.html#module-runtime-configuration)
 via `config/releases.exs` and `rel/env.sh.eex`. It is more secure, however, to
 separate the process of getting configuration from the app itself using
@@ -565,7 +564,7 @@ Config vars set a few common env vars:
 
 In addition, you can set `env_vars` and `env_files` the same way
 as for `mix_systemd`. The `set-env` script will then set these
-varialbles the same way as they are in the systemd unit,
+variables the same way as they are in the systemd unit,
 allowing you to run release commands with the same config, e.g. database
 migrations or console. It also sets:
 
@@ -803,3 +802,6 @@ files:
 
 See [mix_systemd](https://github.com/cogini/mix_systemd) for more examples.
 
+I am `jakemorrison` on on the Elixir Slack and Discord, `reachfh` on
+Freenode `#elixir-lang` IRC channel. Happy to chat or help with
+your projects.
