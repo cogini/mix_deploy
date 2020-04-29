@@ -42,7 +42,7 @@ if [ -f "$RUNTIME_ENV" ]; then
 fi
 
 # Elixir 1.9
-$CURRENT_DIR/bin/$APP_NAME eval "$MIGRATE_FUNCTION"
+$CURRENT_DIR/bin/$APP_NAME rpc "$MIGRATE_FUNCTION"
 
 # Distillery custom command
 # $CURRENT_DIR/bin/$APP_NAME migrate
