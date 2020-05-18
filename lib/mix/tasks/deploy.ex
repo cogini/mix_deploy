@@ -164,7 +164,7 @@ defmodule Mix.Tasks.Deploy do
         "deploy-sync-config-s3",
         "deploy-sync-assets-s3",
         "deploy-noop",
-        "deploy-rotate-beats-secrets"
+        "deploy-rotate-dd-secrets"
       ]
     ]
 
