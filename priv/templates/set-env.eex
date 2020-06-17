@@ -6,17 +6,17 @@
 export LANG="${LANG:-"en_US.utf8"}"
 export MIX_ENV="${MIX_ENV:-"prod"}"
 
-<%= if :runtime in dirs do %>RUNTIME_DIR="${RUNTIME_DIR:-"<%= runtime_dir %>"}"<% end %>
-<%= if :configuration in dirs do %>CONFIGURATION_DIR="${CONFIGURATION_DIR:-"<%= configuration_dir %>"}"<% end %>
-<%= if :logs in dirs do %>LOGS_DIR="${LOGS_DIR:-"<%= logs_dir %>"}"<% end %>
-<%= if :cache in dirs do %>CACHE_DIR="${CACHE_DIR:-"<%= cache_dir %>"}"<% end %>
-<%= if :state in dirs do %>STATE_DIR="${STATE_DIR:-"<%= state_dir %>"}"<% end %>
-<%= if :tmp in dirs do %>TMP_DIR="${TMP_DIR:-"<%= tmp_dir %>"}"<% end %>
+<%= if :runtime in dirs do %>export RUNTIME_DIR="${RUNTIME_DIR:-"<%= runtime_dir %>"}"<% end %>
+<%= if :configuration in dirs do %>export CONFIGURATION_DIR="${CONFIGURATION_DIR:-"<%= configuration_dir %>"}"<% end %>
+<%= if :logs in dirs do %>export LOGS_DIR="${LOGS_DIR:-"<%= logs_dir %>"}"<% end %>
+<%= if :cache in dirs do %>export CACHE_DIR="${CACHE_DIR:-"<%= cache_dir %>"}"<% end %>
+<%= if :state in dirs do %>export STATE_DIR="${STATE_DIR:-"<%= state_dir %>"}"<% end %>
+<%= if :tmp in dirs do %>export TMP_DIR="${TMP_DIR:-"<%= tmp_dir %>"}"<% end %>
 
 <%= if conform_conf_path && conform_conf_path != "" do %>CONFORM_CONF_PATH="<%= conform_conf_path %>"<% end %>
 
 <%= for env <- env_vars do %>
-<%= env %>
+<%= "export " <> env %>
 
 <% end %>
 
