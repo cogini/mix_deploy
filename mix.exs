@@ -4,10 +4,10 @@ defmodule MixDeploy.MixProject do
   def project do
     [
       app: :mix_deploy,
-      version: "0.5.0",
-      elixir: "~> 1.6",
-      build_embedded: Mix.env == :prod,
-      start_permanent: Mix.env == :prod,
+      version: "0.1.7",
+      elixir: "~> 1.9",
+      build_embedded: Mix.env() == :prod,
+      start_permanent: Mix.env() == :prod,
       description: description(),
       package: package(),
       source_url: "https://github.com/cogini/mix_deploy",
@@ -34,8 +34,10 @@ defmodule MixDeploy.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:ex_doc, "~> 0.19.2", only: :dev, runtime: false},
-      {:mix_systemd, git: "https://github.com/NarrativeApp/mix_systemd", tag: "0.1"},
+      {:mix_systemd, "~> 0.7.0", organization: "narrativeapp"},
+      {:ex_doc, ">= 0.0.0", only: [:dev, :test]},
+      {:credo, "~> 1.4.0", only: [:dev, :test], runtime: false}
+
       # {:mix_systemd, "~> 0.1.0"}
       # {:dialyxir, "~> 0.5.1", only: [:dev, :test], runtime: false},
       # {:dep_from_hexpm, "~> 0.3.0"},
@@ -61,5 +63,4 @@ defmodule MixDeploy.MixProject do
       extras: ["README.md"]
     ]
   end
-
 end

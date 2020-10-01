@@ -1,4 +1,5 @@
 defmodule Mix.Tasks.Deploy do
+  @moduledoc false
   # Directory under _build where module stores generated files
   @output_dir "deploy"
 
@@ -222,12 +223,13 @@ defmodule Mix.Tasks.Deploy.Init do
   """
   @shortdoc "Initialize template files"
   use Mix.Task
+  alias Mix.Tasks.Deploy
 
   @app :mix_deploy
 
   @spec run(OptionParser.argv()) :: no_return
   def run(args) do
-    cfg = Mix.Tasks.Deploy.parse_args(args)
+    cfg = Deploy.parse_args(args)
 
     template_dir = cfg[:template_dir]
     app_dir = Application.app_dir(@app, ["priv", "templates"])
@@ -249,6 +251,7 @@ defmodule Mix.Tasks.Deploy.Generate do
   @shortdoc "Create deploy scripts and files"
   use Mix.Task
 
+  alias Mix.Tasks.Deploy
   alias MixDeploy.Templates
 
   def flags_dir(cfg) do
@@ -269,7 +272,7 @@ defmodule Mix.Tasks.Deploy.Generate do
 
   @spec run(OptionParser.argv()) :: no_return
   def run(args) do
-    cfg = Mix.Tasks.Deploy.parse_args(args)
+    cfg = Deploy.parse_args(args)
     ext_name = cfg[:ext_name]
     output_dir = cfg[:output_dir]
 
@@ -368,10 +371,12 @@ defmodule Mix.Tasks.Deploy.Local do
 
   use Mix.Task
 
+  alias Mix.Tasks.Deploy
+
   @spec run(OptionParser.argv()) :: no_return
   def run(args) do
     # IO.puts (inspect args)
-    config = Mix.Tasks.Deploy.parse_args(args)
+    config = Deploy.parse_args(args)
     deploy_release(config)
   end
 
@@ -423,8 +428,10 @@ defmodule Mix.Tasks.Deploy.Local.Rollback do
 
   use Mix.Task
 
+  alias Mix.Tasks.Deploy
+
   def run(args) do
-    cfg = Mix.Tasks.Deploy.parse_args(args)
+    cfg = Deploy.parse_args(args)
 
     dirs = cfg[:releases_path] |> File.ls!() |> Enum.sort() |> Enum.reverse()
 
