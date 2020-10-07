@@ -594,7 +594,7 @@ defmodule Mix.Tasks.Deploy.Local do
       end
 
     Mix.shell().info("Extracting tar #{tar_file}")
-    :ok = :erl_tar.extract(to_charlist(tar_file), [{:cwd, release_dir}, :compressed])
+    :ok = :erl_tar.extract(to_charlist(tar_file), [{:cwd, to_charlist(release_dir)}, :compressed])
 
     current_link = cfg[:current_dir]
 
