@@ -566,6 +566,7 @@ defmodule Mix.Tasks.Deploy.Local do
   """
   use Mix.Task
 
+  @impl Mix.Task
   def run(args) do
     cfg = Mix.Tasks.Deploy.parse_args(args)
 
@@ -630,6 +631,7 @@ defmodule Mix.Tasks.Deploy.Local.Rollback do
   """
   use Mix.Task
 
+  @impl Mix.Task
   def run(args) do
     cfg = Mix.Tasks.Deploy.parse_args(args)
     dirs = cfg[:releases_dir] |> File.ls!() |> Enum.sort() |> Enum.reverse()
