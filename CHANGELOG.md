@@ -9,8 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Export vars to be visible in other scripts, thanks mitjok
 - Add ability to seed db, thanks mitjok
 - Update deps for Elixir 1.11
+- Update dialyxir version
 ### Fixed
 - Avoid duplicate keys in the bindings passed to EEx.eval_file, thanks vimalearnest
+- Pass dir as charlist to :erl_tar.extract
 
 ## [0.7.5] - 2020-02-25
 ### Fixed
