@@ -6,7 +6,7 @@ defmodule MixDeploy.MixProject do
   def project do
     [
       app: :mix_deploy,
-      version: "0.7.5",
+      version: "0.7.6",
       elixir: "~> 1.6",
       build_embedded: Mix.env() == :prod,
       start_permanent: Mix.env() == :prod,
@@ -23,7 +23,7 @@ defmodule MixDeploy.MixProject do
         # ignore_warnings: "dialyzer.ignore-warnings"
       ],
       deps: deps(),
-      releases: releases()
+      releases: releases(),
     ]
   end
 
@@ -39,7 +39,7 @@ defmodule MixDeploy.MixProject do
   # Run "mix help compile.app" to learn about applications.
   def application do
     [
-      extra_applications: [:logger]
+      extra_applications: [:logger, :eex]
     ]
   end
 
@@ -54,7 +54,7 @@ defmodule MixDeploy.MixProject do
   end
 
   defp description do
-    "Generates deployment scripts for an application."
+    "Generate deployment scripts for an application."
   end
 
   defp package do

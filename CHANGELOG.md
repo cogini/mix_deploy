@@ -4,7 +4,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [0.7.6] - 2020-10-07
+### Changed
+- Export vars to be visible in other scripts, thanks mitjok
+- Add ability to seed db, thanks mitjok
+- Update deps for Elixir 1.11
+### Fixed
+- Avoid duplicate keys in the bindings passed to EEx.eval_file, thanks vimalearnest
 
 ## [0.7.5] - 2020-02-25
 ### Fixed
