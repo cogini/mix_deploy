@@ -66,7 +66,14 @@ defmodule MixDeploy.User do
   end
 
   @doc "Get OS user info from /etc/passwd"
-  @spec get_user_info(binary) :: {:ok, map}
+  @spec get_user_info(binary) :: {:ok, %{
+    :gecos => binary(),
+    :gid => integer(),
+    :home => binary(),
+    :password => binary(),
+    :shell => binary(),
+    :uid => integer(),
+    :user => binary()}}
   def get_user_info(name) do
     {:ok, record} = get_passwd_record(:os.type(), name)
     # "jake:x:1003:1005:ansible-jake:/home/jake:/bin/bash\n"
@@ -85,7 +92,12 @@ defmodule MixDeploy.User do
   end
 
   @doc "Get OS group info from /etc/group"
-  @spec get_group_info(binary) :: {:ok, map}
+  @spec get_group_info(binary) :: {:ok, %{
+                :gid => integer(),
+                :members => [binary()],
+                :name => binary(),
+                :password => binary()}}
+
   def get_group_info(name) do
     {:ok, record} = get_group_record(:os.type(), name)
     # "wheel:x:10:jake,foo\n"
