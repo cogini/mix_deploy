@@ -16,10 +16,10 @@ defmodule MixDeploy.MixProject do
       homepage_url: @github,
       docs: docs(),
       dialyzer: [
-        plt_add_apps: [:mix, :eex]
+        plt_add_apps: [:mix, :eex],
         # plt_add_deps: true,
         # flags: ["-Werror_handling", "-Wrace_conditions"],
-        # flags: ["-Wunmatched_returns", :error_handling, :race_conditions, :underspecs],
+        flags: ["-Wunmatched_returns", :error_handling, :race_conditions, :underspecs],
         # ignore_warnings: "dialyzer.ignore-warnings"
       ],
       deps: deps(),
@@ -48,8 +48,8 @@ defmodule MixDeploy.MixProject do
     [
       {:ex_doc, "~> 0.21", only: :dev, runtime: false},
       # {:mix_systemd, git: "https://github.com/cogini/mix_systemd.git"},
-      {:mix_systemd, "~> 0.7"}
-      # {:dialyxir, "~> 0.5.1", only: [:dev, :test], runtime: false},
+      {:mix_systemd, "~> 0.7"},
+      {:dialyxir, "~> 0.5.1", only: [:dev, :test], runtime: false},
     ]
   end
 
