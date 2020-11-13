@@ -36,7 +36,7 @@ defmodule MixDeploy.MixProject do
     [
       {:mix_systemd, "~> 0.7.0", organization: "narrativeapp"},
       {:ex_doc, ">= 0.0.0", only: [:dev, :test]},
-      {:credo, "~> 1.4.0", only: [:dev, :test], runtime: false}
+      {:credo, "~> 1.5.1", only: [:dev, :test], runtime: false}
 
       # {:mix_systemd, "~> 0.1.0"}
       # {:dialyxir, "~> 0.5.1", only: [:dev, :test], runtime: false},
