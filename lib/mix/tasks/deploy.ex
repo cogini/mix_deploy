@@ -504,7 +504,7 @@ defmodule Mix.Tasks.Deploy.Generate do
           },
           %{
             enabled: cfg[:sudo_deploy] or cfg[:sudo_app],
-            src: ["_build/", :mix_env, "/deploy/etc/sudoers.d/", :ext_name],
+            src: ["_build/", :mix_env, "/deploy/etc/sudoers.d/", :target_prefix, "-", :ext_name],
             dst: ["/etc/sudoers.d/", :ext_name],
             mode: "600"
           }
