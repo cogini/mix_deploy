@@ -24,7 +24,7 @@ Add `mix_deploy` to the list of dependencies in `mix.exs`:
 def deps do
   [
     {:mix_systemd, "~> 0.6.0"},
-    {:mix_deploy, "~> 0.6.0"},
+    {:mix_deploy, "~> 0.1.7"},
   ]
 end
 ```
