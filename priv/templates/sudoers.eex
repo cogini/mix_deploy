@@ -1,14 +1,14 @@
-Cmnd_Alias <%= app_name %>_SYSTEMCTL = /bin/systemctl start <%= service_name %>, \
+Cmnd_Alias <%= String.upcase(app_name) %>_SYSTEMCTL = /bin/systemctl start <%= service_name %>, \
                            /bin/systemctl stop <%= service_name %>, \
                            /bin/systemctl restart <%= service_name %>, \
                            /bin/systemctl status <%= service_name %>, \
                            /bin/systemctl is-active <%= service_name %>
 
 <%= if sudo_deploy do %>
-<%= deploy_user %> ALL=(ALL) NOPASSWD: <%= app_name %>_SYSTEMCTL
+<%= deploy_user %> ALL=(ALL) NOPASSWD: <%= String.upcase(app_name) %>_SYSTEMCTL
 Defaults:<%= deploy_user %> !requiretty
 <% end %>
 <%= if sudo_app do %>
-<%= app_user %> ALL=(ALL) NOPASSWD: <%= app_name %>_SYSTEMCTL
+<%= app_user %> ALL=(ALL) NOPASSWD: <%= String.upcase(app_name) %>_SYSTEMCTL
 Defaults:<%= app_user %> !requiretty
 <% end %>
