@@ -1,0 +1,26 @@
+#!/bin/sh
+
+# Run custom function/command before starting
+
+# This is normally run under the app OS user.
+# It assumes that config is loaded by release config providers and env.sh.
+
+# The release will, in general, need to have a writable directory to process
+# the application environment, set with RELEASE_TMP or RELEASE_MUTABLE_DIR
+
+# Exit on errors
+set -e
+
+# Config vars
+CURRENT_DIR="${CURRENT_DIR:-"<%= current_dir %>"}"
+RELEASE_NAME="${RELEASE_NAME:-"<%= release_name %>"}"
+
+<%= case release_system do %>
+<% :mix -> %>
+CUSTOM_FUNCTION="${CUSTOM_FUNCTION:-"<%= module_name %>.Release.custom_function"}"
+$CURRENT_DIR/bin/$RELEASE_NAME eval "$CUSTOM_FUNCTION"
+<% :distillery -> %>
+# Run Distillery custom command
+# https://hexdocs.pm/distillery/extensibility/custom_commands.html
+$CURRENT_DIR/bin/$RELEASE_NAME custom_function
+<% end %>
