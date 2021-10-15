@@ -1,5 +1,11 @@
 # mix_deploy
 
+[![Module Version](https://img.shields.io/hexpm/v/mix_deploy.svg)](https://hex.pm/packages/mix_deploy)
+[![Hex Docs](https://img.shields.io/badge/hex-docs-lightgreen.svg)](https://hexdocs.pm/mix_deploy/)
+[![Total Download](https://img.shields.io/hexpm/dt/mix_deploy.svg)](https://hex.pm/packages/mix_deploy)
+[![License](https://img.shields.io/hexpm/l/mix_deploy.svg)](https://github.com/cogini/mix_deploy/blob/master/LICENSE)
+[![Last Updated](https://img.shields.io/github/last-commit/cogini/mix_deploy.svg)](https://github.com/cogini/mix_deploy/commits/master)
+
 This module generates scripts which help deploy an Erlang release, handling
 tasks such as creating initial directory structure, unpacking release files,
 managing configuration, and starting/stopping.  It supports deployment to the
@@ -805,3 +811,17 @@ See [mix_systemd](https://github.com/cogini/mix_systemd) for more examples.
 I am `jakemorrison` on on the Elixir Slack and Discord, `reachfh` on
 Freenode `#elixir-lang` IRC channel. Happy to chat or help with
 your projects.
+
+## Copyright and License
+
+Copyright (c) 2019 Jake Morrison
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at [https://www.apache.org/licenses/LICENSE-2.0](https://www.apache.org/licenses/LICENSE-2.0)
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.

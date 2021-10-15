@@ -14,7 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.7.7] - 2020-12-08
 ### Fixed
-- Fix incorect file path copying /etc/sudoers.d file
+- Fix incorrect file path copying /etc/sudoers.d file
 
 ## [0.7.6] - 2020-10-07
 ### Changed

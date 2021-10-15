@@ -562,7 +562,6 @@ defmodule Mix.Tasks.Deploy.Local do
 
   This module looks for configuration in the mix project, to get the app and version,
   and under the application environment under `mix_deploy`.
-  ```
   """
   use Mix.Task
 
