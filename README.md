@@ -298,7 +298,7 @@ at runtime prior to starting the app. They are more most useful with Distillery.
 
 Elixir 1.9+ mix releases support
 [runtime configuration](https://hexdocs.pm/mix/Mix.Tasks.Release.html#module-runtime-configuration)
-via `config/releases.exs` and `rel/env.sh.eex`. It is more secure, however, to
+via `config/runtime.exs` and `rel/env.sh.eex`. It is more secure, however, to
 separate the process of getting configuration from the app itself using
 [ExecStartPre](https://www.freedesktop.org/software/systemd/man/systemd.service.html#ExecStartPre=)]).
 See [mix_systemd](https://github.com/cogini/mix_systemd) for examples.
