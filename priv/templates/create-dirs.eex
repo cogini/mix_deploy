@@ -18,7 +18,7 @@ APP_USER="${APP_USER:-"<%= app_user %>"}"
 APP_GROUP="${APP_GROUP:-"<%= app_group %>"}"
 
 <%= for dir <- create_dirs, dir[:enabled] != false do %>
-<% if dir[:comment] do %># <%= dir.comment %><% end %>
+<%= if dir[:comment] do %># <%= dir.comment %><% end %>
 if [ ! -d "${DESTDIR}<%= dir.path %>" ]; then
   mkdir -v -p "${DESTDIR}<%= dir.path %>"
   <%= if dir[:user] do %>chown <%= dir.user %>:<%= dir.group %> "${DESTDIR}<%= dir.path %>"<% end %>
