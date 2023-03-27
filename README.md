@@ -9,7 +9,7 @@
 This module generates scripts which help deploy an Erlang release, handling
 tasks such as creating initial directory structure, unpacking release files,
 managing configuration, and starting/stopping.  It supports deployment to the
-local machine, bare-metal servers or cloud servers using e.g.
+local machine, bare-metal servers, or cloud servers using e.g.
 [AWS CodeDeploy](https://aws.amazon.com/codedeploy/).
 
 It supports releases created with Elixir 1.9+
@@ -36,56 +36,81 @@ end
 
 ## Example
 
-The most straightforward way to deploy an app is on a server at e.g.
-[Digital Ocean](https://m.do.co/c/150575a88316). You can build and deploy on
-the same machine, checking out the code on a server, building/testing, then
-generating a release.  You then run scripts to set up the runtime environment,
-including systemd unit scripts, extract the release to the target dir and run
-it under systemd.
+A straightforward way to deploy an app is on a virtual private server at e.g.
+[Digital Ocean](https://m.do.co/c/150575a88316), building and deploying on the
+same machine.
+
+Check out the code, build, then generate a release. You then use the scripts in
+this package to set up the runtime environment, deploy the release to the
+target dir, and run it supervised by systemd.
 
 ### Configure the app
 
 Follow the Phoenix config process for
 [deployment](https://hexdocs.pm/phoenix/deployment.html) and
-[releases](https://hexdocs.pm/phoenix/releases.html). Make the app read its
-config from environment variables. Create a file with these environment vars
-and put it in `config/environment`.
+[releases](https://hexdocs.pm/phoenix/releases.html).
 
-### Configure `mix_deploy` and `mix_systemd` in `config/config.exs`
+Make the app read runtime configuration such as the database connection from
+environment variables.
+
+Create a file with these environment vars and put it in `config/environment`.
+Add `config/environment` to `.gitignore` so that any secrets do not get checked
+into git.
+
+### Configure `mix_deploy` and `mix_systemd`
+
+Configure `mix_deploy` and `mix_systemd` in `config/prod.exs`.
+
+`mix_systemd` generates a systemd unit file which loads the configuration
+for the app. On startup, it creates the specified directories for the app in
+the standard locations.
 
 ```elixir
 config :mix_systemd,
   env_files: [
-    # Read environment vars from file /srv/foo/etc/environment
+    # Read environment vars from file /srv/foo/etc/environment if it exists
     ["-", :deploy_dir, "/etc/environment"],
+    # Read environment vars from file /etc/foo/environment if it exists
+    ["-", :configuration_dir, "/environment"]
   ],
   # Set individual env vars
   env_vars: [
     "PORT=8080"
   ],
-  # Run app under this OS user, default is name of app
+  # Create standard config dirs
+  dirs: [
+    # /var/cache/foo
+    :cache,
+    # /etc/foo
+    :configuration,
+    # /var/log/foo
+    :logs,
+    # /run/foo
+    :runtime,
+    # /var/lib/foo
+    :state,
+    # /var/tmp/foo
+    :tmp
+  ],
+  # Run app under this OS user, default is the app name
   app_user: "app",
   app_group: "app"
+```
 
+`mix_deploy` generates scripts to initialize the system and deploy it.
+
+```elixir
 config :mix_deploy,
   app_user: "app",
   app_group: "app"
-  # When deploying, copy config/environment to /etc/foo/environment
+  # Copy config/environment to /etc/foo/environment
   copy_files: [
     %{
       src: "config/environment",
-      dst: [:deploy_dir, "/etc/environment"],
+      dst: [:configuration_dir, "/environment"],
       user: "$DEPLOY_USER",
       group: "$APP_GROUP",
       mode: "640"
-    },
-  ],
-  create_dirs: [
-    %{
-      path: [:deploy_dir, "/etc"],
-      user: "$DEPLOY_USER",
-      group: "$APP_GROUP",
-      mode: "750"
     },
   ],
   # Generate these scripts in bin
@@ -103,15 +128,21 @@ config :mix_deploy,
   ]
 ```
 
-### Initialize `mix_systemd` and `mix_deploy` and generate files.
+### Initialize `mix_systemd` and `mix_deploy` and generate files
+
+`mix_systemd` and `mix_deploy` generate output files from templates.
+Run the following to copy the templates into your project. The templating
+process most common needs via configuration, but you can also check them into
+your project and make local modifications to handle special needs.
 
 ```shell
-# Initialize mix_systemd templates
 mix systemd.init
-
-# Initialize mix_deploy templates
 mix deploy.init
+```
 
+Generate output files:
+
+```shell
 # Create systemd unit file for app under _build/prod/systemd
 MIX_ENV=prod mix systemd.generate
 
@@ -120,8 +151,9 @@ MIX_ENV=prod mix deploy.generate
 chmod +x bin/*
 ```
 
-### Set up the system.
+### Set up the system
 
+Run the scripts to set up the operating system for the deployment.
 This creates the app OS user, directory structure under `/srv/foo`, and the
 systemd unit file which supervises the app.
 
@@ -142,7 +174,6 @@ bin/deploy-create-users
 bin/deploy-create-dirs
 
 # Copy scripts used at runtime by the systemd unit
-# Strictly speaking, you only need to copy scripts used at runtime
 cp bin/* /srv/foo/bin
 
 # Copy files and enable systemd unit
@@ -152,8 +183,8 @@ bin/deploy-enable
 
 ### Build the Elixir release
 
-Create the release, a tar file containing the app, the libraries it depends
-on, and scripts to manage it.
+Create the Elixir (Erlang) release. This is a tar file containing the app, the
+libraries it depends on, and the scripts to manage it.
 
 ```shell
 MIX_ENV=prod mix release
@@ -162,19 +193,34 @@ MIX_ENV=prod mix release
 ### Deploy the release to the local machine:
 
 ```shell
-# Extract release to target directory, creating current symlink
-bin/deploy-release
+# Extract release to target directory and make it current
+sudo bin/deploy-release
 
 # Restart the systemd unit
 sudo bin/deploy-restart
 ```
 
-Roll back the release with the following:
+You can roll back the release with the following:
 
 ```shell
 bin/deploy-rollback
 sudo bin/deploy-restart
 ```
+
+Add an alias to `mix.exs`, and you can do the deploy by running `mix deploy`.
+
+```elixir
+defp aliases do
+  [
+    deploy: [
+      "release --overwrite",
+      "cmd sudo bin/deploy-release",
+      "cmd sudo bin/deploy-restart"
+    ]
+  ]
+end
+```
+
 
 ### Try it out
 
