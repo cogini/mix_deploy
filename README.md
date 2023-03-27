@@ -40,9 +40,11 @@ A straightforward way to deploy an app is on a virtual private server at e.g.
 [Digital Ocean](https://m.do.co/c/150575a88316), building and deploying on the
 same machine.
 
-Check out the code, build, then generate a release. You then use the scripts in
-this package to set up the runtime environment, deploy the release to the
-target dir, and run it supervised by systemd.
+Check out the code on the server, run `mix compile` to build, run `mix test`,
+then run `mix release` to generate a release.
+
+You can use the scripts in `mix_release` to set up the runtime environment,
+deploy the release to the target dir, and run it supervised by systemd.
 
 ### Configure the app
 
