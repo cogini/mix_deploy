@@ -52,12 +52,19 @@ Follow the Phoenix config process for
 [deployment](https://hexdocs.pm/phoenix/deployment.html) and
 [releases](https://hexdocs.pm/phoenix/releases.html).
 
-Make the app read runtime configuration such as the database connection from
-environment variables.
+The app should read runtime configuration such as the database connection from
+environment variables in `config/runtime.exs`. Generate a production secret
+with `mix phx.gen.secret`.
 
-Create a file with these environment vars and put it in `config/environment`.
-Add `config/environment` to `.gitignore` so that any secrets do not get checked
-into git.
+Create a file with these environment vars and put it in `config/environment`, e.g.:
+
+```shell
+DATABASE_URL="ecto://foo:Sekr!t@localhost/foo"
+SECRET_KEY_BASE="VXR6/fViPssuoAyqmr0SvAYBIaMrtiZLaQCn1TfB5NXaOzssHxtegfF+yM+/Senv"
+```
+
+Add the `config/environment` file to `.gitignore` so that any secrets do not
+get checked into git.
 
 ### Configure `mix_deploy` and `mix_systemd`
 
@@ -77,7 +84,8 @@ config :mix_systemd,
   ],
   # Set individual env vars
   env_vars: [
-    "PORT=8080"
+    "PHX_SERVER=true"
+    "PORT=8080",
   ],
   # Create standard config dirs
   dirs: [
@@ -222,7 +230,6 @@ defp aliases do
   ]
 end
 ```
-
 
 ### Try it out
 
