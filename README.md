@@ -217,6 +217,14 @@ sudo bin/deploy-restart
 Add an alias to `mix.exs`, and you can do the deploy by running `mix deploy`.
 
 ```elixir
+def project do
+  [
+    preferred_cli_env: [
+      deploy: :prod
+    ]
+  ]
+end
+
 defp aliases do
   [
     deploy: [
