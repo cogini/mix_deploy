@@ -23,12 +23,12 @@ defmodule Mix.Tasks.Deploy do
 
     app_name = mix_config[:app]
 
+    service_name = app_name
+
     ext_name =
       app_name
       |> to_string
       |> String.replace("_", "-")
-
-    service_name = ext_name
 
     module_name =
       app_name
