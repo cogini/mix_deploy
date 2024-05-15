@@ -1,7 +1,7 @@
 defmodule MixDeploy.MixProject do
   use Mix.Project
 
-  @version "0.1.9"
+  @version "0.2.0"
 
   def project do
     [

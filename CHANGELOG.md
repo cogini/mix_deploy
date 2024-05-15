@@ -5,6 +5,15 @@ See [Conventional Commits](Https://conventionalcommits.org) for commit guideline
 
 <!-- changelog -->
 
+## [v0.2.0](https://github.com/NarrativeApp/mix_deploy/compare/v0.1.9...v0.2.0) (2024-05-15)
+
+
+
+
+### Features:
+
+* release new version
+
 ## [v0.1.7](https://github.com/NarrativeApp/mix_deploy/compare/v0.1.7...v0.1.7) (2020-12-15)
 
 
