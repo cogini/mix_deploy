@@ -23,7 +23,7 @@ defmodule Mix.Tasks.Deploy do
 
     app_name = mix_config[:app]
 
-    service_name = app_name
+    service_name = app_name |> to_string()
 
     ext_name =
       app_name
