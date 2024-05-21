@@ -25,10 +25,7 @@ defmodule Mix.Tasks.Deploy do
 
     service_name = app_name |> to_string()
 
-    ext_name =
-      app_name
-      |> to_string
-      |> String.replace("_", "-")
+    ext_name = app_name
 
     module_name =
       app_name
