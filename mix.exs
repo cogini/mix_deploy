@@ -35,7 +35,7 @@ defmodule MixDeploy.MixProject do
       {:credo, "~> 1.5.1", only: ~w[dev test]a, runtime: false},
       {:ex_doc, ">= 0.0.0", only: ~w[dev test]a},
       {:git_ops, "~> 2.2", only: ~w[dev test]a, runtime: false},
-      {:mix_systemd, "~> 0.8.0", organization: "narrativeapp"}
+      {:mix_systemd, "~> 0.9.0", organization: "narrativeapp"}
     ]
   end
 
