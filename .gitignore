@@ -28,3 +28,5 @@ mix_deploy-*.tar
 # Misc.
 /rel/templates/
 /bin/
+
+.DS_Store
