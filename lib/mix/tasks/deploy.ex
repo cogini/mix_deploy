@@ -42,8 +42,7 @@ defmodule Mix.Tasks.Deploy do
       app_name
       |> to_string
       |> String.split("_")
-      |> Enum.map(&String.capitalize/1)
-      |> Enum.join("")
+      |> Enum.map_join("", &String.capitalize/1)
 
     base_dir = user_config[:base_dir] || "/srv"
 
@@ -331,9 +330,7 @@ defmodule Mix.Tasks.Deploy do
   end
 
   def expand_vars(terms, cfg) when is_list(terms) do
-    terms
-    |> Enum.map(&expand_vars(&1, cfg))
-    |> Enum.join("")
+    Enum.map_join(terms, "", &expand_vars(&1, cfg))
   end
 
   def expand_vars(value, _cfg), do: to_string(value)
