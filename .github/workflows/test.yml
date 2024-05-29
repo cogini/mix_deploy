@@ -1,0 +1,105 @@
+---
+name: Test
+on:
+  push:
+    branches:
+      - "master"
+  pull_request:
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  test:
+    name: Run tests
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        otp: ['24', '25', '26']
+        elixir: ['1.13.4', '1.14.5', '1.15.7', '1.16.3']
+        # https://hexdocs.pm/elixir/compatibility-and-deprecations.html
+        exclude:
+          - otp: '26'
+            elixir: '1.13.4'
+          - otp: '26'
+            elixir: '1.14.5'
+    env:
+      MIX_ENV: test
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Install Erlang and Elixir
+        uses: erlef/setup-beam@v1
+        with:
+          otp-version: ${{matrix.otp}}
+          elixir-version: ${{matrix.elixir}}
+
+      - name: Cache deps
+        id: cache-deps
+        uses: actions/cache@v4
+        env:
+          cache-name: cache-elixir-deps
+        with:
+          path: deps
+          key: ${{ runner.os }}-${{matrix.otp}}-${{matrix.elixir}}-mix-${{ env.cache-name }}-${{ hashFiles('**/mix.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-${{matrix.otp}}-${{matrix.elixir}}-mix-${{ env.cache-name }}-
+
+      - name: Cache compiled build
+        id: cache-build
+        uses: actions/cache@v4
+        env:
+          cache-name: cache-compiled-build
+        with:
+          path: _build
+          key: ${{ runner.os }}-${{matrix.otp}}-${{matrix.elixir}}-mix-${{ env.cache-name }}-${{ hashFiles('**/mix.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-${{matrix.otp}}-${{matrix.elixir}}-mix-${{ env.cache-name }}-
+
+      - name: Install tools
+        run: mix do local.rebar --force, local.hex --force
+
+      - name: Get Elixir deps
+        run: mix deps.get
+
+      - name: Compile
+        run: mix compile --warnings-as-errors
+
+      # - name: Check formatting
+      #   run: mix format --check-formatted
+
+      - name: Run tests
+        run: mix test
+
+      - name: Run credo
+        run: mix credo --mute-exit-status
+        # run: mix credo
+
+      - name: Run hex.audit
+        run: mix hex.audit
+
+      - name: Run deps.audit
+        run: mix deps.audit
+
+      - name: Run dialyzer
+        run: mix dialyzer --ignore-exit-status --format github
+
+      - name: Publish unit test results to GitHub
+        uses: EnricoMi/publish-unit-test-result-action@v2
+        # Run even if tests fail
+        if: always()
+        with:
+          junit_files: _build/test/junit-reports/*.xml
+          # junit_files: _build/test/lib/*/*.xml
+          check_name: "Test Results ${{matrix.elixir}} ${{matrix.otp}}"
+
+      # - name: Upload results to Datadog
+      #   if: always()
+      #   continue-on-error: true
+      #   env:
+      #     DD_API_KEY: ${{ secrets.ACTIONS_DD_API_KEY }}
+      #     DD_ENV: ci
+      #   run: |
+      #     npm install -g @datadog/datadog-ci
+      #     datadog-ci junit upload --service api-graphql _build/test/lib/*/test-junit-report.xml
