@@ -20,7 +20,7 @@ defmodule MixDeploy.User do
           [_name, pairs] ->
             for pair <- String.split(pairs, ",") do
               [num, name] =
-                Regex.run(~R/^(\d+)\(([a-zA-Z1-9_.-]+)\)$/, pair, capture: :all_but_first)
+                Regex.run(~r/^(\d+)\(([a-zA-Z1-9_.-]+)\)$/, pair, capture: :all_but_first)
 
               {name, String.to_integer(num)}
             end
