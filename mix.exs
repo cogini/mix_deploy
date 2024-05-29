@@ -56,6 +56,7 @@ defmodule MixDeploy.MixProject do
 
   defp deps do
     [
+      {:castore, "~> 1.0", only: [:dev, :test], runtime: false},
       {:credo, "~> 1.6", only: [:dev, :test], runtime: false},
       {:dialyxir, "~> 1.2", only: [:dev, :test], runtime: false},
       {:ex_doc, "~> 0.33.0", only: :dev, runtime: false},
