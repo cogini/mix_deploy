@@ -32,7 +32,7 @@ mkdir -p "${OUTPUT_DIR}/systemd"
 cp -v _build/${MIX_ENV}/systemd/lib/systemd/system/* "${OUTPUT_DIR}/systemd"
 
 mkdir -p "${OUTPUT_DIR}/bin"
-cp ${SCRIPTS_SRC}/* ${OUTPUT_DIR}/bin
+cp ${SCRIPTS_SRC}/* "${OUTPUT_DIR}/bin"
 
 mkdir -p "${OUTPUT_DIR}/etc"
 
