@@ -21,7 +21,7 @@ APP_GROUP="${APP_GROUP:-"<%= app_group %>"}"
 <%= if dir[:comment] do %># <%= dir.comment %><% end %>
 if [ ! -d "${DESTDIR}<%= dir.path %>" ]; then
   mkdir -v -p "${DESTDIR}<%= dir.path %>"
-  <%= if dir[:user] do %>chown <%= dir.user %>:<%= dir.group %> "${DESTDIR}<%= dir.path %>"<% end %>
+  <%= if dir[:user] do %>chown "<%= dir.user %>:<%= dir.group %>" "${DESTDIR}<%= dir.path %>"<% end %>
   <%= if dir[:mode] do %>chmod <%= dir.mode %> "${DESTDIR}<%= dir.path %>"<% end %>
 fi
 <% end %>

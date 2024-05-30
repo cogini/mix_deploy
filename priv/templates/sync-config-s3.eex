@@ -21,6 +21,6 @@ echo "Starting $0"
 
 aws s3 sync --exact-timestamps --no-progress "s3://${CONFIG_S3_BUCKET}/${CONFIG_S3_PREFIX}" "${DESTDIR}${CONFIG_DIR}/"
 
-chown -R $DEPLOY_USER:$APP_GROUP "${DESTDIR}$CONFIG_DIR"
+chown -R "$DEPLOY_USER:$APP_GROUP" "${DESTDIR}$CONFIG_DIR"
 find -H "${DESTDIR}$CONFIG_DIR" -type f -exec chmod 640 {} \;
 find -H "${DESTDIR}$CONFIG_DIR" -type d -exec chmod 750 {} \;

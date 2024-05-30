@@ -17,7 +17,7 @@ APP_GROUP="${APP_GROUP:-"<%= app_group %>"}"
 
 <%= for file <- copy_files, file[:enabled] != false do %>
 cp -v <%= file.src %> "${DESTDIR}<%= file.dst %>"
-<%= if file[:user] do %>chown <%= file.user %>:<%= file.group %> "${DESTDIR}<%= file.dst %>"<% end %>
+<%= if file[:user] do %>chown "<%= file.user %>:<%= file.group %>" "${DESTDIR}<%= file.dst %>"<% end %>
 <%= if file[:mode] do %>chmod <%= file.mode %> "${DESTDIR}<%= file.dst %>"<% end %>
 
 <% end %>

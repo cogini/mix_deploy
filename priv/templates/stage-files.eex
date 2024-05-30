@@ -18,7 +18,7 @@ echo "==> Copying output files to ${OUTPUT_DIR}"
 mkdir -p "${OUTPUT_DIR}"
 
 if [ -f appspec.yml ]; then
-    cp -v appspec.yml ${OUTPUT_DIR}
+    cp -v appspec.yml "${OUTPUT_DIR}"
 fi
 
 <%= case release_system do %>
@@ -28,13 +28,13 @@ cp -v "_build/${MIX_ENV}/${RELEASE_NAME}-${RELEASE_VSN}.tar.gz" "${OUTPUT_DIR}/$
 cp -v "_build/${MIX_ENV}/rel/${RELEASE_NAME}/releases/${RELEASE_VSN}/${RELEASE_NAME}.tar.gz" "${OUTPUT_DIR}/${RELEASE_NAME}.tar.gz"
 <% end %>
 
-mkdir -p ${OUTPUT_DIR}/systemd
+mkdir -p "${OUTPUT_DIR}/systemd"
 cp -v _build/${MIX_ENV}/systemd/lib/systemd/system/* "${OUTPUT_DIR}/systemd"
 
 mkdir -p "${OUTPUT_DIR}/bin"
 cp ${SCRIPTS_SRC}/* ${OUTPUT_DIR}/bin
 
-mkdir -p ${OUTPUT_DIR}/etc
+mkdir -p "${OUTPUT_DIR}/etc"
 
 # mkdir -p "${OUTPUT_DIR}/static-assets"
 # cp -R priv/static/* "${OUTPUT_DIR}/static-assets"
