@@ -18,7 +18,7 @@ BINDIR=$(dirname "$0")
 cd "$BINDIR"; BINDIR="$PWD"; cd "$CURDIR"
 
 TARGET_DIR="${DESTDIR}${CURRENT_DIR}"
-TAR_FILE="$BINDIR/../${RELEASE_NAME}.tar.gz"
+TAR_FILE="${BINDIR}/../${RELEASE_NAME}.tar.gz"
 
 echo "==> Removing previous release $TARGET_DIR"
 rm -rf "$TARGET_DIR"
@@ -26,4 +26,4 @@ rm -rf "$TARGET_DIR"
 echo "==> Extracting release from tar file $TAR_FILE"
 mkdir -p "$TARGET_DIR"
 tar -C "$TARGET_DIR" -xzf "$TAR_FILE"
-chown -R ${DEPLOY_USER}:${APP_GROUP} "${TARGET_DIR}"
+chown -R "${DEPLOY_USER}:${APP_GROUP}" "${TARGET_DIR}"

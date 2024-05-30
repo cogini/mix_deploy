@@ -18,9 +18,9 @@ RELEASE_NAME="${RELEASE_NAME:-"<%= release_name %>"}"
 <%= case release_system do %>
 <% :mix -> %>
 CUSTOM_FUNCTION="${CUSTOM_FUNCTION:-"<%= module_name %>.Release.custom_function"}"
-$CURRENT_DIR/bin/$RELEASE_NAME eval "$CUSTOM_FUNCTION"
+"${CURRENT_DIR}/bin/${RELEASE_NAME}" eval "$CUSTOM_FUNCTION"
 <% :distillery -> %>
 # Run Distillery custom command
 # https://hexdocs.pm/distillery/extensibility/custom_commands.html
-$CURRENT_DIR/bin/$RELEASE_NAME custom_function
+"${CURRENT_DIR}/bin/${RELEASE_NAME}" custom_function
 <% end %>

@@ -18,9 +18,9 @@ RELEASE_NAME="${RELEASE_NAME:-"<%= release_name %>"}"
 <%= case release_system do %>
 <% :mix -> %>
 MIGRATE_FUNCTION="${MIGRATE_FUNCTION:-"<%= module_name %>.Release.migrate"}"
-$CURRENT_DIR/bin/$RELEASE_NAME eval "$MIGRATE_FUNCTION"
+"${CURRENT_DIR}/bin/${RELEASE_NAME}" eval "$MIGRATE_FUNCTION"
 <% :distillery -> %>
 # Run Distillery custom command
 # https://hexdocs.pm/distillery/extensibility/custom_commands.html
-$CURRENT_DIR/bin/$RELEASE_NAME migrate
+"${CURRENT_DIR}/bin/${RELEASE_NAME}" migrate
 <% end %>
