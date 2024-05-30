@@ -1,15 +1,18 @@
-# mix_deploy
-
+![test workflow](https://github.com/cogini/mix_systemd/actions/workflows/test.yml/badge.svg)
+[![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-2.1-4baaaa.svg)](CODE_OF_CONDUCT.md)
 [![Module Version](https://img.shields.io/hexpm/v/mix_deploy.svg)](https://hex.pm/packages/mix_deploy)
 [![Hex Docs](https://img.shields.io/badge/hex-docs-lightgreen.svg)](https://hexdocs.pm/mix_deploy/)
 [![Total Download](https://img.shields.io/hexpm/dt/mix_deploy.svg)](https://hex.pm/packages/mix_deploy)
-[![License](https://img.shields.io/hexpm/l/mix_deploy.svg)](https://github.com/cogini/mix_deploy/blob/master/LICENSE)
+[![License](https://img.shields.io/hexpm/l/mix_deploy.svg)](https://github.com/cogini/mix_deploy/blob/master/LICENSE.md)
 [![Last Updated](https://img.shields.io/github/last-commit/cogini/mix_deploy.svg)](https://github.com/cogini/mix_deploy/commits/master)
+
+# mix_deploy
+
 
 This module generates scripts which help deploy an Erlang release, handling
 tasks such as creating initial directory structure, unpacking release files,
 managing configuration, and starting/stopping.  It supports deployment to the
-local machine, bare-metal servers, or cloud servers using e.g.
+local machine, bare-metal servers, or cloud servers using e.g.,
 [AWS CodeDeploy](https://aws.amazon.com/codedeploy/).
 
 It supports releases created with Elixir 1.9+
@@ -36,7 +39,7 @@ end
 
 ## Example
 
-A straightforward way to deploy an app is on a virtual private server at e.g.
+A straightforward way to deploy an app is on a virtual private server at, e.g.,
 [Digital Ocean](https://m.do.co/c/150575a88316), building and deploying on the
 same machine. Check out the code on the server, run `mix compile` to build, run
 `mix test`, then run `mix release` to generate a release. You then use the
