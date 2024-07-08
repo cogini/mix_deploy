@@ -2,7 +2,7 @@ defmodule MixDeploy.MixProject do
   use Mix.Project
 
   @github "https://github.com/cogini/mix_deploy"
-  @version "0.8.0"
+  @version "0.7.10"
 
   def project do
     [
