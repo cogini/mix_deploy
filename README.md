@@ -84,8 +84,8 @@ config :mix_systemd,
   ],
   # Set individual env vars
   env_vars: [
-    "PHX_SERVER=true"
-    "PORT=8080",
+    "PHX_SERVER=true",
+    "PORT=8080"
   ],
   # Create standard config dirs
   dirs: [
