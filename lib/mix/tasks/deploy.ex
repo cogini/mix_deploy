@@ -31,8 +31,7 @@ defmodule Mix.Tasks.Deploy do
       app_name
       |> to_string
       |> String.split("_")
-      |> Enum.map(&String.capitalize/1)
-      |> Enum.join("")
+      |> Enum.map_join("", &String.capitalize/1)
 
     base_dir = user_config[:base_dir] || "/srv"
 

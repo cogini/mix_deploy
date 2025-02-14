@@ -32,7 +32,7 @@ defmodule MixDeploy.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:credo, "~> 1.5.1", only: ~w[dev test]a, runtime: false},
+      {:credo, "~> 1.7", only: ~w[dev test]a, runtime: false},
       {:ex_doc, ">= 0.0.0", only: ~w[dev test]a},
       {:git_ops, "~> 2.2", only: ~w[dev test]a, runtime: false},
       {:mix_systemd, "~> 0.9.0", organization: "narrativeapp"}
