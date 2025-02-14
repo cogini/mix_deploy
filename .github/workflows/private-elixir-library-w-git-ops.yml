@@ -3,12 +3,12 @@ on: push
 name: Privately published Elixir Library (with git ops)
 
 env:
-  ELIXIR_VERSION: "1.12.3"
-  OTP_VERSION: "24.3.3"
+  ELIXIR_VERSION: "1.14.5-otp-24"
+  OTP_VERSION: "24.3.4.17"
 
 jobs:
   deps:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
     env:
       NARRATIVE_HEX_ORG_API_KEY: ${{ secrets.NARRATIVE_HEX_ORG_API_KEY }}
       MIX_ENV: test
@@ -33,9 +33,10 @@ jobs:
         with:
           name: deps
           path: deps/
+          include-hidden-files: true
 
   build:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
     needs: ["deps"]
     env:
       MIX_ENV: test
@@ -66,7 +67,7 @@ jobs:
           path: _build/
 
   credo:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
     needs: ["deps", "build"]
     env:
       MIX_ENV: test
@@ -91,7 +92,7 @@ jobs:
       - run: mix credo --strict
 
   formatter:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
     steps:
       - name: Checking out project
         uses: actions/checkout@v4
@@ -103,7 +104,7 @@ jobs:
       - run: mix format --check-formatted
 
   audit:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
     needs: ["deps"]
     env:
       NARRATIVE_HEX_ORG_API_KEY: ${{ secrets.NARRATIVE_HEX_ORG_API_KEY }}
@@ -125,7 +126,7 @@ jobs:
       - run: mix hex.audit
 
   test:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
     needs: ["deps", "build"]
     env:
       MIX_ENV: test
@@ -150,7 +151,7 @@ jobs:
       - run: mix test
 
   is_releasable:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
     needs: ["deps", "test", "audit", "formatter", "credo"]
     if: ${{ github.event_name == 'push' && github.ref != 'refs/heads/master'}}
     env:
@@ -192,7 +193,7 @@ jobs:
           path: docs.tar.gz
 
   git_ops:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
     needs: ["deps", "test", "audit", "formatter", "credo"]
     if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
     env:
