@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.7.11] - 2025-10-14
 ### Changed
 - Update libs
+- Update docs, thanks @j4nk3e https://github.com/cogini/mix_deploy/pull/16
 
 ## [0.7.10] - 2024-07-07
 ### Changed
