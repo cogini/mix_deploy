@@ -276,7 +276,11 @@ defmodule Mix.Tasks.Deploy do
           # Loation of pid file when running as a daemon
           pid_file:
             cfg[:pid_file] ||
-              Path.join([cfg[:runtime_directory_base], cfg[:runtime_directory], "#{app_name}.pid"]),
+              Path.join([
+                cfg[:runtime_directory_base],
+                cfg[:runtime_directory],
+                "#{app_name}.pid"
+              ]),
 
           # Chroot dir
           root_directory: cfg[:root_directory] || Path.join(cfg[:deploy_dir], "current"),
