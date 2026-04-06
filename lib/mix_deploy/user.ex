@@ -57,7 +57,7 @@ defmodule MixDeploy.User do
   @spec get_gid(os_type(), binary) :: non_neg_integer
   defp get_gid({:unix, :linux}, name) do
     {:ok, info} = get_user_info(name)
-    info.uid
+    info.gid
   end
 
   defp get_gid({:unix, :darwin}, name) do
