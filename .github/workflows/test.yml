@@ -63,7 +63,7 @@ jobs:
       MIX_ENV: test
     steps:
       - name: Check out source
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Install Erlang and Elixir
         uses: erlef/setup-beam@v1
@@ -72,8 +72,7 @@ jobs:
           elixir-version: ${{matrix.elixir}}
 
       - name: Cache deps
-        id: cache-deps
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         env:
           cache-name: cache-elixir-deps
         with:
@@ -83,8 +82,7 @@ jobs:
             ${{ runner.os }}-${{matrix.otp}}-${{matrix.elixir}}-mix-${{ env.cache-name }}-
 
       - name: Cache compiled build
-        id: cache-build
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         env:
           cache-name: cache-compiled-build
         with:
