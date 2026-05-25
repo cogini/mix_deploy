@@ -9,7 +9,7 @@ defmodule MixDeploy.MixProject do
       app: :mix_deploy,
       version: @version,
       elixir: "~> 1.12",
-      build_embedded: Mix.env() == :prod,
+      elixirc_paths: elixirc_paths(Mix.env()),
       start_permanent: Mix.env() == :prod,
       aliases: aliases(),
       dialyzer: [
@@ -20,31 +20,12 @@ defmodule MixDeploy.MixProject do
         # ignore_warnings: "dialyzer.ignore-warnings"
       ],
       test_coverage: [tool: ExCoveralls],
-      preferred_cli_env: [
-        coveralls: :test,
-        "coveralls.detail": :test,
-        "coveralls.post": :test,
-        "coveralls.html": :test,
-        "coveralls.lcov": :test,
-        quality: :test,
-        "quality.ci": :test
-      ],
       description: description(),
       package: package(),
       source_url: @github,
       homepage_url: @github,
       docs: docs(),
-      deps: deps(),
-      releases: releases()
-    ]
-  end
-
-  defp releases do
-    [
-      mix_deploy: [
-        include_executables_for: [:unix],
-        steps: [:assemble, :tar]
-      ]
+      deps: deps()
     ]
   end
 
@@ -53,6 +34,24 @@ defmodule MixDeploy.MixProject do
       extra_applications: [:logger, :eex]
     ]
   end
+
+  def cli do
+    [
+      preferred_envs: [
+        coveralls: :test,
+        "coveralls.detail": :test,
+        "coveralls.post": :test,
+        "coveralls.html": :test,
+        "coveralls.lcov": :test,
+        quality: :test,
+        "quality.ci": :test
+      ]
+    ]
+  end
+
+  defp elixirc_paths(:dev), do: ["lib", "test/support"]
+  defp elixirc_paths(:test), do: ["lib", "test/support"]
+  defp elixirc_paths(_), do: ["lib"]
 
   defp deps do
     [
