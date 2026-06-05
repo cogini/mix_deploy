@@ -72,7 +72,10 @@ jobs:
           elixir-version: ${{ matrix.elixir }}
 
       - name: Install tools
-        run: mix 'do' local.rebar --force + local.hex --force
+        # Old syntax supported by Elixir 1.13
+        run: mix 'do' local.rebar --force, local.hex --force
+        # New syntax
+        # run: mix 'do' local.rebar --force + local.hex --force
 
       - name: Cache deps
         uses: actions/cache@v5
