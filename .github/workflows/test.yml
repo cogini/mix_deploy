@@ -3,8 +3,8 @@ name: Test
 on:
   push:
     branches:
-      - "master"
-  pull_request:
+      - master
+  # pull_request:
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
@@ -72,7 +72,7 @@ jobs:
           elixir-version: ${{ matrix.elixir }}
 
       - name: Install tools
-        run: mix do local.rebar --force, local.hex --force
+        run: mix 'do' local.rebar --force + local.hex --force
 
       - name: Cache deps
         uses: actions/cache@v5
@@ -81,9 +81,9 @@ jobs:
         with:
           path: deps
           key: |
-            mix-${{ env.cache-name }}-${{matrix.otp}}-${{matrix.elixir}}-${{ hashFiles('**/mix.lock') }}
+            ${{runner.os}}-mix-${{env.cache-name}}-${{matrix.otp}}-${{matrix.elixir}}-${{ hashFiles('**/mix.lock') }}
           restore-keys: |
-            mix-${{ env.cache-name }}-${{matrix.otp}}-${{matrix.elixir}}-
+            ${{runner.os}}-mix-${{env.cache-name}}-${{matrix.otp}}-${{matrix.elixir}}-
 
       - name: Cache compiled build
         uses: actions/cache@v5
@@ -92,10 +92,16 @@ jobs:
         with:
           path: _build
           key: |
-            mix-${{ env.cache-name }}-${{matrix.otp}}-${{matrix.elixir}}-${{ hashFiles('**/mix.lock') }}
+            ${{runner.os}}-mix-${{env.cache-name}}-${{matrix.otp}}-${{matrix.elixir}}-${{ hashFiles('**/mix.lock') }}
           restore-keys: |
-            mix-${{ env.cache-name }}-${{matrix.otp}}-${{matrix.elixir}}-
+            ${{runner.os}}-mix-${{env.cache-name}}-${{matrix.otp}}-${{matrix.elixir}}-
 
+      # Force full recompile on builds that are retried.
+      - name: Clean deps to avoid flaky incremental builds
+        if: github.run_attempt != '1'
+        run: |
+          mix deps.clean --all
+          mix clean
 
       - name: Get Elixir deps
         run: mix deps.get
